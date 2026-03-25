@@ -42,6 +42,4 @@ export type TaskHistoryDependencies = {
  * 由于它依赖项目定位和数据库读取，所以沿用统一 CLI 上下文，
  * 并允许测试按需替换局部依赖。
  */
-export type TaskHistoryContext = CliRuntimeContext & {
-  dependencies?: Partial<TaskHistoryDependencies>
-}
+export type TaskHistoryContext = CliRuntimeContext<TaskHistoryDependencies>

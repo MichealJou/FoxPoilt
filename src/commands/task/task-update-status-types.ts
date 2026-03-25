@@ -62,6 +62,4 @@ export type TaskUpdateStatusDependencies = {
  * - 当前语言能力；
  * - 测试中的依赖替换能力。
  */
-export type TaskUpdateStatusContext = CliRuntimeContext & {
-  dependencies?: Partial<TaskUpdateStatusDependencies>
-}
+export type TaskUpdateStatusContext = CliRuntimeContext<TaskUpdateStatusDependencies>

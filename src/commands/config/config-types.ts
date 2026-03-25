@@ -36,6 +36,4 @@ export type ConfigSetLanguageDependencies = {
  * 虽然这个命令几乎不使用 cwd 和 stdin，但仍沿用统一上下文结构，
  * 这样主分发器在拼装命令上下文时就不需要区分不同命令的特殊结构。
  */
-export type ConfigSetLanguageContext = CliRuntimeContext & {
-  dependencies?: Partial<ConfigSetLanguageDependencies>
-}
+export type ConfigSetLanguageContext = CliRuntimeContext<ConfigSetLanguageDependencies>

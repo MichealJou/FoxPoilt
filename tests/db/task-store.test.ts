@@ -121,6 +121,9 @@ type TaskStore = {
       repository_path: string | null
     }>
   } | null
+  listOpenScanSuggestionRepositoryIds: (input: {
+    projectId: string
+  }) => string[]
 }
 
 async function loadModules(): Promise<{
@@ -869,6 +872,132 @@ describe('task store', () => {
         created_at: '2026-03-25T00:01:00Z',
       },
     ])
+
+    db.close?.()
+  })
+
+  it('lists repository ids that already have unfinished scan suggestion tasks', async () => {
+    const tempDir = await createTempDir('foxpilot-db-')
+    tempDirs.push(tempDir)
+    const dbPath = `${tempDir}/foxpilot.db`
+    const now = '2026-03-25T00:00:00Z'
+    const { bootstrapDatabase, createCatalogStore, createTaskStore } = await loadModules()
+
+    const db = await bootstrapDatabase(dbPath)
+    const catalogStore = createCatalogStore(db)
+    const taskStore = createTaskStore(db)
+
+    catalogStore.upsertProjectCatalog({
+      workspaceRoot: {
+        id: 'workspace_root:/Users/program/code',
+        name: 'code',
+        path: '/Users/program/code',
+        enabled: 1,
+        description: null,
+        created_at: now,
+        updated_at: now,
+      },
+      project: {
+        id: 'project:/Users/program/code/foxpilot-workspace',
+        workspace_root_id: 'workspace_root:/Users/program/code',
+        name: 'foxpilot',
+        display_name: 'Foxpilot',
+        root_path: '/Users/program/code/foxpilot-workspace',
+        source_type: 'manual',
+        status: 'managed',
+        description: null,
+        created_at: now,
+        updated_at: now,
+      },
+      repositories: [
+        {
+          id: 'repository:/Users/program/code/foxpilot-workspace:.',
+          project_id: 'project:/Users/program/code/foxpilot-workspace',
+          name: 'foxpilot-workspace',
+          display_name: 'Foxpilot Workspace',
+          path: '.',
+          repo_type: 'git',
+          language_stack: '',
+          enabled: 1,
+          created_at: now,
+          updated_at: now,
+        },
+        {
+          id: 'repository:/Users/program/code/foxpilot-workspace:frontend',
+          project_id: 'project:/Users/program/code/foxpilot-workspace',
+          name: 'frontend',
+          display_name: 'Frontend',
+          path: 'frontend',
+          repo_type: 'git',
+          language_stack: '',
+          enabled: 1,
+          created_at: now,
+          updated_at: now,
+        },
+      ],
+    })
+
+    taskStore.createTask({
+      task: {
+        id: 'task:scan-open',
+        project_id: 'project:/Users/program/code/foxpilot-workspace',
+        title: '扫描建议: 根仓库',
+        description: null,
+        source_type: 'scan_suggestion',
+        status: 'todo',
+        priority: 'P2',
+        task_type: 'init',
+        execution_mode: 'manual',
+        requires_plan_confirm: 1,
+        current_executor: 'none',
+        created_at: now,
+        updated_at: now,
+      },
+      targets: [
+        {
+          id: 'task_target:scan-open',
+          task_id: 'task:scan-open',
+          repository_id: 'repository:/Users/program/code/foxpilot-workspace:.',
+          target_type: 'repository',
+          target_value: null,
+          created_at: now,
+        },
+      ],
+    })
+
+    taskStore.createTask({
+      task: {
+        id: 'task:scan-done',
+        project_id: 'project:/Users/program/code/foxpilot-workspace',
+        title: '扫描建议: frontend',
+        description: null,
+        source_type: 'scan_suggestion',
+        status: 'done',
+        priority: 'P2',
+        task_type: 'init',
+        execution_mode: 'manual',
+        requires_plan_confirm: 1,
+        current_executor: 'none',
+        created_at: '2026-03-25T00:01:00Z',
+        updated_at: '2026-03-25T00:01:00Z',
+      },
+      targets: [
+        {
+          id: 'task_target:scan-done',
+          task_id: 'task:scan-done',
+          repository_id: 'repository:/Users/program/code/foxpilot-workspace:frontend',
+          target_type: 'repository',
+          target_value: null,
+          created_at: '2026-03-25T00:01:00Z',
+        },
+      ],
+    })
+
+    expect(
+      taskStore.listOpenScanSuggestionRepositoryIds({
+        projectId: 'project:/Users/program/code/foxpilot-workspace',
+      }),
+    ).toEqual(['repository:/Users/program/code/foxpilot-workspace:.'])
 
     db.close?.()
   })

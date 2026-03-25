@@ -110,6 +110,16 @@ export type TaskListRow = {
 }
 
 /**
+ * 未完成の扫描建议与仓库之间的最小映射结构。
+ *
+ * 这个投影只在去重场景使用，因此只保留仓库主键，不回传多余任务字段。
+ */
+export type OpenScanSuggestionRepositoryRow = {
+  /** 已有未完成扫描建议任务绑定的仓库主键。 */
+  repository_id: string
+}
+
+/**
  * 更新前用于存在性检查的最小任务投影。
  *
  * 这个结构只保留状态变更前真正需要读出的最小字段，避免多查无关信息。
@@ -244,6 +254,18 @@ export function createTaskStore(db: SqliteDatabase) {
     FROM task_run
     WHERE task_id = @task_id
     ORDER BY started_at DESC, created_at DESC
+  `)
+
+  const listOpenScanSuggestionRepositoryIdsStmt = db.prepare(`
+    SELECT DISTINCT tt.repository_id
+    FROM task t
+    JOIN task_target tt ON tt.task_id = t.id
+    WHERE t.project_id = @project_id
+      AND t.source_type = 'scan_suggestion'
+      AND t.status NOT IN ('done', 'cancelled')
+      AND tt.target_type = 'repository'
+      AND tt.repository_id IS NOT NULL
+    ORDER BY tt.repository_id ASC
   `)
 
   const getLatestOpenTaskRunStmt = db.prepare(`
@@ -401,6 +423,21 @@ export function createTaskStore(db: SqliteDatabase) {
       return listTaskRunsStmt.all({
         task_id: input.taskId,
       }) as TaskRunRow[]
+    },
+    /**
+     * 列出当前项目里已经存在“未完成扫描建议任务”的仓库主键。
+     *
+     * 这个查询专门服务于 `task suggest-scan` 的去重逻辑：
+     * - 只关注 `scan_suggestion` 来源；
+     * - 只关注仓库级目标；
+     * - 已完成或已取消的建议不会阻止重新生成。
+     */
+    listOpenScanSuggestionRepositoryIds(input: {
+      projectId: string
+    }): string[] {
+      return (listOpenScanSuggestionRepositoryIdsStmt.all({
+        project_id: input.projectId,
+      }) as OpenScanSuggestionRepositoryRow[]).map((row) => row.repository_id)
     },
     /**
      * 加载任务详情以及与仓库关联的目标信息。

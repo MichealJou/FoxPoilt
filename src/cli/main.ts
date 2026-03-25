@@ -14,6 +14,7 @@ import { runTaskCreateCommand } from '@/commands/task/task-create-command.js'
 import { runTaskHistoryCommand } from '@/commands/task/task-history-command.js'
 import { runTaskListCommand } from '@/commands/task/task-list-command.js'
 import { runTaskShowCommand } from '@/commands/task/task-show-command.js'
+import { runTaskSuggestScanCommand } from '@/commands/task/task-suggest-scan-command.js'
 import { runTaskUpdateStatusCommand } from '@/commands/task/task-update-status-command.js'
 import { resolveInterfaceLanguage } from '@/config/global-config.js'
 import { getMessages } from '@/i18n/messages.js'
@@ -159,6 +160,25 @@ export async function main(
         help: args.help,
         path: args.path,
         id: args.id,
+      },
+      {
+        binName: context.binName ?? 'foxpilot',
+        cwd: context.cwd ?? process.cwd(),
+        homeDir,
+        stdin: [...(context.stdin ?? [])],
+        interfaceLanguage,
+        dependencies: context.dependencies,
+      },
+    )
+  }
+
+  if (args.command === 'task' && args.subcommand === 'suggest-scan') {
+    return runTaskSuggestScanCommand(
+      {
+        command: 'task',
+        subcommand: 'suggest-scan',
+        help: args.help,
+        path: args.path,
       },
       {
         binName: context.binName ?? 'foxpilot',

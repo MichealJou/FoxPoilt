@@ -55,6 +55,4 @@ export type TaskCreateDependencies = {
  * `dependencies` 只在测试、故障注入和局部替换真实实现时使用，
  * 正常 CLI 执行路径下会回退到命令文件内部定义的默认依赖。
  */
-export type TaskCreateContext = CliRuntimeContext & {
-  dependencies?: Partial<TaskCreateDependencies>
-}
+export type TaskCreateContext = CliRuntimeContext<TaskCreateDependencies>

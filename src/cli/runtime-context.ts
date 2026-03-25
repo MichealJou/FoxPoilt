@@ -17,7 +17,7 @@ import type { InterfaceLanguage } from '@/i18n/interface-language.js'
  * 2. 测试可以显式控制 cwd、stdin、homeDir；
  * 3. 不需要让每个命令自行读取 `process` 全局对象。
  */
-export type CliRuntimeContext = {
+export type CliRuntimeContext<TDependencies = Record<string, unknown>> = {
   /** 当前执行的二进制名称，用于帮助输出和别名感知行为。 */
   binName: 'foxpilot' | 'fp'
   /** 用于解析相对用户输入的进程工作目录。 */
@@ -28,6 +28,13 @@ export type CliRuntimeContext = {
   stdin: string[]
   /** 在命令分发前解析出的当前有效交互语言。 */
   interfaceLanguage: InterfaceLanguage
-  /** 测试和故障注入场景使用的可选依赖覆盖项。 */
-  dependencies?: Record<string, unknown>
+  /**
+   * 测试和故障注入场景使用的可选依赖覆盖项。
+   *
+   * 这里改成泛型参数，而不是固定写成 `Record<string, unknown>`，
+   * 是为了让每条命令的上下文都能显式携带自己的依赖形状。
+   * 这样编辑器在读取 `TaskListContext`、`TaskShowContext` 这类类型时，
+   * 就不会再经历“先宽后窄”的交叉收敛过程，悬浮提示和属性推断也更稳定。
+   */
+  dependencies?: Partial<TDependencies>
 }

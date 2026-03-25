@@ -42,6 +42,4 @@ export type TaskShowDependencies = {
  * 由于详情查询既依赖项目定位，也依赖数据库读取，
  * 所以它沿用统一的 CLI 上下文，并额外允许注入局部依赖做测试替换。
  */
-export type TaskShowContext = CliRuntimeContext & {
-  dependencies?: Partial<TaskShowDependencies>
-}
+export type TaskShowContext = CliRuntimeContext<TaskShowDependencies>

@@ -76,6 +76,13 @@ export type MessageCatalog = {
     title: string
     noRuns: string
   }
+  taskSuggestScan: {
+    helpDescription: string
+    projectNotInitialized: string
+    dbBootstrapFailed: string
+    created: string
+    taskTitle: (repositoryName: string) => string
+  }
   taskUpdateStatus: {
     helpDescription: string
     idRequired: string
@@ -163,6 +170,13 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       title: '[FoxPilot] 任务运行历史',
       noRuns: '- 暂无运行历史',
     },
+    taskSuggestScan: {
+      helpDescription: '为当前项目的仓库生成扫描建议任务。',
+      projectNotInitialized: '[FoxPilot] 扫描建议失败: 项目尚未初始化',
+      dbBootstrapFailed: '[FoxPilot] 扫描建议失败: foxpilot.db 初始化失败',
+      created: '[FoxPilot] 已生成扫描建议任务',
+      taskTitle: (repositoryName) => `扫描建议: ${repositoryName}`,
+    },
     taskUpdateStatus: {
       helpDescription: '更新当前项目中某个任务的状态。',
       idRequired: '[FoxPilot] 任务状态更新失败: id 不能为空',
@@ -248,6 +262,13 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       title: '[FoxPilot] Task run history',
       noRuns: '- No run history yet',
     },
+    taskSuggestScan: {
+      helpDescription: 'Generate scan suggestion tasks for repositories in the current project.',
+      projectNotInitialized: '[FoxPilot] Scan suggestion failed: project is not initialized',
+      dbBootstrapFailed: '[FoxPilot] Scan suggestion failed: failed to initialize foxpilot.db',
+      created: '[FoxPilot] Scan suggestion tasks created',
+      taskTitle: (repositoryName) => `Scan suggestion: ${repositoryName}`,
+    },
     taskUpdateStatus: {
       helpDescription: 'Update the status of one task in the current project.',
       idRequired: '[FoxPilot] Task status update failed: id is required',
@@ -332,6 +353,13 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       taskNotFound: '[FoxPilot] タスク履歴に失敗しました: タスクが見つかりません',
       title: '[FoxPilot] タスク実行履歴',
       noRuns: '- 実行履歴はまだありません',
+    },
+    taskSuggestScan: {
+      helpDescription: '現在のプロジェクト内のリポジトリに対して走査提案タスクを生成します。',
+      projectNotInitialized: '[FoxPilot] 走査提案に失敗しました: プロジェクトが未初期化です',
+      dbBootstrapFailed: '[FoxPilot] 走査提案に失敗しました: foxpilot.db の初期化に失敗しました',
+      created: '[FoxPilot] 走査提案タスクを生成しました',
+      taskTitle: (repositoryName) => `スキャン提案: ${repositoryName}`,
     },
     taskUpdateStatus: {
       helpDescription: '現在のプロジェクト内のタスク状態を更新します。',

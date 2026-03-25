@@ -75,6 +75,4 @@ export type InitCommandDependencies = {
  * 由于 init 同时涉及交互输入、主目录、项目目录和数据库路径，
  * 它几乎会使用 `CliRuntimeContext` 的全部字段，因此这里直接继承完整上下文。
  */
-export type InitCommandContext = CliRuntimeContext & {
-  dependencies?: Partial<InitCommandDependencies>
-}
+export type InitCommandContext = CliRuntimeContext<InitCommandDependencies>

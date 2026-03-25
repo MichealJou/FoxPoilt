@@ -61,6 +61,4 @@ export type TaskListDependencies = {
  * 它继承所有 CLI 共享上下文，并允许在测试里替换局部依赖，
  * 例如用内存数据库模拟不同项目下的任务列表。
  */
-export type TaskListContext = CliRuntimeContext & {
-  dependencies?: Partial<TaskListDependencies>
-}
+export type TaskListContext = CliRuntimeContext<TaskListDependencies>
