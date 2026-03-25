@@ -48,13 +48,32 @@ type TaskStore = {
   listTasks: (input: {
     projectId: string
     status?: 'todo' | 'analyzing' | 'awaiting_plan_confirm' | 'executing' | 'awaiting_result_confirm' | 'done' | 'blocked' | 'cancelled'
+    sourceType?: 'manual' | 'beads_sync' | 'scan_suggestion'
+    executor?: 'codex' | 'beads' | 'none'
   }) => Array<{
     id: string
     title: string
+    source_type: string
     status: string
     priority: string
     task_type: string
+    current_executor: string
   }>
+  getNextTask: (input: {
+    projectId: string
+    sourceType?: 'manual' | 'beads_sync' | 'scan_suggestion'
+    executor?: 'codex' | 'beads' | 'none'
+  }) => {
+    id: string
+    title: string
+    description: string | null
+    source_type: string
+    status: string
+    priority: string
+    task_type: string
+    current_executor: string
+    updated_at: string
+  } | null
   getTaskById: (input: {
     projectId: string
     taskId: string
@@ -457,6 +476,150 @@ describe('task store', () => {
         status: 'todo',
       }).map((item) => item.id),
     ).toEqual(['task:todo'])
+
+    db.close?.()
+  })
+
+  it('selects the next actionable task by status rank, priority, source, and executor', async () => {
+    const tempDir = await createTempDir('foxpilot-db-')
+    tempDirs.push(tempDir)
+    const dbPath = `${tempDir}/foxpilot.db`
+    const now = '2026-03-25T00:00:00Z'
+    const { bootstrapDatabase, createCatalogStore, createTaskStore } = await loadModules()
+
+    const db = await bootstrapDatabase(dbPath)
+    const catalogStore = createCatalogStore(db)
+    const taskStore = createTaskStore(db)
+
+    catalogStore.upsertProjectCatalog({
+      workspaceRoot: {
+        id: 'workspace_root:/Users/program/code',
+        name: 'code',
+        path: '/Users/program/code',
+        enabled: 1,
+        description: null,
+        created_at: now,
+        updated_at: now,
+      },
+      project: {
+        id: 'project:/Users/program/code/foxpilot-workspace',
+        workspace_root_id: 'workspace_root:/Users/program/code',
+        name: 'foxpilot',
+        display_name: 'Foxpilot',
+        root_path: '/Users/program/code/foxpilot-workspace',
+        source_type: 'manual',
+        status: 'managed',
+        description: null,
+        created_at: now,
+        updated_at: now,
+      },
+      repositories: [],
+    })
+
+    taskStore.createTask({
+      task: {
+        id: 'task:todo-high',
+        project_id: 'project:/Users/program/code/foxpilot-workspace',
+        title: '高优先级待办',
+        description: null,
+        source_type: 'manual',
+        status: 'todo',
+        priority: 'P0',
+        task_type: 'generic',
+        execution_mode: 'manual',
+        requires_plan_confirm: 1,
+        current_executor: 'codex',
+        created_at: now,
+        updated_at: now,
+      },
+      targets: [],
+    })
+
+    taskStore.createTask({
+      task: {
+        id: 'task:analysis-beads',
+        project_id: 'project:/Users/program/code/foxpilot-workspace',
+        title: '需要 beads 继续分析',
+        description: '保留给 beads 的分析任务',
+        source_type: 'scan_suggestion',
+        status: 'analyzing',
+        priority: 'P2',
+        task_type: 'init',
+        execution_mode: 'manual',
+        requires_plan_confirm: 1,
+        current_executor: 'beads',
+        created_at: '2026-03-25T00:01:00Z',
+        updated_at: '2026-03-25T00:01:00Z',
+      },
+      targets: [],
+    })
+
+    taskStore.createTask({
+      task: {
+        id: 'task:executing-low',
+        project_id: 'project:/Users/program/code/foxpilot-workspace',
+        title: '低优先级但已执行中',
+        description: null,
+        source_type: 'manual',
+        status: 'executing',
+        priority: 'P3',
+        task_type: 'generic',
+        execution_mode: 'manual',
+        requires_plan_confirm: 1,
+        current_executor: 'codex',
+        created_at: '2026-03-25T00:02:00Z',
+        updated_at: '2026-03-25T00:02:00Z',
+      },
+      targets: [],
+    })
+
+    taskStore.createTask({
+      task: {
+        id: 'task:blocked-top',
+        project_id: 'project:/Users/program/code/foxpilot-workspace',
+        title: '已阻塞任务',
+        description: null,
+        source_type: 'manual',
+        status: 'blocked',
+        priority: 'P0',
+        task_type: 'generic',
+        execution_mode: 'manual',
+        requires_plan_confirm: 1,
+        current_executor: 'codex',
+        created_at: '2026-03-25T00:03:00Z',
+        updated_at: '2026-03-25T00:03:00Z',
+      },
+      targets: [],
+    })
+
+    expect(
+      taskStore.getNextTask({
+        projectId: 'project:/Users/program/code/foxpilot-workspace',
+      }),
+    ).toMatchObject({
+      id: 'task:executing-low',
+      status: 'executing',
+    })
+
+    expect(
+      taskStore.getNextTask({
+        projectId: 'project:/Users/program/code/foxpilot-workspace',
+        executor: 'beads',
+      }),
+    ).toMatchObject({
+      id: 'task:analysis-beads',
+      current_executor: 'beads',
+    })
+
+    expect(
+      taskStore.getNextTask({
+        projectId: 'project:/Users/program/code/foxpilot-workspace',
+        sourceType: 'scan_suggestion',
+      }),
+    ).toMatchObject({
+      id: 'task:analysis-beads',
+      source_type: 'scan_suggestion',
+    })
 
     db.close?.()
   })

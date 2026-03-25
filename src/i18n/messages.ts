@@ -59,6 +59,13 @@ export type MessageCatalog = {
     empty: string
     title: string
   }
+  taskNext: {
+    helpDescription: string
+    projectNotInitialized: string
+    dbBootstrapFailed: string
+    empty: string
+    title: string
+  }
   taskShow: {
     helpDescription: string
     idRequired: string
@@ -168,6 +175,13 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       empty: '[FoxPilot] 当前没有匹配任务',
       title: '[FoxPilot] 任务列表',
     },
+    taskNext: {
+      helpDescription: '显示当前项目下一条最值得先推进的任务。',
+      projectNotInitialized: '[FoxPilot] 下一条任务查询失败: 项目尚未初始化',
+      dbBootstrapFailed: '[FoxPilot] 下一条任务查询失败: foxpilot.db 初始化失败',
+      empty: '[FoxPilot] 当前没有可推进任务',
+      title: '[FoxPilot] 下一条任务',
+    },
     taskShow: {
       helpDescription: '查看单个任务的详情和目标列表。',
       idRequired: '[FoxPilot] 任务详情失败: id 不能为空',
@@ -275,6 +289,13 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       empty: '[FoxPilot] No matching tasks',
       title: '[FoxPilot] Task list',
     },
+    taskNext: {
+      helpDescription: 'Show the next actionable task for the current project.',
+      projectNotInitialized: '[FoxPilot] Next task lookup failed: project is not initialized',
+      dbBootstrapFailed: '[FoxPilot] Next task lookup failed: failed to initialize foxpilot.db',
+      empty: '[FoxPilot] No actionable task right now',
+      title: '[FoxPilot] Next task',
+    },
     taskShow: {
       helpDescription: 'Show detail and targets for a single task.',
       idRequired: '[FoxPilot] Task detail failed: id is required',
@@ -381,6 +402,13 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       dbBootstrapFailed: '[FoxPilot] タスクリストに失敗しました: foxpilot.db の初期化に失敗しました',
       empty: '[FoxPilot] 条件に一致するタスクはありません',
       title: '[FoxPilot] タスクリスト',
+    },
+    taskNext: {
+      helpDescription: '現在のプロジェクトで次に進めるべきタスクを 1 件表示します。',
+      projectNotInitialized: '[FoxPilot] 次タスク取得に失敗しました: プロジェクトが未初期化です',
+      dbBootstrapFailed: '[FoxPilot] 次タスク取得に失敗しました: foxpilot.db の初期化に失敗しました',
+      empty: '[FoxPilot] 現在進められるタスクはありません',
+      title: '[FoxPilot] 次のタスク',
     },
     taskShow: {
       helpDescription: '単一タスクの詳細と対象一覧を表示します。',

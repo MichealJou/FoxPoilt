@@ -13,6 +13,7 @@ import type { CliResult, InitCommandContext } from '@/commands/init/init-types.j
 import { runTaskCreateCommand } from '@/commands/task/task-create-command.js'
 import { runTaskHistoryCommand } from '@/commands/task/task-history-command.js'
 import { runTaskListCommand } from '@/commands/task/task-list-command.js'
+import { runTaskNextCommand } from '@/commands/task/task-next-command.js'
 import { runTaskShowCommand } from '@/commands/task/task-show-command.js'
 import { runTaskSuggestScanCommand } from '@/commands/task/task-suggest-scan-command.js'
 import { runTaskUpdateExecutorCommand } from '@/commands/task/task-update-executor-command.js'
@@ -100,6 +101,27 @@ export async function main(
         help: args.help,
         path: args.path,
         status: args.status,
+        source: args.source,
+        executor: args.executor,
+      },
+      {
+        binName: context.binName ?? 'foxpilot',
+        cwd: context.cwd ?? process.cwd(),
+        homeDir,
+        stdin: [...(context.stdin ?? [])],
+        interfaceLanguage,
+        dependencies: context.dependencies,
+      },
+    )
+  }
+
+  if (args.command === 'task' && args.subcommand === 'next') {
+    return runTaskNextCommand(
+      {
+        command: 'task',
+        subcommand: 'next',
+        help: args.help,
+        path: args.path,
         source: args.source,
         executor: args.executor,
       },

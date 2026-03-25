@@ -112,6 +112,24 @@ export type TaskListRow = {
 }
 
 /**
+ * `task next` 使用的候选任务投影。
+ *
+ * 这份结构比 `task list` 多保留一个 `description`，因为“下一条任务”
+ * 是一个聚焦视图，允许在不切到详情页的情况下多看一层上下文。
+ */
+export type TaskNextRow = {
+  id: string
+  title: string
+  description: string | null
+  source_type: TaskRow['source_type']
+  status: TaskRow['status']
+  priority: TaskRow['priority']
+  task_type: TaskRow['task_type']
+  current_executor: TaskRow['current_executor']
+  updated_at: string
+}
+
+/**
  * 未完成扫描建议与仓库之间的最小映射结构。
  *
  * 这个投影只在去重场景使用，因此只保留仓库主键，不回传多余任务字段。
@@ -227,6 +245,34 @@ export function createTaskStore(db: SqliteDatabase) {
     FROM task
     WHERE project_id = @project_id
       AND id = @id
+    LIMIT 1
+  `)
+
+  const getNextTaskStmt = db.prepare(`
+    SELECT id, title, description, source_type, status, priority, task_type, current_executor, updated_at
+    FROM task
+    WHERE project_id = @project_id
+      AND status IN ('todo', 'analyzing', 'awaiting_plan_confirm', 'executing', 'awaiting_result_confirm')
+      AND (@source_type IS NULL OR source_type = @source_type)
+      AND (@current_executor IS NULL OR current_executor = @current_executor)
+    ORDER BY
+      CASE status
+        WHEN 'executing' THEN 0
+        WHEN 'awaiting_result_confirm' THEN 1
+        WHEN 'awaiting_plan_confirm' THEN 2
+        WHEN 'analyzing' THEN 3
+        WHEN 'todo' THEN 4
+        ELSE 9
+      END ASC,
+      CASE priority
+        WHEN 'P0' THEN 0
+        WHEN 'P1' THEN 1
+        WHEN 'P2' THEN 2
+        WHEN 'P3' THEN 3
+        ELSE 9
+      END ASC,
+      updated_at DESC,
+      created_at DESC
     LIMIT 1
   `)
 
@@ -361,6 +407,30 @@ export function createTaskStore(db: SqliteDatabase) {
           project_id: input.projectId,
           id: input.taskId,
         }) as TaskSummaryRow | undefined) ?? null
+      )
+    },
+    /**
+     * 选择当前项目里最值得优先推进的一条任务。
+     *
+     * 排序逻辑分三层：
+     * 1. 先看任务是否已经进入活跃阶段，避免“正在做的事”被普通待办淹没；
+     * 2. 再按优先级排序，保证高优先级任务优先；
+     * 3. 最后用更新时间打破并列，优先返回最近仍在被关注的任务。
+     *
+     * `blocked` / `done` / `cancelled` 明确不参与候选，
+     * 因为这些状态都不属于“现在就该继续推进”的集合。
+     */
+    getNextTask(input: {
+      projectId: string
+      sourceType?: TaskRow['source_type']
+      executor?: TaskRow['current_executor']
+    }): TaskNextRow | null {
+      return (
+        (getNextTaskStmt.get({
+          project_id: input.projectId,
+          source_type: input.sourceType ?? null,
+          current_executor: input.executor ?? null,
+        }) as TaskNextRow | undefined) ?? null
       )
     },
     /**
