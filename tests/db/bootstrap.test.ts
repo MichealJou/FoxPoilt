@@ -28,8 +28,10 @@ async function loadBootstrapModule(): Promise<{
 }
 
 const tempDirs: string[] = []
+const originalCwd = process.cwd()
 
 afterEach(async () => {
+  process.chdir(originalCwd)
   await Promise.all(tempDirs.splice(0).map(removeTempDir))
 })
 
@@ -39,6 +41,12 @@ describe('db bootstrap', () => {
     tempDirs.push(tempDir)
     const dbPath = `${tempDir}/foxpilot.db`
     const { bootstrapDatabase } = await loadBootstrapModule()
+
+    /**
+     * 故意切到临时目录执行，用来验证 schema 定位不依赖当前工作目录。
+     * 这样可以覆盖“作为已安装 CLI 在任意目录执行”的真实场景。
+     */
+    process.chdir(tempDir)
 
     const db = await bootstrapDatabase(dbPath)
     const tables = db.prepare("SELECT name FROM sqlite_master WHERE type = 'table'").all()

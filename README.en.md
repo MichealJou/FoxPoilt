@@ -47,7 +47,13 @@ FoxPilot is a local multi-project task control tool for developer workspaces. It
 pnpm install
 pnpm typecheck
 pnpm test
+pnpm verify:install
 ```
+
+Notes:
+
+- `pnpm install` now triggers `prepare` and generates `dist/`
+- `pnpm verify:install` packs the current repository, installs it into a temporary directory, and runs a real `foxpilot init`
 
 Initialize the current project:
 
@@ -59,6 +65,13 @@ Use the short alias:
 
 ```bash
 fp init
+```
+
+Run the CLI directly from source:
+
+```bash
+pnpm cli init --help
+pnpm cli task next --help
 ```
 
 Set the interface language:
