@@ -174,4 +174,76 @@ describe('task update-status CLI', () => {
     expect(result.exitCode).toBe(4)
     expect(result.stdout).toContain('foxpilot.db 初始化失败')
   })
+
+  it('rejects an invalid direct transition from todo to done', async () => {
+    const { homeDir, projectRoot, taskId } = await createManagedProjectWithTask()
+
+    const result = await runCli(
+      ['task', 'update-status', '--id', taskId, '--status', 'done'],
+      { cwd: projectRoot, homeDir },
+    )
+
+    expect(result.exitCode).toBe(1)
+    expect(result.stdout).toContain('状态流转不合法')
+    expect(result.stdout).toContain('from: todo')
+    expect(result.stdout).toContain('to: done')
+
+    const db = new Database(path.join(homeDir, '.foxpilot', 'foxpilot.db'))
+    const row = db.prepare('SELECT status FROM task WHERE id = ?').get(taskId) as { status: string }
+    expect(row.status).toBe('todo')
+    db.close()
+  })
+
+  it('rejects any transition after the task is done', async () => {
+    const { homeDir, projectRoot, taskId } = await createManagedProjectWithTask()
+
+    expect((await runCli(
+      ['task', 'update-status', '--id', taskId, '--status', 'analyzing'],
+      { cwd: projectRoot, homeDir },
+    )).exitCode).toBe(0)
+    expect((await runCli(
+      ['task', 'update-status', '--id', taskId, '--status', 'awaiting_plan_confirm'],
+      { cwd: projectRoot, homeDir },
+    )).exitCode).toBe(0)
+    expect((await runCli(
+      ['task', 'update-status', '--id', taskId, '--status', 'executing'],
+      { cwd: projectRoot, homeDir },
+    )).exitCode).toBe(0)
+    expect((await runCli(
+      ['task', 'update-status', '--id', taskId, '--status', 'awaiting_result_confirm'],
+      { cwd: projectRoot, homeDir },
+    )).exitCode).toBe(0)
+    expect((await runCli(
+      ['task', 'update-status', '--id', taskId, '--status', 'done'],
+      { cwd: projectRoot, homeDir },
+    )).exitCode).toBe(0)
+
+    const result = await runCli(
+      ['task', 'update-status', '--id', taskId, '--status', 'analyzing'],
+      { cwd: projectRoot, homeDir },
+    )
+
+    expect(result.exitCode).toBe(1)
+    expect(result.stdout).toContain('状态流转不合法')
+    expect(result.stdout).toContain('from: done')
+    expect(result.stdout).toContain('to: analyzing')
+  })
+
+  it('allows blocked tasks to return to analyzing', async () => {
+    const { homeDir, projectRoot, taskId } = await createManagedProjectWithTask()
+
+    expect((await runCli(
+      ['task', 'update-status', '--id', taskId, '--status', 'blocked'],
+      { cwd: projectRoot, homeDir },
+    )).exitCode).toBe(0)
+
+    const result = await runCli(
+      ['task', 'update-status', '--id', taskId, '--status', 'analyzing'],
+      { cwd: projectRoot, homeDir },
+    )
+
+    expect(result.exitCode).toBe(0)
+    expect(result.stdout).toContain('from: blocked')
+    expect(result.stdout).toContain('to: analyzing')
+  })
 })

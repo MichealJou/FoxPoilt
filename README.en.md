@@ -23,6 +23,7 @@ FoxPilot is a local multi-project task control tool for developer workspaces. It
   - Inspect task run history
 - `foxpilot task update-status`
   - Update task status
+  - Enforce the minimal valid transition rules
 
 ## Quick Start
 
@@ -92,4 +93,4 @@ foxpilot task update-status --id task:example --status executing
 
 ## Status
 
-The repository is now in the CLI MVP implementation stage. Core initialization, manual task management, and task run history flows are available, and the next iterations will extend stricter status transitions, scan suggestions, and collaboration orchestration.
+The repository is now in the CLI MVP implementation stage. Core initialization, manual task management, task run history, and minimal transition-guard flows are available, and the next iterations will extend scan suggestions and collaboration orchestration.

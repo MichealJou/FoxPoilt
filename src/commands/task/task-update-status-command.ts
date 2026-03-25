@@ -82,6 +82,38 @@ function buildTaskRun(
 }
 
 /**
+ * 判断状态流转是否属于当前 CLI 允许的最小集合。
+ *
+ * 这一版不引入可配置状态机，而是把人工任务管理最常见的主链路固定在代码里。
+ */
+function isAllowedTaskStatusTransition(
+  currentStatus: TaskRunRow['status'] | TaskUpdateStatusArgs['status'],
+  nextStatus: TaskUpdateStatusArgs['status'],
+): boolean {
+  if (!nextStatus || currentStatus === nextStatus) {
+    return true
+  }
+
+  const allowedTransitions: Record<
+    Exclude<TaskUpdateStatusArgs['status'], undefined>,
+    Array<Exclude<TaskUpdateStatusArgs['status'], undefined>>
+  > = {
+    todo: ['analyzing', 'blocked', 'cancelled'],
+    analyzing: ['awaiting_plan_confirm', 'blocked', 'cancelled'],
+    awaiting_plan_confirm: ['executing', 'cancelled'],
+    executing: ['awaiting_result_confirm', 'blocked', 'cancelled'],
+    awaiting_result_confirm: ['done', 'blocked', 'cancelled'],
+    done: [],
+    blocked: ['analyzing', 'cancelled'],
+    cancelled: [],
+  }
+
+  return allowedTransitions[currentStatus as Exclude<TaskUpdateStatusArgs['status'], undefined>].includes(
+    nextStatus,
+  )
+}
+
+/**
  * 把任务状态推进同步到 `task_run` 历史。
  *
  * 第一版只实现最小、可解释的映射规则，不在这里引入复杂状态机。
@@ -245,6 +277,19 @@ export async function runTaskUpdateStatusCommand(
     return {
       exitCode: 1,
       stdout: `${messages.taskUpdateStatus.taskNotFound}\n- taskId: ${taskId}`,
+    }
+  }
+
+  if (!isAllowedTaskStatusTransition(existingTask.status, nextStatus)) {
+    db.close()
+    return {
+      exitCode: 1,
+      stdout: [
+        messages.taskUpdateStatus.invalidTransition,
+        `- taskId: ${taskId}`,
+        `- from: ${existingTask.status}`,
+        `- to: ${nextStatus}`,
+      ].join('\n'),
     }
   }
 

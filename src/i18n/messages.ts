@@ -83,6 +83,7 @@ export type MessageCatalog = {
     projectNotInitialized: string
     dbBootstrapFailed: string
     taskNotFound: string
+    invalidTransition: string
     updated: string
   }
   configSetLanguage: {
@@ -169,6 +170,7 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       projectNotInitialized: '[FoxPilot] 任务状态更新失败: 项目尚未初始化',
       dbBootstrapFailed: '[FoxPilot] 任务状态更新失败: foxpilot.db 初始化失败',
       taskNotFound: '[FoxPilot] 任务状态更新失败: 未找到任务',
+      invalidTransition: '[FoxPilot] 任务状态更新失败: 状态流转不合法',
       updated: '[FoxPilot] 已更新任务状态',
     },
     configSetLanguage: {
@@ -253,6 +255,7 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       projectNotInitialized: '[FoxPilot] Task status update failed: project is not initialized',
       dbBootstrapFailed: '[FoxPilot] Task status update failed: failed to initialize foxpilot.db',
       taskNotFound: '[FoxPilot] Task status update failed: task was not found',
+      invalidTransition: '[FoxPilot] Task status update failed: invalid state transition',
       updated: '[FoxPilot] Task status updated',
     },
     configSetLanguage: {
@@ -337,6 +340,7 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       projectNotInitialized: '[FoxPilot] タスク状態更新に失敗しました: プロジェクトが未初期化です',
       dbBootstrapFailed: '[FoxPilot] タスク状態更新に失敗しました: foxpilot.db の初期化に失敗しました',
       taskNotFound: '[FoxPilot] タスク状態更新に失敗しました: タスクが見つかりません',
+      invalidTransition: '[FoxPilot] タスク状態更新に失敗しました: 状態遷移が不正です',
       updated: '[FoxPilot] タスク状態を更新しました',
     },
     configSetLanguage: {
