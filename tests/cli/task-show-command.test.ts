@@ -59,6 +59,27 @@ describe('task show CLI', () => {
     expect(result.stdout).toContain('把详情展示清楚')
     expect(result.stdout).toContain('updatedAt')
     expect(result.stdout).toContain('frontend')
+    expect(result.stdout).toContain('暂无运行历史')
+  })
+
+  it('shows task run history when runs already exist', async () => {
+    const { homeDir, projectRoot, taskId } = await createManagedProjectWithDetailedTask()
+
+    const updateResult = await runCli(
+      ['task', 'update-status', '--id', taskId, '--status', 'analyzing'],
+      { cwd: projectRoot, homeDir },
+    )
+    expect(updateResult.exitCode).toBe(0)
+
+    const result = await runCli(
+      ['task', 'show', '--id', taskId],
+      { cwd: projectRoot, homeDir },
+    )
+
+    expect(result.exitCode).toBe(0)
+    expect(result.stdout).toContain('任务运行历史')
+    expect(result.stdout).toContain('analysis')
+    expect(result.stdout).toContain('running')
   })
 
   it('prints help and accepts fp alias', async () => {

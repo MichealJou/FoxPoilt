@@ -69,6 +69,33 @@ export type TaskTargetRow = {
 }
 
 /**
+ * `task_run` 表的行模型。
+ *
+ * 这张表承载任务运行历史，和 `task` 的当前态分离保存。
+ * 一个任务可以拥有多条运行记录，用于表达分析、执行、验证等阶段性过程。
+ */
+export type TaskRunRow = {
+  /** 运行记录主键。 */
+  id: string
+  /** 所属任务主键。 */
+  task_id: string
+  /** 运行类型，说明这条历史对应哪个阶段。 */
+  run_type: 'analysis' | 'execution' | 'verification'
+  /** 实际执行方，和任务默认执行方不是一个概念。 */
+  executor: 'codex' | 'manual' | 'future_reserved'
+  /** 运行记录当前状态。 */
+  status: 'running' | 'success' | 'failed' | 'cancelled'
+  /** 面向人的摘要说明，可记录本轮简要结论。 */
+  summary: string | null
+  /** 本轮运行开始时间。 */
+  started_at: string
+  /** 本轮运行结束时间；未结束时为空。 */
+  ended_at: string | null
+  /** 记录创建时间。 */
+  created_at: string
+}
+
+/**
  * `task list` 使用的紧凑任务投影。
  *
  * 列表页只关心摘要信息，因此这里刻意不带 description 等大字段。
@@ -127,7 +154,7 @@ export type TaskDetail = {
   }>
 }
 
-function countRows(db: SqliteDatabase, tableName: 'task' | 'task_target'): number {
+function countRows(db: SqliteDatabase, tableName: 'task' | 'task_target' | 'task_run'): number {
   const row = db.prepare(`SELECT COUNT(*) AS count FROM ${tableName}`).get() as { count: number }
   return row.count
 }
@@ -148,6 +175,14 @@ export function createTaskStore(db: SqliteDatabase) {
       id, task_id, repository_id, target_type, target_value, created_at
     ) VALUES (
       @id, @task_id, @repository_id, @target_type, @target_value, @created_at
+    )
+  `)
+
+  const insertTaskRunStmt = db.prepare(`
+    INSERT INTO task_run (
+      id, task_id, run_type, executor, status, summary, started_at, ended_at, created_at
+    ) VALUES (
+      @id, @task_id, @run_type, @executor, @status, @summary, @started_at, @ended_at, @created_at
     )
   `)
 
@@ -204,6 +239,40 @@ export function createTaskStore(db: SqliteDatabase) {
     ORDER BY tt.created_at ASC
   `)
 
+  const listTaskRunsStmt = db.prepare(`
+    SELECT id, task_id, run_type, executor, status, summary, started_at, ended_at, created_at
+    FROM task_run
+    WHERE task_id = @task_id
+    ORDER BY started_at DESC, created_at DESC
+  `)
+
+  const getLatestOpenTaskRunStmt = db.prepare(`
+    SELECT id
+    FROM task_run
+    WHERE task_id = @task_id
+      AND ended_at IS NULL
+    ORDER BY started_at DESC, created_at DESC
+    LIMIT 1
+  `)
+
+  const getLatestOpenTaskRunByTypeStmt = db.prepare(`
+    SELECT id
+    FROM task_run
+    WHERE task_id = @task_id
+      AND run_type = @run_type
+      AND ended_at IS NULL
+    ORDER BY started_at DESC, created_at DESC
+    LIMIT 1
+  `)
+
+  const finishTaskRunStmt = db.prepare(`
+    UPDATE task_run
+    SET status = @status,
+        summary = @summary,
+        ended_at = @ended_at
+    WHERE id = @id
+  `)
+
   return {
     /**
      * 在单个事务中插入任务及其全部目标。
@@ -220,6 +289,10 @@ export function createTaskStore(db: SqliteDatabase) {
     /** 返回任务目标行数，主要供测试验证事务行为使用。 */
     countTaskTargets(): number {
       return countRows(db, 'task_target')
+    },
+    /** 返回运行历史行数，主要供测试验证 `task_run` 写入行为。 */
+    countTaskRuns(): number {
+      return countRows(db, 'task_run')
     },
     /**
      * 列出单个项目下的任务，并支持可选状态过滤。
@@ -270,6 +343,64 @@ export function createTaskStore(db: SqliteDatabase) {
       })
 
       return result.changes > 0
+    },
+    /**
+     * 新建一条运行历史。
+     *
+     * 这一层只负责持久化，不主动推断状态映射；
+     * 映射策略由上层命令或编排逻辑决定后，再把明确的行模型传进来。
+     */
+    startTaskRun(input: {
+      run: TaskRunRow
+    }): void {
+      insertTaskRunStmt.run(input.run)
+    },
+    /**
+     * 结束最近一条尚未结束的运行历史。
+     *
+     * 当传入 `runType` 时，会把搜索范围收窄到同类型运行；
+     * 否则默认关闭“最近开始且尚未结束”的那一条记录。
+     */
+    finishLatestTaskRun(input: {
+      taskId: string
+      runType?: TaskRunRow['run_type']
+      status: 'success' | 'failed' | 'cancelled'
+      summary?: string | null
+      endedAt: string
+    }): boolean {
+      const row = input.runType
+        ? (getLatestOpenTaskRunByTypeStmt.get({
+            task_id: input.taskId,
+            run_type: input.runType,
+          }) as { id: string } | undefined)
+        : (getLatestOpenTaskRunStmt.get({
+            task_id: input.taskId,
+          }) as { id: string } | undefined)
+
+      if (!row) {
+        return false
+      }
+
+      const result = finishTaskRunStmt.run({
+        id: row.id,
+        status: input.status,
+        summary: input.summary ?? null,
+        ended_at: input.endedAt,
+      })
+
+      return result.changes > 0
+    },
+    /**
+     * 按开始时间倒序读取任务的全部运行历史。
+     *
+     * 详情页和后续历史页都应直接复用这里的排序，避免不同命令各自定义展示顺序。
+     */
+    listTaskRuns(input: {
+      taskId: string
+    }): TaskRunRow[] {
+      return listTaskRunsStmt.all({
+        task_id: input.taskId,
+      }) as TaskRunRow[]
     },
     /**
      * 加载任务详情以及与仓库关联的目标信息。

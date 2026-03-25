@@ -64,7 +64,9 @@ export type MessageCatalog = {
     taskNotFound: string
     title: string
     targetsTitle: string
+    runsTitle: string
     noTargets: string
+    noRuns: string
   }
   taskUpdateStatus: {
     helpDescription: string
@@ -141,6 +143,8 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       title: '[FoxPilot] 任务详情',
       targetsTitle: '[FoxPilot] 任务目标',
       noTargets: '- (none)',
+      runsTitle: '[FoxPilot] 任务运行历史',
+      noRuns: '- 暂无运行历史',
     },
     taskUpdateStatus: {
       helpDescription: '更新当前项目中某个任务的状态。',
@@ -215,6 +219,8 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       title: '[FoxPilot] Task detail',
       targetsTitle: '[FoxPilot] Task targets',
       noTargets: '- (none)',
+      runsTitle: '[FoxPilot] Task run history',
+      noRuns: '- No run history yet',
     },
     taskUpdateStatus: {
       helpDescription: 'Update the status of one task in the current project.',
@@ -289,6 +295,8 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       title: '[FoxPilot] タスク詳細',
       targetsTitle: '[FoxPilot] タスク対象',
       noTargets: '- (none)',
+      runsTitle: '[FoxPilot] タスク実行履歴',
+      noRuns: '- 実行履歴はまだありません',
     },
     taskUpdateStatus: {
       helpDescription: '現在のプロジェクト内のタスク状態を更新します。',

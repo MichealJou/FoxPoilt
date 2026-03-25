@@ -44,6 +44,7 @@ type TaskStore = {
   }) => void
   countTasks: () => number
   countTaskTargets: () => number
+  countTaskRuns: () => number
   listTasks: (input: {
     projectId: string
     status?: 'todo' | 'analyzing' | 'awaiting_plan_confirm' | 'executing' | 'awaiting_result_confirm' | 'done' | 'blocked' | 'cancelled'
@@ -68,6 +69,39 @@ type TaskStore = {
     status: 'todo' | 'analyzing' | 'awaiting_plan_confirm' | 'executing' | 'awaiting_result_confirm' | 'done' | 'blocked' | 'cancelled'
     updatedAt: string
   }) => boolean
+  startTaskRun: (input: {
+    run: {
+      id: string
+      task_id: string
+      run_type: 'analysis' | 'execution' | 'verification'
+      executor: 'codex' | 'manual' | 'future_reserved'
+      status: 'running' | 'success' | 'failed' | 'cancelled'
+      summary: string | null
+      started_at: string
+      ended_at: string | null
+      created_at: string
+    }
+  }) => void
+  finishLatestTaskRun: (input: {
+    taskId: string
+    runType?: 'analysis' | 'execution' | 'verification'
+    status: 'success' | 'failed' | 'cancelled'
+    summary?: string | null
+    endedAt: string
+  }) => boolean
+  listTaskRuns: (input: {
+    taskId: string
+  }) => Array<{
+    id: string
+    task_id: string
+    run_type: 'analysis' | 'execution' | 'verification'
+    executor: 'codex' | 'manual' | 'future_reserved'
+    status: 'running' | 'success' | 'failed' | 'cancelled'
+    summary: string | null
+    started_at: string
+    ended_at: string | null
+    created_at: string
+  }>
   getTaskDetail: (input: {
     projectId: string
     taskId: string
@@ -132,7 +166,7 @@ async function loadModules(): Promise<{
 }> {
   const bootstrap = await import('@/db/bootstrap.js')
   const catalogStore = await import('@/db/catalog-store.js')
-  const taskStore = await import('../../src/db/task-store.js')
+  const taskStore = await import('@/db/task-store.js')
 
   return {
     bootstrapDatabase: bootstrap.bootstrapDatabase,
@@ -706,6 +740,135 @@ describe('task store', () => {
         taskId: 'task:detail',
       }),
     ).toBeNull()
+
+    db.close?.()
+  })
+
+  it('stores task runs and finishes the latest open run in reverse time order', async () => {
+    const tempDir = await createTempDir('foxpilot-db-')
+    tempDirs.push(tempDir)
+    const dbPath = `${tempDir}/foxpilot.db`
+    const now = '2026-03-25T00:00:00Z'
+    const { bootstrapDatabase, createCatalogStore, createTaskStore } = await loadModules()
+
+    const db = await bootstrapDatabase(dbPath)
+    const catalogStore = createCatalogStore(db)
+    const taskStore = createTaskStore(db)
+
+    catalogStore.upsertProjectCatalog({
+      workspaceRoot: {
+        id: 'workspace_root:/Users/program/code',
+        name: 'code',
+        path: '/Users/program/code',
+        enabled: 1,
+        description: null,
+        created_at: now,
+        updated_at: now,
+      },
+      project: {
+        id: 'project:/Users/program/code/foxpilot-workspace',
+        workspace_root_id: 'workspace_root:/Users/program/code',
+        name: 'foxpilot',
+        display_name: 'Foxpilot',
+        root_path: '/Users/program/code/foxpilot-workspace',
+        source_type: 'manual',
+        status: 'managed',
+        description: null,
+        created_at: now,
+        updated_at: now,
+      },
+      repositories: [],
+    })
+
+    taskStore.createTask({
+      task: {
+        id: 'task:history',
+        project_id: 'project:/Users/program/code/foxpilot-workspace',
+        title: '记录运行历史',
+        description: null,
+        source_type: 'manual',
+        status: 'todo',
+        priority: 'P2',
+        task_type: 'generic',
+        execution_mode: 'manual',
+        requires_plan_confirm: 1,
+        current_executor: 'codex',
+        created_at: now,
+        updated_at: now,
+      },
+      targets: [],
+    })
+
+    taskStore.startTaskRun({
+      run: {
+        id: 'task_run:analysis',
+        task_id: 'task:history',
+        run_type: 'analysis',
+        executor: 'manual',
+        status: 'running',
+        summary: '开始分析任务',
+        started_at: '2026-03-25T00:01:00Z',
+        ended_at: null,
+        created_at: '2026-03-25T00:01:00Z',
+      },
+    })
+
+    taskStore.startTaskRun({
+      run: {
+        id: 'task_run:execution',
+        task_id: 'task:history',
+        run_type: 'execution',
+        executor: 'codex',
+        status: 'running',
+        summary: '开始执行任务',
+        started_at: '2026-03-25T00:02:00Z',
+        ended_at: null,
+        created_at: '2026-03-25T00:02:00Z',
+      },
+    })
+
+    expect(taskStore.finishLatestTaskRun({
+      taskId: 'task:history',
+      status: 'failed',
+      summary: '执行被阻塞',
+      endedAt: '2026-03-25T00:03:00Z',
+    })).toBe(true)
+
+    expect(taskStore.finishLatestTaskRun({
+      taskId: 'task:history',
+      runType: 'analysis',
+      status: 'success',
+      summary: '分析完成',
+      endedAt: '2026-03-25T00:04:00Z',
+    })).toBe(true)
+
+    expect(taskStore.countTaskRuns()).toBe(2)
+    expect(taskStore.listTaskRuns({
+      taskId: 'task:history',
+    })).toEqual([
+      {
+        id: 'task_run:execution',
+        task_id: 'task:history',
+        run_type: 'execution',
+        executor: 'codex',
+        status: 'failed',
+        summary: '执行被阻塞',
+        started_at: '2026-03-25T00:02:00Z',
+        ended_at: '2026-03-25T00:03:00Z',
+        created_at: '2026-03-25T00:02:00Z',
+      },
+      {
+        id: 'task_run:analysis',
+        task_id: 'task:history',
+        run_type: 'analysis',
+        executor: 'manual',
+        status: 'success',
+        summary: '分析完成',
+        started_at: '2026-03-25T00:01:00Z',
+        ended_at: '2026-03-25T00:04:00Z',
+        created_at: '2026-03-25T00:01:00Z',
+      },
+    ])
 
     db.close?.()
   })

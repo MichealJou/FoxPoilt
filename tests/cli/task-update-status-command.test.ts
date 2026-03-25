@@ -59,6 +59,57 @@ describe('task update-status CLI', () => {
     const db = new Database(path.join(homeDir, '.foxpilot', 'foxpilot.db'))
     const row = db.prepare('SELECT status FROM task WHERE id = ?').get(taskId) as { status: string }
     expect(row.status).toBe('analyzing')
+    const taskRun = db.prepare(`
+      SELECT run_type, executor, status, ended_at
+      FROM task_run
+      WHERE task_id = ?
+      ORDER BY started_at DESC
+      LIMIT 1
+    `).get(taskId) as {
+      run_type: string
+      executor: string
+      status: string
+      ended_at: string | null
+    }
+    expect(taskRun).toMatchObject({
+      run_type: 'analysis',
+      executor: 'manual',
+      status: 'running',
+      ended_at: null,
+    })
+    db.close()
+  })
+
+  it('closes the latest analysis run when status moves to awaiting_plan_confirm', async () => {
+    const { homeDir, projectRoot, taskId } = await createManagedProjectWithTask()
+
+    const analyzingResult = await runCli(
+      ['task', 'update-status', '--id', taskId, '--status', 'analyzing'],
+      { cwd: projectRoot, homeDir },
+    )
+    expect(analyzingResult.exitCode).toBe(0)
+
+    const confirmResult = await runCli(
+      ['task', 'update-status', '--id', taskId, '--status', 'awaiting_plan_confirm'],
+      { cwd: projectRoot, homeDir },
+    )
+    expect(confirmResult.exitCode).toBe(0)
+
+    const db = new Database(path.join(homeDir, '.foxpilot', 'foxpilot.db'))
+    const taskRun = db.prepare(`
+      SELECT run_type, status, ended_at
+      FROM task_run
+      WHERE task_id = ?
+      ORDER BY started_at DESC
+      LIMIT 1
+    `).get(taskId) as {
+      run_type: string
+      status: string
+      ended_at: string | null
+    }
+    expect(taskRun.run_type).toBe('analysis')
+    expect(taskRun.status).toBe('success')
+    expect(taskRun.ended_at).not.toBeNull()
     db.close()
   })
 

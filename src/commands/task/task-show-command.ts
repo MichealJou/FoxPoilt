@@ -102,9 +102,8 @@ export async function runTaskShowCommand(
     taskId: args.id.trim(),
   })
 
-  db.close()
-
   if (!detail) {
+    db.close()
     return {
       exitCode: 1,
       stdout: `${messages.taskShow.taskNotFound}\n- taskId: ${args.id.trim()}`,
@@ -125,6 +124,22 @@ export async function runTaskShowCommand(
           return `${index + 1}. [${target.target_type}] ${targetValue}`
         })
 
+  const taskRunLines = taskStore.listTaskRuns({
+    taskId: args.id.trim(),
+  })
+  const runLines =
+    taskRunLines.length === 0
+      ? [messages.taskShow.noRuns]
+      : taskRunLines.map((run, index) => {
+          const timeRange = run.ended_at
+            ? `${run.started_at} -> ${run.ended_at}`
+            : `${run.started_at} -> (running)`
+          const summary = run.summary ? ` | ${run.summary}` : ''
+          return `${index + 1}. [${run.run_type}][${run.executor}][${run.status}] ${timeRange}${summary}`
+        })
+
+  db.close()
+
   return {
     exitCode: 0,
     stdout: [
@@ -141,6 +156,9 @@ export async function runTaskShowCommand(
       '',
       messages.taskShow.targetsTitle,
       ...targetLines,
+      '',
+      messages.taskShow.runsTitle,
+      ...runLines,
     ].join('\n'),
   }
 }
