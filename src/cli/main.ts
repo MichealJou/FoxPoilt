@@ -11,6 +11,7 @@ import { runConfigSetLanguageCommand } from '@/commands/config/config-set-langua
 import { runInitCommand } from '@/commands/init/init-command.js'
 import type { CliResult, InitCommandContext } from '@/commands/init/init-types.js'
 import { runTaskCreateCommand } from '@/commands/task/task-create-command.js'
+import { runTaskEditCommand } from '@/commands/task/task-edit-command.js'
 import { runTaskHistoryCommand } from '@/commands/task/task-history-command.js'
 import { runTaskListCommand } from '@/commands/task/task-list-command.js'
 import { runTaskNextCommand } from '@/commands/task/task-next-command.js'
@@ -80,8 +81,32 @@ export async function main(
         title: args.title,
         description: args.description,
         priority: args.priority ?? 'P2',
-        taskType: args.taskType,
+        taskType: args.taskType ?? 'generic',
         repository: args.repository,
+      },
+      {
+        binName: context.binName ?? 'foxpilot',
+        cwd: context.cwd ?? process.cwd(),
+        homeDir,
+        stdin: [...(context.stdin ?? [])],
+        interfaceLanguage,
+        dependencies: context.dependencies,
+      },
+    )
+  }
+
+  if (args.command === 'task' && args.subcommand === 'edit') {
+    return runTaskEditCommand(
+      {
+        command: 'task',
+        subcommand: 'edit',
+        help: args.help,
+        path: args.path,
+        id: args.id,
+        title: args.title,
+        description: args.description,
+        clearDescription: args.clearDescription,
+        taskType: args.taskType,
       },
       {
         binName: context.binName ?? 'foxpilot',

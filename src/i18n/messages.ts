@@ -66,6 +66,19 @@ export type MessageCatalog = {
     empty: string
     title: string
   }
+  taskEdit: {
+    helpDescription: string
+    idRequired: string
+    titleRequired: string
+    descriptionRequired: string
+    noChangesSpecified: string
+    conflictingDescription: string
+    projectNotInitialized: string
+    dbBootstrapFailed: string
+    taskNotFound: string
+    unchanged: string
+    updated: string
+  }
   taskShow: {
     helpDescription: string
     idRequired: string
@@ -192,6 +205,19 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       empty: '[FoxPilot] 当前没有可推进任务',
       title: '[FoxPilot] 下一条任务',
     },
+    taskEdit: {
+      helpDescription: '编辑当前项目中某个任务的标题、描述或任务类型。',
+      idRequired: '[FoxPilot] 任务编辑失败: id 不能为空',
+      titleRequired: '[FoxPilot] 任务编辑失败: title 不能为空',
+      descriptionRequired: '[FoxPilot] 任务编辑失败: description 不能为空',
+      noChangesSpecified: '[FoxPilot] 任务编辑失败: 至少指定一个可编辑字段',
+      conflictingDescription: '[FoxPilot] 任务编辑失败: description 参数冲突',
+      projectNotInitialized: '[FoxPilot] 任务编辑失败: 项目尚未初始化',
+      dbBootstrapFailed: '[FoxPilot] 任务编辑失败: foxpilot.db 初始化失败',
+      taskNotFound: '[FoxPilot] 任务编辑失败: 未找到任务',
+      unchanged: '[FoxPilot] 任务元数据未变化',
+      updated: '[FoxPilot] 已更新任务元数据',
+    },
     taskShow: {
       helpDescription: '查看单个任务的详情和目标列表。',
       idRequired: '[FoxPilot] 任务详情失败: id 不能为空',
@@ -316,6 +342,19 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       empty: '[FoxPilot] No actionable task right now',
       title: '[FoxPilot] Next task',
     },
+    taskEdit: {
+      helpDescription: 'Edit the title, description, or task type of one task in the current project.',
+      idRequired: '[FoxPilot] Task edit failed: id is required',
+      titleRequired: '[FoxPilot] Task edit failed: title is required',
+      descriptionRequired: '[FoxPilot] Task edit failed: description is required',
+      noChangesSpecified: '[FoxPilot] Task edit failed: at least one editable field is required',
+      conflictingDescription: '[FoxPilot] Task edit failed: description flags conflict',
+      projectNotInitialized: '[FoxPilot] Task edit failed: project is not initialized',
+      dbBootstrapFailed: '[FoxPilot] Task edit failed: failed to initialize foxpilot.db',
+      taskNotFound: '[FoxPilot] Task edit failed: task was not found',
+      unchanged: '[FoxPilot] Task metadata unchanged',
+      updated: '[FoxPilot] Task metadata updated',
+    },
     taskShow: {
       helpDescription: 'Show detail and targets for a single task.',
       idRequired: '[FoxPilot] Task detail failed: id is required',
@@ -439,6 +478,19 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       dbBootstrapFailed: '[FoxPilot] 次タスク取得に失敗しました: foxpilot.db の初期化に失敗しました',
       empty: '[FoxPilot] 現在進められるタスクはありません',
       title: '[FoxPilot] 次のタスク',
+    },
+    taskEdit: {
+      helpDescription: '現在のプロジェクト内のタスクのタイトル・説明・種別を編集します。',
+      idRequired: '[FoxPilot] タスク編集に失敗しました: id は必須です',
+      titleRequired: '[FoxPilot] タスク編集に失敗しました: title は必須です',
+      descriptionRequired: '[FoxPilot] タスク編集に失敗しました: description は必須です',
+      noChangesSpecified: '[FoxPilot] タスク編集に失敗しました: 少なくとも 1 つの編集対象が必要です',
+      conflictingDescription: '[FoxPilot] タスク編集に失敗しました: description 引数が競合しています',
+      projectNotInitialized: '[FoxPilot] タスク編集に失敗しました: プロジェクトが未初期化です',
+      dbBootstrapFailed: '[FoxPilot] タスク編集に失敗しました: foxpilot.db の初期化に失敗しました',
+      taskNotFound: '[FoxPilot] タスク編集に失敗しました: タスクが見つかりません',
+      unchanged: '[FoxPilot] タスクメタデータは変化していません',
+      updated: '[FoxPilot] タスクメタデータを更新しました',
     },
     taskShow: {
       helpDescription: '単一タスクの詳細と対象一覧を表示します。',

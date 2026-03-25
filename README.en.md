@@ -21,6 +21,9 @@ FoxPilot is a local multi-project task control tool for developer workspaces. It
 - `foxpilot task next`
   - Show the next actionable task for the current project
   - Support filtering by source and executor
+- `foxpilot task edit`
+  - Edit the title, description, and task type of a task
+  - Support explicitly clearing the description
 - `foxpilot task show`
   - Inspect task detail and targets
 - `foxpilot task history`
@@ -87,6 +90,13 @@ foxpilot task next
 foxpilot task next --executor codex
 ```
 
+Edit task metadata:
+
+```bash
+foxpilot task edit --id task:example --title "Refine task note" --task-type docs
+foxpilot task edit --id task:example --clear-description
+```
+
 Show task detail:
 
 ```bash
@@ -132,4 +142,4 @@ foxpilot task update-status --id task:example --status executing
 
 ## Status
 
-The repository is now in the CLI MVP implementation stage. Core initialization, manual task management, next-task selection, scan suggestion tasks, executor switching, priority adjustment, task run history, and minimal transition-guard flows are available, and the next iterations will extend collaboration orchestration.
+The repository is now in the CLI MVP implementation stage. Core initialization, manual task management, next-task selection, task metadata editing, scan suggestion tasks, executor switching, priority adjustment, task run history, and minimal transition-guard flows are available, and the next iterations will extend collaboration orchestration.

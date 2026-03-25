@@ -301,6 +301,16 @@ export function createTaskStore(db: SqliteDatabase) {
       AND id = @id
   `)
 
+  const updateTaskMetadataStmt = db.prepare(`
+    UPDATE task
+    SET title = @title,
+        description = @description,
+        task_type = @task_type,
+        updated_at = @updated_at
+    WHERE project_id = @project_id
+      AND id = @id
+  `)
+
   const getTaskDetailStmt = db.prepare(`
     SELECT id, title, description, status, priority, task_type, current_executor, updated_at
     FROM task
@@ -498,6 +508,36 @@ export function createTaskStore(db: SqliteDatabase) {
         project_id: input.projectId,
         id: input.taskId,
         priority: input.priority,
+        updated_at: input.updatedAt,
+      })
+
+      return result.changes > 0
+    },
+    /**
+     * 更新任务的可编辑元数据字段。
+     *
+     * 当前只开放三类人工最常改动的信息：
+     * - `title`
+     * - `description`
+     * - `task_type`
+     *
+     * 这三个字段都属于“当前态描述信息”，不会影响运行历史表，
+     * 也不会在这里触发额外的调度、副作用或状态流转。
+     */
+    updateTaskMetadata(input: {
+      projectId: string
+      taskId: string
+      title: string
+      description: string | null
+      taskType: TaskRow['task_type']
+      updatedAt: string
+    }): boolean {
+      const result = updateTaskMetadataStmt.run({
+        project_id: input.projectId,
+        id: input.taskId,
+        title: input.title,
+        description: input.description,
+        task_type: input.taskType,
         updated_at: input.updatedAt,
       })
 

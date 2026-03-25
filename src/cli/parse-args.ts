@@ -32,10 +32,12 @@ export type CliArgs = {
   title?: string
   /** 手动任务描述。 */
   description?: string
+  /** 是否显式清空已有任务描述。 */
+  clearDescription: boolean
   /** 任务优先级；未提供时交给具体命令决定默认值。 */
   priority?: 'P0' | 'P1' | 'P2' | 'P3'
-  /** 用于路由和展示的任务类型分类。 */
-  taskType: 'generic' | 'frontend' | 'backend' | 'cross_repo' | 'docs' | 'init'
+  /** 用于路由和展示的任务类型分类；未提供时由具体命令决定默认值。 */
+  taskType?: 'generic' | 'frontend' | 'backend' | 'cross_repo' | 'docs' | 'init'
   /** 用于限定任务作用范围的可选仓库选择器。 */
   repository?: string
   /** 可选的状态过滤条件或目标状态。 */
@@ -76,8 +78,9 @@ export function parseArgs(argv: string[]): CliArgs {
   let noScan = false
   let title: string | undefined
   let description: string | undefined
+  let clearDescription = false
   let priority: 'P0' | 'P1' | 'P2' | 'P3' | undefined
-  let taskType: 'generic' | 'frontend' | 'backend' | 'cross_repo' | 'docs' | 'init' = 'generic'
+  let taskType: 'generic' | 'frontend' | 'backend' | 'cross_repo' | 'docs' | 'init' | undefined
   let repository: string | undefined
   let id: string | undefined
   let executor: 'codex' | 'beads' | 'none' | undefined
@@ -122,6 +125,11 @@ export function parseArgs(argv: string[]): CliArgs {
     if (value === '--description') {
       description = rest[index + 1]
       index += 1
+      continue
+    }
+
+    if (value === '--clear-description') {
+      clearDescription = true
       continue
     }
 
@@ -237,6 +245,7 @@ export function parseArgs(argv: string[]): CliArgs {
     noScan,
     title,
     description,
+    clearDescription,
     priority,
     taskType,
     repository,
