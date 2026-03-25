@@ -17,6 +17,7 @@ import { runTaskNextCommand } from '@/commands/task/task-next-command.js'
 import { runTaskShowCommand } from '@/commands/task/task-show-command.js'
 import { runTaskSuggestScanCommand } from '@/commands/task/task-suggest-scan-command.js'
 import { runTaskUpdateExecutorCommand } from '@/commands/task/task-update-executor-command.js'
+import { runTaskUpdatePriorityCommand } from '@/commands/task/task-update-priority-command.js'
 import { runTaskUpdateStatusCommand } from '@/commands/task/task-update-status-command.js'
 import { resolveInterfaceLanguage } from '@/config/global-config.js'
 import { getMessages } from '@/i18n/messages.js'
@@ -78,7 +79,7 @@ export async function main(
         path: args.path,
         title: args.title,
         description: args.description,
-        priority: args.priority,
+        priority: args.priority ?? 'P2',
         taskType: args.taskType,
         repository: args.repository,
       },
@@ -166,6 +167,27 @@ export async function main(
         path: args.path,
         id: args.id,
         executor: args.executor,
+      },
+      {
+        binName: context.binName ?? 'foxpilot',
+        cwd: context.cwd ?? process.cwd(),
+        homeDir,
+        stdin: [...(context.stdin ?? [])],
+        interfaceLanguage,
+        dependencies: context.dependencies,
+      },
+    )
+  }
+
+  if (args.command === 'task' && args.subcommand === 'update-priority') {
+    return runTaskUpdatePriorityCommand(
+      {
+        command: 'task',
+        subcommand: 'update-priority',
+        help: args.help,
+        path: args.path,
+        id: args.id,
+        priority: args.priority,
       },
       {
         binName: context.binName ?? 'foxpilot',

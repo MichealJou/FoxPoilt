@@ -148,6 +148,7 @@ export type TaskSummaryRow = {
   id: string
   title: string
   status: TaskRow['status']
+  priority: TaskRow['priority']
   current_executor: TaskRow['current_executor']
 }
 
@@ -241,7 +242,7 @@ export function createTaskStore(db: SqliteDatabase) {
   `)
 
   const getTaskByIdStmt = db.prepare(`
-    SELECT id, title, status, current_executor
+    SELECT id, title, status, priority, current_executor
     FROM task
     WHERE project_id = @project_id
       AND id = @id
@@ -287,6 +288,14 @@ export function createTaskStore(db: SqliteDatabase) {
   const updateTaskExecutorStmt = db.prepare(`
     UPDATE task
     SET current_executor = @current_executor,
+        updated_at = @updated_at
+    WHERE project_id = @project_id
+      AND id = @id
+  `)
+
+  const updateTaskPriorityStmt = db.prepare(`
+    UPDATE task
+    SET priority = @priority,
         updated_at = @updated_at
     WHERE project_id = @project_id
       AND id = @id
@@ -468,6 +477,27 @@ export function createTaskStore(db: SqliteDatabase) {
         project_id: input.projectId,
         id: input.taskId,
         current_executor: input.executor,
+        updated_at: input.updatedAt,
+      })
+
+      return result.changes > 0
+    },
+    /**
+     * 更新任务优先级，并返回是否有记录被修改。
+     *
+     * 这一层同样只关心当前态字段，不承担任何“重新排程”副作用。
+     * 是否需要重新挑选下一条任务，由上层命令在下一次查询时自然体现。
+     */
+    updateTaskPriority(input: {
+      projectId: string
+      taskId: string
+      priority: TaskRow['priority']
+      updatedAt: string
+    }): boolean {
+      const result = updateTaskPriorityStmt.run({
+        project_id: input.projectId,
+        id: input.taskId,
+        priority: input.priority,
         updated_at: input.updatedAt,
       })
 

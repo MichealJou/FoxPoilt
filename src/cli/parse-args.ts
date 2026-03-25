@@ -32,8 +32,8 @@ export type CliArgs = {
   title?: string
   /** 手动任务描述。 */
   description?: string
-  /** 任务初始创建时使用的优先级。 */
-  priority: 'P0' | 'P1' | 'P2' | 'P3'
+  /** 任务优先级；未提供时交给具体命令决定默认值。 */
+  priority?: 'P0' | 'P1' | 'P2' | 'P3'
   /** 用于路由和展示的任务类型分类。 */
   taskType: 'generic' | 'frontend' | 'backend' | 'cross_repo' | 'docs' | 'init'
   /** 用于限定任务作用范围的可选仓库选择器。 */
@@ -76,7 +76,7 @@ export function parseArgs(argv: string[]): CliArgs {
   let noScan = false
   let title: string | undefined
   let description: string | undefined
-  let priority: 'P0' | 'P1' | 'P2' | 'P3' = 'P2'
+  let priority: 'P0' | 'P1' | 'P2' | 'P3' | undefined
   let taskType: 'generic' | 'frontend' | 'backend' | 'cross_repo' | 'docs' | 'init' = 'generic'
   let repository: string | undefined
   let id: string | undefined

@@ -115,6 +115,16 @@ export type MessageCatalog = {
     unchanged: string
     updated: string
   }
+  taskUpdatePriority: {
+    helpDescription: string
+    idRequired: string
+    priorityRequired: string
+    projectNotInitialized: string
+    dbBootstrapFailed: string
+    taskNotFound: string
+    unchanged: string
+    updated: string
+  }
   configSetLanguage: {
     helpDescription: string
     invalidLanguage: string
@@ -231,6 +241,16 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       unchanged: '[FoxPilot] 任务执行器未变化',
       updated: '[FoxPilot] 已更新任务执行器',
     },
+    taskUpdatePriority: {
+      helpDescription: '更新当前项目中某个任务的优先级。',
+      idRequired: '[FoxPilot] 任务优先级更新失败: id 不能为空',
+      priorityRequired: '[FoxPilot] 任务优先级更新失败: priority 非法或缺失',
+      projectNotInitialized: '[FoxPilot] 任务优先级更新失败: 项目尚未初始化',
+      dbBootstrapFailed: '[FoxPilot] 任务优先级更新失败: foxpilot.db 初始化失败',
+      taskNotFound: '[FoxPilot] 任务优先级更新失败: 未找到任务',
+      unchanged: '[FoxPilot] 任务优先级未变化',
+      updated: '[FoxPilot] 已更新任务优先级',
+    },
     configSetLanguage: {
       helpDescription: '设置 CLI 交互语言。',
       invalidLanguage: '[FoxPilot] 语言设置失败: lang 非法或缺失',
@@ -345,6 +365,16 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       unchanged: '[FoxPilot] Task executor unchanged',
       updated: '[FoxPilot] Task executor updated',
     },
+    taskUpdatePriority: {
+      helpDescription: 'Update the priority of one task in the current project.',
+      idRequired: '[FoxPilot] Task priority update failed: id is required',
+      priorityRequired: '[FoxPilot] Task priority update failed: priority is invalid or missing',
+      projectNotInitialized: '[FoxPilot] Task priority update failed: project is not initialized',
+      dbBootstrapFailed: '[FoxPilot] Task priority update failed: failed to initialize foxpilot.db',
+      taskNotFound: '[FoxPilot] Task priority update failed: task was not found',
+      unchanged: '[FoxPilot] Task priority unchanged',
+      updated: '[FoxPilot] Task priority updated',
+    },
     configSetLanguage: {
       helpDescription: 'Set the CLI interface language.',
       invalidLanguage: '[FoxPilot] Language update failed: lang is invalid or missing',
@@ -458,6 +488,16 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       taskNotFound: '[FoxPilot] タスク実行者更新に失敗しました: タスクが見つかりません',
       unchanged: '[FoxPilot] タスク実行者は変化していません',
       updated: '[FoxPilot] タスク実行者を更新しました',
+    },
+    taskUpdatePriority: {
+      helpDescription: '現在のプロジェクト内のタスク優先度を更新します。',
+      idRequired: '[FoxPilot] タスク優先度更新に失敗しました: id は必須です',
+      priorityRequired: '[FoxPilot] タスク優先度更新に失敗しました: priority が不正または不足しています',
+      projectNotInitialized: '[FoxPilot] タスク優先度更新に失敗しました: プロジェクトが未初期化です',
+      dbBootstrapFailed: '[FoxPilot] タスク優先度更新に失敗しました: foxpilot.db の初期化に失敗しました',
+      taskNotFound: '[FoxPilot] タスク優先度更新に失敗しました: タスクが見つかりません',
+      unchanged: '[FoxPilot] タスク優先度は変化していません',
+      updated: '[FoxPilot] タスク優先度を更新しました',
     },
     configSetLanguage: {
       helpDescription: 'CLI の表示言語を設定します。',
