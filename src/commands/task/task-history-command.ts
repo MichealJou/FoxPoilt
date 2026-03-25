@@ -96,7 +96,16 @@ export async function runTaskHistoryCommand(
     throw error
   }
 
-  const db = await dependencies.bootstrapDatabase(resolveGlobalDatabasePath(context.homeDir))
+  const dbPath = resolveGlobalDatabasePath(context.homeDir)
+  let db
+  try {
+    db = await dependencies.bootstrapDatabase(dbPath)
+  } catch {
+    return {
+      exitCode: 4,
+      stdout: `${messages.taskHistory.dbBootstrapFailed}\n- ${dbPath}`,
+    }
+  }
   const taskStore = dependencies.createTaskStore(db)
   const projectId = `project:${managedProject.projectRoot}`
   const task = taskStore.getTaskById({

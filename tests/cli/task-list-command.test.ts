@@ -134,4 +134,16 @@ describe('task list CLI', () => {
 
     expect(result.stdout).not.toContain('只在第二项目出现')
   })
+
+  it('returns exit code 4 when sqlite bootstrap fails', async () => {
+    const { homeDir, projectRoot } = await createManagedProjectWithTasks()
+
+    const result = await runCli(
+      ['task', 'list'],
+      { cwd: projectRoot, homeDir, failBootstrap: true },
+    )
+
+    expect(result.exitCode).toBe(4)
+    expect(result.stdout).toContain('foxpilot.db 初始化失败')
+  })
 })

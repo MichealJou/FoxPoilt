@@ -246,4 +246,28 @@ describe('task update-status CLI', () => {
     expect(result.stdout).toContain('from: blocked')
     expect(result.stdout).toContain('to: analyzing')
   })
+
+  it('does not create duplicate task runs when the status is unchanged', async () => {
+    const { homeDir, projectRoot, taskId } = await createManagedProjectWithTask()
+
+    expect((await runCli(
+      ['task', 'update-status', '--id', taskId, '--status', 'analyzing'],
+      { cwd: projectRoot, homeDir },
+    )).exitCode).toBe(0)
+
+    const result = await runCli(
+      ['task', 'update-status', '--id', taskId, '--status', 'analyzing'],
+      { cwd: projectRoot, homeDir },
+    )
+
+    expect(result.exitCode).toBe(0)
+    expect(result.stdout).toContain('任务状态未变化')
+
+    const db = new Database(path.join(homeDir, '.foxpilot', 'foxpilot.db'))
+    const taskRunCountRow = db.prepare('SELECT COUNT(*) AS count FROM task_run WHERE task_id = ?').get(taskId) as {
+      count: number
+    }
+    expect(taskRunCountRow.count).toBe(1)
+    db.close()
+  })
 })

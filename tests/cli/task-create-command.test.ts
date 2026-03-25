@@ -158,4 +158,16 @@ describe('task create CLI', () => {
 
     db.close()
   })
+
+  it('returns exit code 4 when sqlite bootstrap fails', async () => {
+    const { homeDir, projectRoot } = await createManagedProjectFixture()
+
+    const result = await runCli(
+      ['task', 'create', '--title', '数据库失败任务'],
+      { cwd: projectRoot, homeDir, failBootstrap: true },
+    )
+
+    expect(result.exitCode).toBe(4)
+    expect(result.stdout).toContain('foxpilot.db 初始化失败')
+  })
 })

@@ -92,7 +92,16 @@ export async function runTaskListCommand(
     throw error
   }
 
-  const db = await dependencies.bootstrapDatabase(resolveGlobalDatabasePath(context.homeDir))
+  const dbPath = resolveGlobalDatabasePath(context.homeDir)
+  let db
+  try {
+    db = await dependencies.bootstrapDatabase(dbPath)
+  } catch {
+    return {
+      exitCode: 4,
+      stdout: `${messages.taskList.dbBootstrapFailed}\n- ${dbPath}`,
+    }
+  }
   const taskStore = dependencies.createTaskStore(db)
   /**
    * 查询条件始终绑定 `projectId`，这是跨项目隔离的关键。

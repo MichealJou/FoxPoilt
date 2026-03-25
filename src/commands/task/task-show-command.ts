@@ -95,7 +95,16 @@ export async function runTaskShowCommand(
     throw error
   }
 
-  const db = await dependencies.bootstrapDatabase(resolveGlobalDatabasePath(context.homeDir))
+  const dbPath = resolveGlobalDatabasePath(context.homeDir)
+  let db
+  try {
+    db = await dependencies.bootstrapDatabase(dbPath)
+  } catch {
+    return {
+      exitCode: 4,
+      stdout: `${messages.taskShow.dbBootstrapFailed}\n- ${dbPath}`,
+    }
+  }
   const taskStore = dependencies.createTaskStore(db)
   const detail = taskStore.getTaskDetail({
     projectId: `project:${managedProject.projectRoot}`,

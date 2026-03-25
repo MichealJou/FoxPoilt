@@ -113,4 +113,16 @@ describe('task history CLI', () => {
     expect(result.exitCode).toBe(1)
     expect(result.stdout).toContain('未找到任务')
   })
+
+  it('returns exit code 4 when sqlite bootstrap fails', async () => {
+    const { homeDir, projectRoot, taskId } = await createManagedProjectWithTask()
+
+    const result = await runCli(
+      ['task', 'history', '--id', taskId],
+      { cwd: projectRoot, homeDir, failBootstrap: true },
+    )
+
+    expect(result.exitCode).toBe(4)
+    expect(result.stdout).toContain('foxpilot.db 初始化失败')
+  })
 })

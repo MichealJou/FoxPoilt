@@ -179,7 +179,15 @@ export async function runTaskCreateCommand(
   }
 
   const dbPath = resolveGlobalDatabasePath(context.homeDir)
-  const db = await dependencies.bootstrapDatabase(dbPath)
+  let db
+  try {
+    db = await dependencies.bootstrapDatabase(dbPath)
+  } catch {
+    return {
+      exitCode: 4,
+      stdout: buildErrorOutput(messages.taskCreate.dbBootstrapFailed, [`- ${dbPath}`]),
+    }
+  }
   const taskStore = dependencies.createTaskStore(db)
   const now = new Date().toISOString()
   const taskId = `task:${randomUUID()}`

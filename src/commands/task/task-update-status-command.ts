@@ -293,6 +293,19 @@ export async function runTaskUpdateStatusCommand(
     }
   }
 
+  if (existingTask.status === nextStatus) {
+    db.close()
+    return {
+      exitCode: 0,
+      stdout: [
+        messages.taskUpdateStatus.unchanged,
+        `- projectRoot: ${managedProject.projectRoot}`,
+        `- taskId: ${taskId}`,
+        `- status: ${nextStatus}`,
+      ].join('\n'),
+    }
+  }
+
   const updatedAt = new Date().toISOString()
   /**
    * 当前态和历史态必须同事务更新，避免 `task` 与 `task_run` 数据脱节。

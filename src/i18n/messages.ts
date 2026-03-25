@@ -47,6 +47,7 @@ export type MessageCatalog = {
     titleRequired: string
     malformedGlobalConfig: string
     projectNotInitialized: string
+    dbBootstrapFailed: string
     repositoryNotFound: string
     projectNotIndexed: string
     created: string
@@ -54,6 +55,7 @@ export type MessageCatalog = {
   taskList: {
     helpDescription: string
     projectNotInitialized: string
+    dbBootstrapFailed: string
     empty: string
     title: string
   }
@@ -61,6 +63,7 @@ export type MessageCatalog = {
     helpDescription: string
     idRequired: string
     projectNotInitialized: string
+    dbBootstrapFailed: string
     taskNotFound: string
     title: string
     targetsTitle: string
@@ -72,6 +75,7 @@ export type MessageCatalog = {
     helpDescription: string
     idRequired: string
     projectNotInitialized: string
+    dbBootstrapFailed: string
     taskNotFound: string
     title: string
     noRuns: string
@@ -83,16 +87,17 @@ export type MessageCatalog = {
     created: string
     taskTitle: (repositoryName: string) => string
   }
-  taskUpdateStatus: {
-    helpDescription: string
-    idRequired: string
-    statusRequired: string
-    projectNotInitialized: string
-    dbBootstrapFailed: string
-    taskNotFound: string
-    invalidTransition: string
-    updated: string
-  }
+    taskUpdateStatus: {
+      helpDescription: string
+      idRequired: string
+      statusRequired: string
+      projectNotInitialized: string
+      dbBootstrapFailed: string
+      taskNotFound: string
+      invalidTransition: string
+      unchanged: string
+      updated: string
+    }
   configSetLanguage: {
     helpDescription: string
     invalidLanguage: string
@@ -141,6 +146,7 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       titleRequired: '[FoxPilot] 任务创建失败: title 不能为空',
       malformedGlobalConfig: '[FoxPilot] 任务创建失败: foxpilot.config.json 格式错误',
       projectNotInitialized: '[FoxPilot] 任务创建失败: 项目尚未初始化',
+      dbBootstrapFailed: '[FoxPilot] 任务创建失败: foxpilot.db 初始化失败',
       repositoryNotFound: '[FoxPilot] 任务创建失败: 未找到仓库目标',
       projectNotIndexed: '[FoxPilot] 任务创建失败: 项目未接入全局索引',
       created: '[FoxPilot] 已创建任务',
@@ -148,6 +154,7 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
     taskList: {
       helpDescription: '列出当前项目下的任务，可按状态过滤。',
       projectNotInitialized: '[FoxPilot] 任务列表失败: 项目尚未初始化',
+      dbBootstrapFailed: '[FoxPilot] 任务列表失败: foxpilot.db 初始化失败',
       empty: '[FoxPilot] 当前没有匹配任务',
       title: '[FoxPilot] 任务列表',
     },
@@ -155,6 +162,7 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       helpDescription: '查看单个任务的详情和目标列表。',
       idRequired: '[FoxPilot] 任务详情失败: id 不能为空',
       projectNotInitialized: '[FoxPilot] 任务详情失败: 项目尚未初始化',
+      dbBootstrapFailed: '[FoxPilot] 任务详情失败: foxpilot.db 初始化失败',
       taskNotFound: '[FoxPilot] 任务详情失败: 未找到任务',
       title: '[FoxPilot] 任务详情',
       targetsTitle: '[FoxPilot] 任务目标',
@@ -166,6 +174,7 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       helpDescription: '查看单个任务的完整运行历史。',
       idRequired: '[FoxPilot] 任务历史失败: id 不能为空',
       projectNotInitialized: '[FoxPilot] 任务历史失败: 项目尚未初始化',
+      dbBootstrapFailed: '[FoxPilot] 任务历史失败: foxpilot.db 初始化失败',
       taskNotFound: '[FoxPilot] 任务历史失败: 未找到任务',
       title: '[FoxPilot] 任务运行历史',
       noRuns: '- 暂无运行历史',
@@ -185,6 +194,7 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       dbBootstrapFailed: '[FoxPilot] 任务状态更新失败: foxpilot.db 初始化失败',
       taskNotFound: '[FoxPilot] 任务状态更新失败: 未找到任务',
       invalidTransition: '[FoxPilot] 任务状态更新失败: 状态流转不合法',
+      unchanged: '[FoxPilot] 任务状态未变化',
       updated: '[FoxPilot] 已更新任务状态',
     },
     configSetLanguage: {
@@ -233,6 +243,7 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       titleRequired: '[FoxPilot] Task creation failed: title is required',
       malformedGlobalConfig: '[FoxPilot] Task creation failed: foxpilot.config.json is malformed',
       projectNotInitialized: '[FoxPilot] Task creation failed: project is not initialized',
+      dbBootstrapFailed: '[FoxPilot] Task creation failed: failed to initialize foxpilot.db',
       repositoryNotFound: '[FoxPilot] Task creation failed: repository target was not found',
       projectNotIndexed: '[FoxPilot] Task creation failed: project is not indexed globally',
       created: '[FoxPilot] Task created',
@@ -240,6 +251,7 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
     taskList: {
       helpDescription: 'List tasks for the current project.',
       projectNotInitialized: '[FoxPilot] Task list failed: Project is not initialized',
+      dbBootstrapFailed: '[FoxPilot] Task list failed: failed to initialize foxpilot.db',
       empty: '[FoxPilot] No matching tasks',
       title: '[FoxPilot] Task list',
     },
@@ -247,6 +259,7 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       helpDescription: 'Show detail and targets for a single task.',
       idRequired: '[FoxPilot] Task detail failed: id is required',
       projectNotInitialized: '[FoxPilot] Task detail failed: project is not initialized',
+      dbBootstrapFailed: '[FoxPilot] Task detail failed: failed to initialize foxpilot.db',
       taskNotFound: '[FoxPilot] Task detail failed: task was not found',
       title: '[FoxPilot] Task detail',
       targetsTitle: '[FoxPilot] Task targets',
@@ -258,6 +271,7 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       helpDescription: 'Show full run history for a single task.',
       idRequired: '[FoxPilot] Task history failed: id is required',
       projectNotInitialized: '[FoxPilot] Task history failed: project is not initialized',
+      dbBootstrapFailed: '[FoxPilot] Task history failed: failed to initialize foxpilot.db',
       taskNotFound: '[FoxPilot] Task history failed: task was not found',
       title: '[FoxPilot] Task run history',
       noRuns: '- No run history yet',
@@ -277,6 +291,7 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       dbBootstrapFailed: '[FoxPilot] Task status update failed: failed to initialize foxpilot.db',
       taskNotFound: '[FoxPilot] Task status update failed: task was not found',
       invalidTransition: '[FoxPilot] Task status update failed: invalid state transition',
+      unchanged: '[FoxPilot] Task status unchanged',
       updated: '[FoxPilot] Task status updated',
     },
     configSetLanguage: {
@@ -325,6 +340,7 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       titleRequired: '[FoxPilot] タスク作成に失敗しました: title は必須です',
       malformedGlobalConfig: '[FoxPilot] タスク作成に失敗しました: foxpilot.config.json の形式が不正です',
       projectNotInitialized: '[FoxPilot] タスク作成に失敗しました: プロジェクトが未初期化です',
+      dbBootstrapFailed: '[FoxPilot] タスク作成に失敗しました: foxpilot.db の初期化に失敗しました',
       repositoryNotFound: '[FoxPilot] タスク作成に失敗しました: リポジトリ対象が見つかりません',
       projectNotIndexed: '[FoxPilot] タスク作成に失敗しました: プロジェクトがグローバル索引に未登録です',
       created: '[FoxPilot] タスクを作成しました',
@@ -332,6 +348,7 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
     taskList: {
       helpDescription: '現在のプロジェクトのタスク一覧を表示します。',
       projectNotInitialized: '[FoxPilot] タスクリストに失敗しました: プロジェクトが未初期化です',
+      dbBootstrapFailed: '[FoxPilot] タスクリストに失敗しました: foxpilot.db の初期化に失敗しました',
       empty: '[FoxPilot] 条件に一致するタスクはありません',
       title: '[FoxPilot] タスクリスト',
     },
@@ -339,6 +356,7 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       helpDescription: '単一タスクの詳細と対象一覧を表示します。',
       idRequired: '[FoxPilot] タスク詳細に失敗しました: id は必須です',
       projectNotInitialized: '[FoxPilot] タスク詳細に失敗しました: プロジェクトが未初期化です',
+      dbBootstrapFailed: '[FoxPilot] タスク詳細に失敗しました: foxpilot.db の初期化に失敗しました',
       taskNotFound: '[FoxPilot] タスク詳細に失敗しました: タスクが見つかりません',
       title: '[FoxPilot] タスク詳細',
       targetsTitle: '[FoxPilot] タスク対象',
@@ -350,6 +368,7 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       helpDescription: '単一タスクの完全な実行履歴を表示します。',
       idRequired: '[FoxPilot] タスク履歴に失敗しました: id は必須です',
       projectNotInitialized: '[FoxPilot] タスク履歴に失敗しました: プロジェクトが未初期化です',
+      dbBootstrapFailed: '[FoxPilot] タスク履歴に失敗しました: foxpilot.db の初期化に失敗しました',
       taskNotFound: '[FoxPilot] タスク履歴に失敗しました: タスクが見つかりません',
       title: '[FoxPilot] タスク実行履歴',
       noRuns: '- 実行履歴はまだありません',
@@ -369,6 +388,7 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       dbBootstrapFailed: '[FoxPilot] タスク状態更新に失敗しました: foxpilot.db の初期化に失敗しました',
       taskNotFound: '[FoxPilot] タスク状態更新に失敗しました: タスクが見つかりません',
       invalidTransition: '[FoxPilot] タスク状態更新に失敗しました: 状態遷移が不正です',
+      unchanged: '[FoxPilot] タスク状態は変化していません',
       updated: '[FoxPilot] タスク状態を更新しました',
     },
     configSetLanguage: {
