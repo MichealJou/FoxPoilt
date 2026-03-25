@@ -12,6 +12,9 @@ import type { scanRepositories } from '@/project/scan-repositories.js'
 
 /**
  * 初始化流程支持的交互模式。
+ *
+ * 交互模式影响的是“是否主动向用户询问缺省值”，
+ * 不影响最终写入的数据结构和数据库格式。
  */
 export type InitMode = 'interactive' | 'non-interactive'
 
@@ -37,6 +40,10 @@ export type InitArgs = {
 
 /**
  * 所有命令处理器共用的标准 CLI 返回结构。
+ *
+ * 当前刻意只保留 `exitCode` 和 `stdout`：
+ * - CLI 层输出保持纯文本，便于测试断言；
+ * - 复杂日志和结构化事件后续再单独设计，不和终端返回耦合。
  */
 export type CliResult = {
   /** 由 CLI 包装层向外暴露的进程退出码。 */
@@ -47,6 +54,12 @@ export type CliResult = {
 
 /**
  * init 命令使用的可注入依赖。
+ *
+ * init 是当前 CLI 里编排最重的命令，因此依赖也最多。
+ * 但这些依赖都围绕三个职责分组：
+ * - 配置文件读写；
+ * - 仓库扫描；
+ * - SQLite catalog 初始化与登记。
  */
 export type InitCommandDependencies = {
   ensureGlobalConfig: typeof ensureGlobalConfig
@@ -58,6 +71,9 @@ export type InitCommandDependencies = {
 
 /**
  * init 命令使用的运行时上下文，包含可选的测试覆盖依赖。
+ *
+ * 由于 init 同时涉及交互输入、主目录、项目目录和数据库路径，
+ * 它几乎会使用 `CliRuntimeContext` 的全部字段，因此这里直接继承完整上下文。
  */
 export type InitCommandContext = CliRuntimeContext & {
   dependencies?: Partial<InitCommandDependencies>

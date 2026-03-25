@@ -18,6 +18,12 @@ import type {
 
 /**
  * 解析任务状态更新命令使用的默认依赖集合。
+ *
+ * 状态更新命令虽然是写操作，但仍然只做三件事：
+ * - 解析项目范围；
+ * - 校验目标任务是否存在；
+ * - 调用 store 持久化状态。
+ * 这样后续无论接入状态机校验还是 task_run 记录，都可以先落在 store 层扩展。
  */
 function getDependencies(
   overrides: Partial<TaskUpdateStatusDependencies> = {},
@@ -30,6 +36,12 @@ function getDependencies(
   }
 }
 
+/**
+ * 构造帮助文本。
+ *
+ * 这里把完整状态集合直接写进帮助页，是为了把“允许写入的状态空间”
+ * 暴露给终端调用者，避免他们猜测缩写或自造状态值。
+ */
 function buildHelpText(language: Parameters<typeof getMessages>[0]): string {
   const messages = getMessages(language)
 
@@ -46,6 +58,14 @@ function buildHelpText(language: Parameters<typeof getMessages>[0]): string {
 
 /**
  * 更新当前项目范围内某个任务的持久化状态。
+ *
+ * MVP 阶段这里做的是“直接状态更新”：
+ * - 不记录原因说明；
+ * - 不记录状态流转历史；
+ * - 不做复杂合法流转校验。
+ *
+ * 这样做不是最终形态，而是为了先把人工任务管理闭环跑通。
+ * 等 `task_run` 和更严格的状态机落地后，再把这里收口成受约束的流转入口。
  */
 export async function runTaskUpdateStatusCommand(
   args: TaskUpdateStatusArgs,
@@ -104,6 +124,11 @@ export async function runTaskUpdateStatusCommand(
   }
   const taskStore = dependencies.createTaskStore(db)
   const projectId = `project:${managedProject.projectRoot}`
+  /**
+   * 先查再写，而不是直接执行 update，有两个目的：
+   * 1. 输出里要展示 from -> to，必须先拿到旧状态；
+   * 2. 可以把“不存在”与“更新失败”区分开来，避免用户看到模糊错误。
+   */
   const existingTask = taskStore.getTaskById({
     projectId,
     taskId: args.id.trim(),

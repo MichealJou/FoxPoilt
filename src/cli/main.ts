@@ -19,6 +19,14 @@ import { getMessages } from '@/i18n/messages.js'
 
 /**
  * CLI 入口函数，负责解析当前生效语言并分发到具体命令处理器。
+ *
+ * 入口层只做三件事：
+ * 1. 解析 argv；
+ * 2. 解析运行时环境和当前语言；
+ * 3. 把标准化参数转交给对应命令。
+ *
+ * 它不直接写文件、不直接操作数据库，也不拼接业务 SQL。
+ * 这样主入口可以长期保持稳定，新增命令时只需要添加路由分支。
  */
 export async function main(
   argv: string[],
@@ -26,6 +34,12 @@ export async function main(
 ): Promise<CliResult> {
   const args = parseArgs(argv)
   const homeDir = context.homeDir ?? os.homedir()
+  /**
+   * 语言解析放在命令分发前统一完成，保证：
+   * - 未命中具体命令时，unknown command 也能本地化；
+   * - 所有命令默认共享同一份当前语言；
+   * - 测试可以通过 context 直接覆盖，无需真的写全局配置文件。
+   */
   const interfaceLanguage = context.interfaceLanguage ?? await resolveInterfaceLanguage({ homeDir })
   const messages = getMessages(interfaceLanguage)
 

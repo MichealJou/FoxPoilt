@@ -7,6 +7,9 @@ import type { InterfaceLanguage } from '@/i18n/interface-language.js'
 
 /**
  * 解析后的 CLI 参数，会被标准化为 `main` 使用的命令模型。
+ *
+ * 这里的字段是“命令协议模型”，不是某个单一命令的最终参数。
+ * 主入口会先拿到这份宽模型，再根据 `command` / `subcommand` 收窄到具体命令类型。
  */
 export type CliArgs = {
   /** 如 `init`、`task`、`config` 这样的顶层命令名。 */
@@ -45,6 +48,18 @@ export type CliArgs = {
 
 /**
  * 将原始 argv 解析为以命令为中心的对象，让命令处理器专注于业务行为。
+ *
+ * 当前实现故意保持轻量，不引入额外参数库，原因是：
+ * - 现阶段命令数量有限；
+ * - 我们需要完全掌控别名、默认值和失败容忍策略；
+ * - 测试里可以直接构造 argv 覆盖各种边界情况。
+ *
+ * 这里采用“宽松解析”策略：
+ * - 合法枚举会被收进返回对象；
+ * - 非法枚举会被忽略为 `undefined` 或默认值；
+ * - 真正的必填校验交给具体命令处理器负责。
+ *
+ * 这样做可以把“语法解析”和“业务校验”拆开，避免参数解析器承担过多命令语义。
  */
 export function parseArgs(argv: string[]): CliArgs {
   const [command] = argv
@@ -73,6 +88,10 @@ export function parseArgs(argv: string[]): CliArgs {
     | 'cancelled'
     | undefined
 
+  /**
+   * `task` 和 `config` 是分组命令，因此要跳过二级命令后再扫描 flag。
+   * `init` 这类单级命令则从第一个 flag 开始扫描即可。
+   */
   for (let index = 0; index < rest.length; index += 1) {
     const value = rest[index]
 
