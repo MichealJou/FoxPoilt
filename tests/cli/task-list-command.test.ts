@@ -1,6 +1,7 @@
 import { mkdir } from 'node:fs/promises'
 import path from 'node:path'
 
+import Database from 'better-sqlite3'
 import { afterEach, describe, expect, it } from 'vitest'
 
 import { runCli } from '@tests/helpers/run-cli.js'
@@ -70,6 +71,47 @@ describe('task list CLI', () => {
     expect(result.stdout).toContain('[FoxPilot] 当前没有匹配任务')
   })
 
+  it('supports filtering by executor', async () => {
+    const { homeDir, projectRoot } = await createManagedProjectWithTasks()
+    const db = new Database(path.join(homeDir, '.foxpilot', 'foxpilot.db'))
+    const row = db.prepare('SELECT id FROM task ORDER BY created_at ASC LIMIT 1').get() as { id: string }
+    db.close()
+
+    const updateExecutor = await runCli(
+      ['task', 'update-executor', '--id', row.id, '--executor', 'beads'],
+      { cwd: projectRoot, homeDir },
+    )
+    expect(updateExecutor.exitCode).toBe(0)
+
+    const result = await runCli(
+      ['task', 'list', '--executor', 'beads'],
+      { cwd: projectRoot, homeDir },
+    )
+
+    expect(result.exitCode).toBe(0)
+    expect(result.stdout).toContain('先做 task list')
+    expect(result.stdout).not.toContain('整理 task 输出')
+  })
+
+  it('supports filtering by source', async () => {
+    const { homeDir, projectRoot } = await createManagedProjectWithTasks()
+
+    const suggestScan = await runCli(
+      ['task', 'suggest-scan'],
+      { cwd: projectRoot, homeDir },
+    )
+    expect(suggestScan.exitCode).toBe(0)
+
+    const result = await runCli(
+      ['task', 'list', '--source', 'scan_suggestion'],
+      { cwd: projectRoot, homeDir },
+    )
+
+    expect(result.exitCode).toBe(0)
+    expect(result.stdout).toContain('扫描建议')
+    expect(result.stdout).not.toContain('先做 task list')
+  })
+
   it('prints help and accepts fp alias', async () => {
     const result = await runCli(
       ['task', 'list', '--help'],
@@ -79,6 +121,8 @@ describe('task list CLI', () => {
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('foxpilot task list')
     expect(result.stdout).toContain('fp task list')
+    expect(result.stdout).toContain('--executor codex|beads|none')
+    expect(result.stdout).toContain('--source manual|beads_sync|scan_suggestion')
   })
 
   it('localizes task list help output after language is switched', async () => {

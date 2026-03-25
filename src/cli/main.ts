@@ -100,6 +100,8 @@ export async function main(
         help: args.help,
         path: args.path,
         status: args.status,
+        source: args.source,
+        executor: args.executor,
       },
       {
         binName: context.binName ?? 'foxpilot',

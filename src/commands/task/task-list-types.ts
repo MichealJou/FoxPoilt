@@ -28,10 +28,22 @@ export type TaskStatus =
   | 'cancelled'
 
 /**
+ * 任务来源集合。
+ */
+export type TaskSourceType = 'manual' | 'beads_sync' | 'scan_suggestion'
+
+/**
+ * 当前责任执行器集合。
+ */
+export type TaskExecutor = 'codex' | 'beads' | 'none'
+
+/**
  * `task list` 的标准化参数。
  *
- * 列表命令的输入故意保持极简，只支持项目路径和状态过滤。
- * 这样可以让它稳定承担“人工查看当前态列表”的职责，不掺杂过多报表逻辑。
+ * 列表命令的输入保持轻量，但已经支持最常见的三类当前态筛选：
+ * - 状态
+ * - 来源
+ * - 当前责任执行器
  */
 export type TaskListArgs = {
   /** 顶层命令标识。 */
@@ -44,6 +56,10 @@ export type TaskListArgs = {
   path?: string
   /** 可选状态过滤条件；为空时返回当前项目下的全部任务。 */
   status?: TaskStatus
+  /** 可选任务来源过滤条件。 */
+  source?: TaskSourceType
+  /** 可选当前责任执行器过滤条件。 */
+  executor?: TaskExecutor
 }
 
 /**

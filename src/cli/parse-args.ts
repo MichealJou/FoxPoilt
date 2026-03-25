@@ -40,6 +40,8 @@ export type CliArgs = {
   repository?: string
   /** 可选的状态过滤条件或目标状态。 */
   status?: 'todo' | 'analyzing' | 'awaiting_plan_confirm' | 'executing' | 'awaiting_result_confirm' | 'done' | 'blocked' | 'cancelled'
+  /** 可选的任务来源过滤条件。 */
+  source?: 'manual' | 'beads_sync' | 'scan_suggestion'
   /** 详情和状态更新命令使用的可选任务标识。 */
   id?: string
   /** 任务当前责任执行器。 */
@@ -90,6 +92,7 @@ export function parseArgs(argv: string[]): CliArgs {
     | 'blocked'
     | 'cancelled'
     | undefined
+  let source: 'manual' | 'beads_sync' | 'scan_suggestion' | undefined
 
   /**
    * `task` 和 `config` 是分组命令，因此要跳过二级命令后再扫描 flag。
@@ -205,6 +208,15 @@ export function parseArgs(argv: string[]): CliArgs {
       continue
     }
 
+    if (value === '--source') {
+      const nextValue = rest[index + 1]
+      if (nextValue === 'manual' || nextValue === 'beads_sync' || nextValue === 'scan_suggestion') {
+        source = nextValue
+      }
+      index += 1
+      continue
+    }
+
     if (value === '--lang') {
       const nextValue = rest[index + 1]
       if (nextValue === 'zh-CN' || nextValue === 'en-US' || nextValue === 'ja-JP') {
@@ -229,6 +241,7 @@ export function parseArgs(argv: string[]): CliArgs {
     taskType,
     repository,
     status,
+    source,
     id,
     executor,
     lang,

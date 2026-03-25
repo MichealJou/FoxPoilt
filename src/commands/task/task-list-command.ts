@@ -48,6 +48,8 @@ function buildHelpText(language: Parameters<typeof getMessages>[0]): string {
     'fp task list',
     '--path <project-root>',
     '--status todo|analyzing|awaiting_plan_confirm|executing|awaiting_result_confirm|done|blocked|cancelled',
+    '--source manual|beads_sync|scan_suggestion',
+    '--executor codex|beads|none',
   ].join('\n')
 }
 
@@ -110,6 +112,8 @@ export async function runTaskListCommand(
   const tasks = taskStore.listTasks({
     projectId: `project:${managedProject.projectRoot}`,
     status: args.status,
+    sourceType: args.source,
+    executor: args.executor,
   })
 
   db.close()
@@ -132,7 +136,8 @@ export async function runTaskListCommand(
       `- total: ${tasks.length}`,
       '',
       ...tasks.map(
-        (task, index) => `${index + 1}. [${task.status}][${task.priority}][${task.task_type}] ${task.title}`,
+        (task, index) =>
+          `${index + 1}. [${task.source_type}][${task.current_executor}][${task.status}][${task.priority}][${task.task_type}] ${task.title}`,
       ),
     ].join('\n'),
   }

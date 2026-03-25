@@ -103,14 +103,16 @@ export type TaskRunRow = {
 export type TaskListRow = {
   id: string
   title: string
+  source_type: TaskRow['source_type']
   status: TaskRow['status']
   priority: TaskRow['priority']
   task_type: TaskRow['task_type']
+  current_executor: TaskRow['current_executor']
   updated_at: string
 }
 
 /**
- * 未完成の扫描建议与仓库之间的最小映射结构。
+ * 未完成扫描建议与仓库之间的最小映射结构。
  *
  * 这个投影只在去重场景使用，因此只保留仓库主键，不回传多余任务字段。
  */
@@ -211,10 +213,12 @@ export function createTaskStore(db: SqliteDatabase) {
   })
 
   const listTasksStmt = db.prepare(`
-    SELECT id, title, status, priority, task_type, updated_at
+    SELECT id, title, source_type, status, priority, task_type, current_executor, updated_at
     FROM task
     WHERE project_id = @project_id
       AND (@status IS NULL OR status = @status)
+      AND (@source_type IS NULL OR source_type = @source_type)
+      AND (@current_executor IS NULL OR current_executor = @current_executor)
     ORDER BY updated_at DESC, created_at DESC
   `)
 
@@ -333,10 +337,14 @@ export function createTaskStore(db: SqliteDatabase) {
     listTasks(input: {
       projectId: string
       status?: TaskRow['status']
+      sourceType?: TaskRow['source_type']
+      executor?: TaskRow['current_executor']
     }): TaskListRow[] {
       return listTasksStmt.all({
         project_id: input.projectId,
         status: input.status ?? null,
+        source_type: input.sourceType ?? null,
+        current_executor: input.executor ?? null,
       }) as TaskListRow[]
     },
     /**
