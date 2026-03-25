@@ -69,6 +69,12 @@ type TaskStore = {
     status: 'todo' | 'analyzing' | 'awaiting_plan_confirm' | 'executing' | 'awaiting_result_confirm' | 'done' | 'blocked' | 'cancelled'
     updatedAt: string
   }) => boolean
+  updateTaskExecutor: (input: {
+    projectId: string
+    taskId: string
+    executor: 'codex' | 'beads' | 'none'
+    updatedAt: string
+  }) => boolean
   startTaskRun: (input: {
     run: {
       id: string
@@ -631,6 +637,119 @@ describe('task store', () => {
         projectId: 'project:/Users/program/other/demo',
         taskId: 'task:update-me',
         status: 'done',
+        updatedAt: '2026-03-25T00:02:00Z',
+      }),
+    ).toBe(false)
+
+    db.close?.()
+  })
+
+  it('updates task executor only within the target project', async () => {
+    const tempDir = await createTempDir('foxpilot-db-')
+    tempDirs.push(tempDir)
+    const dbPath = `${tempDir}/foxpilot.db`
+    const now = '2026-03-25T00:00:00Z'
+    const { bootstrapDatabase, createCatalogStore, createTaskStore } = await loadModules()
+
+    const db = await bootstrapDatabase(dbPath)
+    const catalogStore = createCatalogStore(db)
+    const taskStore = createTaskStore(db)
+
+    catalogStore.upsertProjectCatalog({
+      workspaceRoot: {
+        id: 'workspace_root:/Users/program/code',
+        name: 'code',
+        path: '/Users/program/code',
+        enabled: 1,
+        description: null,
+        created_at: now,
+        updated_at: now,
+      },
+      project: {
+        id: 'project:/Users/program/code/foxpilot-workspace',
+        workspace_root_id: 'workspace_root:/Users/program/code',
+        name: 'foxpilot',
+        display_name: 'Foxpilot',
+        root_path: '/Users/program/code/foxpilot-workspace',
+        source_type: 'manual',
+        status: 'managed',
+        description: null,
+        created_at: now,
+        updated_at: now,
+      },
+      repositories: [],
+    })
+
+    catalogStore.upsertProjectCatalog({
+      workspaceRoot: {
+        id: 'workspace_root:/Users/program/other',
+        name: 'other',
+        path: '/Users/program/other',
+        enabled: 1,
+        description: null,
+        created_at: now,
+        updated_at: now,
+      },
+      project: {
+        id: 'project:/Users/program/other/demo',
+        workspace_root_id: 'workspace_root:/Users/program/other',
+        name: 'demo',
+        display_name: 'Demo',
+        root_path: '/Users/program/other/demo',
+        source_type: 'manual',
+        status: 'managed',
+        description: null,
+        created_at: now,
+        updated_at: now,
+      },
+      repositories: [],
+    })
+
+    taskStore.createTask({
+      task: {
+        id: 'task:update-executor',
+        project_id: 'project:/Users/program/code/foxpilot-workspace',
+        title: '切换执行器',
+        description: null,
+        source_type: 'manual',
+        status: 'todo',
+        priority: 'P2',
+        task_type: 'generic',
+        execution_mode: 'manual',
+        requires_plan_confirm: 1,
+        current_executor: 'codex',
+        created_at: now,
+        updated_at: now,
+      },
+      targets: [],
+    })
+
+    expect(
+      taskStore.updateTaskExecutor({
+        projectId: 'project:/Users/program/code/foxpilot-workspace',
+        taskId: 'task:update-executor',
+        executor: 'beads',
+        updatedAt: '2026-03-25T00:01:00Z',
+      }),
+    ).toBe(true)
+
+    expect(
+      taskStore.getTaskDetail({
+        projectId: 'project:/Users/program/code/foxpilot-workspace',
+        taskId: 'task:update-executor',
+      }),
+    ).toMatchObject({
+      task: {
+        id: 'task:update-executor',
+        current_executor: 'beads',
+      },
+    })
+
+    expect(
+      taskStore.updateTaskExecutor({
+        projectId: 'project:/Users/program/other/demo',
+        taskId: 'task:update-executor',
+        executor: 'none',
         updatedAt: '2026-03-25T00:02:00Z',
       }),
     ).toBe(false)

@@ -42,6 +42,8 @@ export type CliArgs = {
   status?: 'todo' | 'analyzing' | 'awaiting_plan_confirm' | 'executing' | 'awaiting_result_confirm' | 'done' | 'blocked' | 'cancelled'
   /** 详情和状态更新命令使用的可选任务标识。 */
   id?: string
+  /** 任务当前责任执行器。 */
+  executor?: 'codex' | 'beads' | 'none'
   /** 配置命令使用的可选交互语言。 */
   lang?: InterfaceLanguage
 }
@@ -76,6 +78,7 @@ export function parseArgs(argv: string[]): CliArgs {
   let taskType: 'generic' | 'frontend' | 'backend' | 'cross_repo' | 'docs' | 'init' = 'generic'
   let repository: string | undefined
   let id: string | undefined
+  let executor: 'codex' | 'beads' | 'none' | undefined
   let lang: InterfaceLanguage | undefined
   let status:
     | 'todo'
@@ -175,6 +178,15 @@ export function parseArgs(argv: string[]): CliArgs {
       continue
     }
 
+    if (value === '--executor') {
+      const nextValue = rest[index + 1]
+      if (nextValue === 'codex' || nextValue === 'beads' || nextValue === 'none') {
+        executor = nextValue
+      }
+      index += 1
+      continue
+    }
+
     if (value === '--status') {
       const nextValue = rest[index + 1]
       if (
@@ -218,6 +230,7 @@ export function parseArgs(argv: string[]): CliArgs {
     repository,
     status,
     id,
+    executor,
     lang,
   }
 }

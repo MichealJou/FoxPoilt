@@ -128,6 +128,7 @@ export type TaskSummaryRow = {
   id: string
   title: string
   status: TaskRow['status']
+  current_executor: TaskRow['current_executor']
 }
 
 /**
@@ -218,7 +219,7 @@ export function createTaskStore(db: SqliteDatabase) {
   `)
 
   const getTaskByIdStmt = db.prepare(`
-    SELECT id, title, status
+    SELECT id, title, status, current_executor
     FROM task
     WHERE project_id = @project_id
       AND id = @id
@@ -228,6 +229,14 @@ export function createTaskStore(db: SqliteDatabase) {
   const updateTaskStatusStmt = db.prepare(`
     UPDATE task
     SET status = @status,
+        updated_at = @updated_at
+    WHERE project_id = @project_id
+      AND id = @id
+  `)
+
+  const updateTaskExecutorStmt = db.prepare(`
+    UPDATE task
+    SET current_executor = @current_executor,
         updated_at = @updated_at
     WHERE project_id = @project_id
       AND id = @id
@@ -361,6 +370,26 @@ export function createTaskStore(db: SqliteDatabase) {
         project_id: input.projectId,
         id: input.taskId,
         status: input.status,
+        updated_at: input.updatedAt,
+      })
+
+      return result.changes > 0
+    },
+    /**
+     * 更新任务当前责任执行器，并返回是否有记录被修改。
+     *
+     * 这一层只处理当前态字段，不负责推导运行历史或状态流转。
+     */
+    updateTaskExecutor(input: {
+      projectId: string
+      taskId: string
+      executor: TaskRow['current_executor']
+      updatedAt: string
+    }): boolean {
+      const result = updateTaskExecutorStmt.run({
+        project_id: input.projectId,
+        id: input.taskId,
+        current_executor: input.executor,
         updated_at: input.updatedAt,
       })
 

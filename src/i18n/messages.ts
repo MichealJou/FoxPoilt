@@ -87,7 +87,7 @@ export type MessageCatalog = {
     created: string
     taskTitle: (repositoryName: string) => string
   }
-    taskUpdateStatus: {
+  taskUpdateStatus: {
       helpDescription: string
       idRequired: string
       statusRequired: string
@@ -95,9 +95,19 @@ export type MessageCatalog = {
       dbBootstrapFailed: string
       taskNotFound: string
       invalidTransition: string
-      unchanged: string
-      updated: string
-    }
+    unchanged: string
+    updated: string
+  }
+  taskUpdateExecutor: {
+    helpDescription: string
+    idRequired: string
+    executorRequired: string
+    projectNotInitialized: string
+    dbBootstrapFailed: string
+    taskNotFound: string
+    unchanged: string
+    updated: string
+  }
   configSetLanguage: {
     helpDescription: string
     invalidLanguage: string
@@ -197,6 +207,16 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       unchanged: '[FoxPilot] 任务状态未变化',
       updated: '[FoxPilot] 已更新任务状态',
     },
+    taskUpdateExecutor: {
+      helpDescription: '更新当前项目中某个任务的责任执行器。',
+      idRequired: '[FoxPilot] 任务执行器更新失败: id 不能为空',
+      executorRequired: '[FoxPilot] 任务执行器更新失败: executor 非法或缺失',
+      projectNotInitialized: '[FoxPilot] 任务执行器更新失败: 项目尚未初始化',
+      dbBootstrapFailed: '[FoxPilot] 任务执行器更新失败: foxpilot.db 初始化失败',
+      taskNotFound: '[FoxPilot] 任务执行器更新失败: 未找到任务',
+      unchanged: '[FoxPilot] 任务执行器未变化',
+      updated: '[FoxPilot] 已更新任务执行器',
+    },
     configSetLanguage: {
       helpDescription: '设置 CLI 交互语言。',
       invalidLanguage: '[FoxPilot] 语言设置失败: lang 非法或缺失',
@@ -294,6 +314,16 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       unchanged: '[FoxPilot] Task status unchanged',
       updated: '[FoxPilot] Task status updated',
     },
+    taskUpdateExecutor: {
+      helpDescription: 'Update the responsible executor of one task in the current project.',
+      idRequired: '[FoxPilot] Task executor update failed: id is required',
+      executorRequired: '[FoxPilot] Task executor update failed: executor is invalid or missing',
+      projectNotInitialized: '[FoxPilot] Task executor update failed: project is not initialized',
+      dbBootstrapFailed: '[FoxPilot] Task executor update failed: failed to initialize foxpilot.db',
+      taskNotFound: '[FoxPilot] Task executor update failed: task was not found',
+      unchanged: '[FoxPilot] Task executor unchanged',
+      updated: '[FoxPilot] Task executor updated',
+    },
     configSetLanguage: {
       helpDescription: 'Set the CLI interface language.',
       invalidLanguage: '[FoxPilot] Language update failed: lang is invalid or missing',
@@ -390,6 +420,16 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       invalidTransition: '[FoxPilot] タスク状態更新に失敗しました: 状態遷移が不正です',
       unchanged: '[FoxPilot] タスク状態は変化していません',
       updated: '[FoxPilot] タスク状態を更新しました',
+    },
+    taskUpdateExecutor: {
+      helpDescription: '現在のプロジェクト内のタスク責任実行者を更新します。',
+      idRequired: '[FoxPilot] タスク実行者更新に失敗しました: id は必須です',
+      executorRequired: '[FoxPilot] タスク実行者更新に失敗しました: executor が不正または不足しています',
+      projectNotInitialized: '[FoxPilot] タスク実行者更新に失敗しました: プロジェクトが未初期化です',
+      dbBootstrapFailed: '[FoxPilot] タスク実行者更新に失敗しました: foxpilot.db の初期化に失敗しました',
+      taskNotFound: '[FoxPilot] タスク実行者更新に失敗しました: タスクが見つかりません',
+      unchanged: '[FoxPilot] タスク実行者は変化していません',
+      updated: '[FoxPilot] タスク実行者を更新しました',
     },
     configSetLanguage: {
       helpDescription: 'CLI の表示言語を設定します。',

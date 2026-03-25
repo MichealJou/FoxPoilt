@@ -24,6 +24,9 @@ FoxPilot is a local multi-project task control tool for developer workspaces. It
 - `foxpilot task suggest-scan`
   - Generate scan suggestion tasks for registered repositories
   - Skip repositories that already have unfinished suggestions
+- `foxpilot task update-executor`
+  - Update the current responsible executor of a task
+  - Supported values: `codex`, `beads`, `none`
 - `foxpilot task update-status`
   - Update task status
   - Enforce the minimal valid transition rules
@@ -87,6 +90,12 @@ Generate scan suggestion tasks:
 foxpilot task suggest-scan
 ```
 
+Update task executor:
+
+```bash
+foxpilot task update-executor --id task:example --executor beads
+```
+
 Update task status:
 
 ```bash
@@ -102,4 +111,4 @@ foxpilot task update-status --id task:example --status executing
 
 ## Status
 
-The repository is now in the CLI MVP implementation stage. Core initialization, manual task management, scan suggestion tasks, task run history, and minimal transition-guard flows are available, and the next iterations will extend collaboration orchestration.
+The repository is now in the CLI MVP implementation stage. Core initialization, manual task management, scan suggestion tasks, executor switching, task run history, and minimal transition-guard flows are available, and the next iterations will extend collaboration orchestration.
