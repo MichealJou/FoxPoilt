@@ -11,6 +11,7 @@ import { runConfigSetLanguageCommand } from '@/commands/config/config-set-langua
 import { runInitCommand } from '@/commands/init/init-command.js'
 import type { CliResult, InitCommandContext } from '@/commands/init/init-types.js'
 import { runTaskCreateCommand } from '@/commands/task/task-create-command.js'
+import { runTaskHistoryCommand } from '@/commands/task/task-history-command.js'
 import { runTaskListCommand } from '@/commands/task/task-list-command.js'
 import { runTaskShowCommand } from '@/commands/task/task-show-command.js'
 import { runTaskUpdateStatusCommand } from '@/commands/task/task-update-status-command.js'
@@ -135,6 +136,26 @@ export async function main(
       {
         command: 'task',
         subcommand: 'show',
+        help: args.help,
+        path: args.path,
+        id: args.id,
+      },
+      {
+        binName: context.binName ?? 'foxpilot',
+        cwd: context.cwd ?? process.cwd(),
+        homeDir,
+        stdin: [...(context.stdin ?? [])],
+        interfaceLanguage,
+        dependencies: context.dependencies,
+      },
+    )
+  }
+
+  if (args.command === 'task' && args.subcommand === 'history') {
+    return runTaskHistoryCommand(
+      {
+        command: 'task',
+        subcommand: 'history',
         help: args.help,
         path: args.path,
         id: args.id,

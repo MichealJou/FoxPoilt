@@ -68,6 +68,14 @@ export type MessageCatalog = {
     noTargets: string
     noRuns: string
   }
+  taskHistory: {
+    helpDescription: string
+    idRequired: string
+    projectNotInitialized: string
+    taskNotFound: string
+    title: string
+    noRuns: string
+  }
   taskUpdateStatus: {
     helpDescription: string
     idRequired: string
@@ -146,6 +154,14 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       runsTitle: '[FoxPilot] 任务运行历史',
       noRuns: '- 暂无运行历史',
     },
+    taskHistory: {
+      helpDescription: '查看单个任务的完整运行历史。',
+      idRequired: '[FoxPilot] 任务历史失败: id 不能为空',
+      projectNotInitialized: '[FoxPilot] 任务历史失败: 项目尚未初始化',
+      taskNotFound: '[FoxPilot] 任务历史失败: 未找到任务',
+      title: '[FoxPilot] 任务运行历史',
+      noRuns: '- 暂无运行历史',
+    },
     taskUpdateStatus: {
       helpDescription: '更新当前项目中某个任务的状态。',
       idRequired: '[FoxPilot] 任务状态更新失败: id 不能为空',
@@ -222,6 +238,14 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       runsTitle: '[FoxPilot] Task run history',
       noRuns: '- No run history yet',
     },
+    taskHistory: {
+      helpDescription: 'Show full run history for a single task.',
+      idRequired: '[FoxPilot] Task history failed: id is required',
+      projectNotInitialized: '[FoxPilot] Task history failed: project is not initialized',
+      taskNotFound: '[FoxPilot] Task history failed: task was not found',
+      title: '[FoxPilot] Task run history',
+      noRuns: '- No run history yet',
+    },
     taskUpdateStatus: {
       helpDescription: 'Update the status of one task in the current project.',
       idRequired: '[FoxPilot] Task status update failed: id is required',
@@ -296,6 +320,14 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       targetsTitle: '[FoxPilot] タスク対象',
       noTargets: '- (none)',
       runsTitle: '[FoxPilot] タスク実行履歴',
+      noRuns: '- 実行履歴はまだありません',
+    },
+    taskHistory: {
+      helpDescription: '単一タスクの完全な実行履歴を表示します。',
+      idRequired: '[FoxPilot] タスク履歴に失敗しました: id は必須です',
+      projectNotInitialized: '[FoxPilot] タスク履歴に失敗しました: プロジェクトが未初期化です',
+      taskNotFound: '[FoxPilot] タスク履歴に失敗しました: タスクが見つかりません',
+      title: '[FoxPilot] タスク実行履歴',
       noRuns: '- 実行履歴はまだありません',
     },
     taskUpdateStatus: {
