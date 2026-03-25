@@ -1,5 +1,13 @@
-import type { SqliteDatabase } from './connect.js'
+/**
+ * @file src/db/task-store.ts
+ * @author michaeljou
+ */
 
+import type { SqliteDatabase } from '@/db/connect.js'
+
+/**
+ * Row model for the `task` table.
+ */
 export type TaskRow = {
   id: string
   project_id: string
@@ -24,6 +32,9 @@ export type TaskRow = {
   updated_at: string
 }
 
+/**
+ * Row model for the `task_target` table.
+ */
 export type TaskTargetRow = {
   id: string
   task_id: string
@@ -33,6 +44,9 @@ export type TaskTargetRow = {
   created_at: string
 }
 
+/**
+ * Compact task projection used by `task list`.
+ */
 export type TaskListRow = {
   id: string
   title: string
@@ -42,12 +56,18 @@ export type TaskListRow = {
   updated_at: string
 }
 
+/**
+ * Minimal task projection used by existence checks before updates.
+ */
 export type TaskSummaryRow = {
   id: string
   title: string
   status: TaskRow['status']
 }
 
+/**
+ * Expanded task detail returned by `task show`.
+ */
 export type TaskDetail = {
   task: {
     id: string
@@ -90,6 +110,7 @@ export function createTaskStore(db: SqliteDatabase) {
     )
   `)
 
+  // Task creation must be atomic so task rows and task targets never drift.
   const createTaskTx = db.transaction((input: { task: TaskRow; targets: TaskTargetRow[] }) => {
     insertTaskStmt.run(input.task)
 
@@ -139,15 +160,19 @@ export function createTaskStore(db: SqliteDatabase) {
   `)
 
   return {
+    /** Inserts a task and all of its targets in a single transaction. */
     createTask(input: { task: TaskRow; targets: TaskTargetRow[] }): void {
       createTaskTx(input)
     },
+    /** Returns the number of task rows for test verification. */
     countTasks(): number {
       return countRows(db, 'task')
     },
+    /** Returns the number of task target rows for test verification. */
     countTaskTargets(): number {
       return countRows(db, 'task_target')
     },
+    /** Lists tasks for one project with an optional status filter. */
     listTasks(input: {
       projectId: string
       status?: TaskRow['status']
@@ -157,6 +182,7 @@ export function createTaskStore(db: SqliteDatabase) {
         status: input.status ?? null,
       }) as TaskListRow[]
     },
+    /** Returns the minimal task summary required before status mutations. */
     getTaskById(input: {
       projectId: string
       taskId: string
@@ -168,6 +194,7 @@ export function createTaskStore(db: SqliteDatabase) {
         }) as TaskSummaryRow | undefined) ?? null
       )
     },
+    /** Updates task status and reports whether a row was changed. */
     updateTaskStatus(input: {
       projectId: string
       taskId: string
@@ -183,6 +210,7 @@ export function createTaskStore(db: SqliteDatabase) {
 
       return result.changes > 0
     },
+    /** Loads task detail together with repository-backed targets. */
     getTaskDetail(input: {
       projectId: string
       taskId: string

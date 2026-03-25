@@ -1,20 +1,37 @@
+/**
+ * @file src/cli/main.ts
+ * @author michaeljou
+ */
+
 import os from 'node:os'
 
-import type { CliRuntimeContext } from './runtime-context.js'
-import { runTaskCreateCommand } from '../commands/task/task-create-command.js'
-import { runTaskListCommand } from '../commands/task/task-list-command.js'
-import { runTaskShowCommand } from '../commands/task/task-show-command.js'
-import { runTaskUpdateStatusCommand } from '../commands/task/task-update-status-command.js'
-import { runInitCommand } from '../commands/init/init-command.js'
-import type { CliResult, InitCommandContext } from '../commands/init/init-types.js'
-import { parseArgs } from './parse-args.js'
+import type { CliRuntimeContext } from '@/cli/runtime-context.js'
+import { parseArgs } from '@/cli/parse-args.js'
+import { runConfigSetLanguageCommand } from '@/commands/config/config-set-language-command.js'
+import { runInitCommand } from '@/commands/init/init-command.js'
+import type { CliResult, InitCommandContext } from '@/commands/init/init-types.js'
+import { runTaskCreateCommand } from '@/commands/task/task-create-command.js'
+import { runTaskListCommand } from '@/commands/task/task-list-command.js'
+import { runTaskShowCommand } from '@/commands/task/task-show-command.js'
+import { runTaskUpdateStatusCommand } from '@/commands/task/task-update-status-command.js'
+import { resolveInterfaceLanguage } from '@/config/global-config.js'
+import { getMessages } from '@/i18n/messages.js'
 
+/**
+ * CLI entrypoint that resolves the effective language and dispatches to the
+ * concrete command handler.
+ */
 export async function main(
   argv: string[],
   context: Partial<CliRuntimeContext> = {},
 ): Promise<CliResult> {
   const args = parseArgs(argv)
+  const homeDir = context.homeDir ?? os.homedir()
+  const interfaceLanguage = context.interfaceLanguage ?? await resolveInterfaceLanguage({ homeDir })
+  const messages = getMessages(interfaceLanguage)
 
+  // Help for init is kept as a lightweight fast path because it does not need
+  // the full command dependency graph.
   if (args.command === 'init' && args.help) {
     return {
       exitCode: 0,
@@ -36,8 +53,9 @@ export async function main(
       {
         binName: context.binName ?? 'foxpilot',
         cwd: context.cwd ?? process.cwd(),
-        homeDir: context.homeDir ?? os.homedir(),
+        homeDir,
         stdin: [...(context.stdin ?? [])],
+        interfaceLanguage,
         dependencies: context.dependencies as InitCommandContext['dependencies'],
       },
     )
@@ -59,8 +77,9 @@ export async function main(
       {
         binName: context.binName ?? 'foxpilot',
         cwd: context.cwd ?? process.cwd(),
-        homeDir: context.homeDir ?? os.homedir(),
+        homeDir,
         stdin: [...(context.stdin ?? [])],
+        interfaceLanguage,
         dependencies: context.dependencies,
       },
     )
@@ -78,8 +97,9 @@ export async function main(
       {
         binName: context.binName ?? 'foxpilot',
         cwd: context.cwd ?? process.cwd(),
-        homeDir: context.homeDir ?? os.homedir(),
+        homeDir,
         stdin: [...(context.stdin ?? [])],
+        interfaceLanguage,
         dependencies: context.dependencies,
       },
     )
@@ -98,8 +118,9 @@ export async function main(
       {
         binName: context.binName ?? 'foxpilot',
         cwd: context.cwd ?? process.cwd(),
-        homeDir: context.homeDir ?? os.homedir(),
+        homeDir,
         stdin: [...(context.stdin ?? [])],
+        interfaceLanguage,
         dependencies: context.dependencies,
       },
     )
@@ -117,8 +138,28 @@ export async function main(
       {
         binName: context.binName ?? 'foxpilot',
         cwd: context.cwd ?? process.cwd(),
-        homeDir: context.homeDir ?? os.homedir(),
+        homeDir,
         stdin: [...(context.stdin ?? [])],
+        interfaceLanguage,
+        dependencies: context.dependencies,
+      },
+    )
+  }
+
+  if (args.command === 'config' && args.subcommand === 'set-language') {
+    return runConfigSetLanguageCommand(
+      {
+        command: 'config',
+        subcommand: 'set-language',
+        help: args.help,
+        lang: args.lang,
+      },
+      {
+        binName: context.binName ?? 'foxpilot',
+        cwd: context.cwd ?? process.cwd(),
+        homeDir,
+        stdin: [...(context.stdin ?? [])],
+        interfaceLanguage,
         dependencies: context.dependencies,
       },
     )
@@ -126,6 +167,6 @@ export async function main(
 
   return {
     exitCode: 1,
-    stdout: 'unknown command',
+    stdout: messages.common.unknownCommand,
   }
 }

@@ -1,25 +1,56 @@
+/**
+ * @file src/cli/parse-args.ts
+ * @author michaeljou
+ */
+
+import type { InterfaceLanguage } from '@/i18n/interface-language.js'
+
+/**
+ * Parsed CLI arguments normalized into the command model used by `main`.
+ */
 export type CliArgs = {
+  /** Top-level command name such as `init`, `task`, or `config`. */
   command?: string
+  /** Second-level command name for grouped commands. */
   subcommand?: string
+  /** Whether help output should short-circuit normal execution. */
   help: boolean
+  /** Optional project root override. */
   path?: string
+  /** Optional project slug or display source name. */
   name?: string
+  /** Optional workspace root override. */
   workspaceRoot?: string
+  /** Init execution mode. */
   mode: 'interactive' | 'non-interactive'
+  /** Whether repository scanning should be skipped during init. */
   noScan: boolean
+  /** Manual task title. */
   title?: string
+  /** Manual task description. */
   description?: string
+  /** Task priority used for initial creation. */
   priority: 'P0' | 'P1' | 'P2' | 'P3'
+  /** Task type category used for routing and display. */
   taskType: 'generic' | 'frontend' | 'backend' | 'cross_repo' | 'docs' | 'init'
+  /** Optional repository selector for scoped task creation. */
   repository?: string
+  /** Optional status filter or target status. */
   status?: 'todo' | 'analyzing' | 'awaiting_plan_confirm' | 'executing' | 'awaiting_result_confirm' | 'done' | 'blocked' | 'cancelled'
+  /** Optional task identifier used by detail and update commands. */
   id?: string
+  /** Optional interface language used by config commands. */
+  lang?: InterfaceLanguage
 }
 
+/**
+ * Parses raw argv into a command-centric object so command handlers stay
+ * focused on behavior instead of token walking.
+ */
 export function parseArgs(argv: string[]): CliArgs {
   const [command] = argv
-  const subcommand = command === 'task' ? argv[1] : undefined
-  const rest = command === 'task' ? argv.slice(2) : argv.slice(1)
+  const subcommand = command === 'task' || command === 'config' ? argv[1] : undefined
+  const rest = command === 'task' || command === 'config' ? argv.slice(2) : argv.slice(1)
   let path: string | undefined
   let name: string | undefined
   let workspaceRoot: string | undefined
@@ -31,6 +62,7 @@ export function parseArgs(argv: string[]): CliArgs {
   let taskType: 'generic' | 'frontend' | 'backend' | 'cross_repo' | 'docs' | 'init' = 'generic'
   let repository: string | undefined
   let id: string | undefined
+  let lang: InterfaceLanguage | undefined
   let status:
     | 'todo'
     | 'analyzing'
@@ -140,6 +172,15 @@ export function parseArgs(argv: string[]): CliArgs {
         status = nextValue
       }
       index += 1
+      continue
+    }
+
+    if (value === '--lang') {
+      const nextValue = rest[index + 1]
+      if (nextValue === 'zh-CN' || nextValue === 'en-US' || nextValue === 'ja-JP') {
+        lang = nextValue
+      }
+      index += 1
     }
   }
 
@@ -159,5 +200,6 @@ export function parseArgs(argv: string[]): CliArgs {
     repository,
     status,
     id,
+    lang,
   }
 }

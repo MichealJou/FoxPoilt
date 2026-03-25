@@ -1,9 +1,17 @@
-import type { CliRuntimeContext } from '../../cli/runtime-context.js'
-import type { readGlobalConfig } from '../../config/global-config.js'
-import type { bootstrapDatabase } from '../../db/bootstrap.js'
-import type { createTaskStore } from '../../db/task-store.js'
-import type { resolveManagedProject } from '../../project/resolve-project.js'
+/**
+ * @file src/commands/task/task-create-types.ts
+ * @author michaeljou
+ */
 
+import type { CliRuntimeContext } from '@/cli/runtime-context.js'
+import type { readGlobalConfig } from '@/config/global-config.js'
+import type { bootstrapDatabase } from '@/db/bootstrap.js'
+import type { createTaskStore } from '@/db/task-store.js'
+import type { resolveManagedProject } from '@/project/resolve-project.js'
+
+/**
+ * Normalized arguments for `task create`.
+ */
 export type TaskCreateArgs = {
   command: 'task'
   subcommand: 'create'
@@ -16,6 +24,9 @@ export type TaskCreateArgs = {
   repository?: string
 }
 
+/**
+ * Injectable collaborators used by task creation.
+ */
 export type TaskCreateDependencies = {
   readGlobalConfig: typeof readGlobalConfig
   resolveManagedProject: typeof resolveManagedProject
@@ -23,6 +34,9 @@ export type TaskCreateDependencies = {
   createTaskStore: typeof createTaskStore
 }
 
+/**
+ * Runtime context used while creating tasks.
+ */
 export type TaskCreateContext = CliRuntimeContext & {
   dependencies?: Partial<TaskCreateDependencies>
 }

@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest'
 
-import { createTempDir, removeTempDir } from '../helpers/tmp-dir.js'
+import { createTempDir, removeTempDir } from '@tests/helpers/tmp-dir.js'
 
 type CatalogStore = {
   upsertWorkspaceRoot: (input: {
@@ -55,8 +55,8 @@ async function loadModules(): Promise<{
   createCatalogStore: (db: unknown) => CatalogStore
 }> {
   try {
-    const bootstrap = await import('../../src/db/bootstrap.js')
-    const store = await import('../../src/db/catalog-store.js')
+    const bootstrap = await import('@/db/bootstrap.js')
+    const store = await import('@/db/catalog-store.js')
 
     return {
       bootstrapDatabase: bootstrap.bootstrapDatabase,

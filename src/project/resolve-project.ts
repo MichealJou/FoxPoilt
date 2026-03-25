@@ -1,11 +1,19 @@
+/**
+ * @file src/project/resolve-project.ts
+ * @author michaeljou
+ */
+
 import { access } from 'node:fs/promises'
 import path from 'node:path'
 
-import { readJsonFile } from '../core/json-file.js'
-import { resolveProjectConfigPath } from '../core/paths.js'
+import { readJsonFile } from '@/core/json-file.js'
+import { resolveProjectConfigPath } from '@/core/paths.js'
 
-import type { ProjectConfig, ProjectRepositoryConfig } from './project-config.js'
+import type { ProjectConfig, ProjectRepositoryConfig } from '@/project/project-config.js'
 
+/**
+ * Raised when a CLI command is executed outside a managed project.
+ */
 export class ProjectNotInitializedError extends Error {
   constructor(
     public readonly projectRoot: string,
@@ -16,6 +24,10 @@ export class ProjectNotInitializedError extends Error {
   }
 }
 
+/**
+ * Raised when a task command references a repository that does not exist in
+ * the project config.
+ */
 export class RepositoryTargetNotFoundError extends Error {
   constructor(public readonly repositorySelector: string) {
     super(`Repository target not found: ${repositorySelector}`)
@@ -35,6 +47,8 @@ async function fileExists(targetPath: string): Promise<boolean> {
 async function findManagedProjectRoot(startPath: string): Promise<string | null> {
   let currentPath = path.resolve(startPath)
 
+  // Walk upward until a managed project marker is found or the filesystem root
+  // is reached.
   while (true) {
     if (await fileExists(resolveProjectConfigPath(currentPath))) {
       return currentPath
@@ -49,6 +63,10 @@ async function findManagedProjectRoot(startPath: string): Promise<string | null>
   }
 }
 
+/**
+ * Resolves the active managed project either from `--path` or by walking up
+ * from the current working directory.
+ */
 export async function resolveManagedProject(input: {
   cwd: string
   projectPath?: string
@@ -77,6 +95,9 @@ export async function resolveManagedProject(input: {
   }
 }
 
+/**
+ * Resolves an optional repository selector against the initialized project.
+ */
 export function resolveRepositoryTarget(
   projectConfig: ProjectConfig,
   repositorySelector?: string,

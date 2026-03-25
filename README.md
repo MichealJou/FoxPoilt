@@ -1,25 +1,20 @@
-# FoxPilot Workspace
+# FoxPilot
+
+中文 | [English](./README.en.md) | [日本語](./README.ja.md)
 
 FoxPilot 是一个面向本地开发环境的多项目任务中控工具。
 
-当前工作区用于沉淀：
+当前仓库提供的主要能力：
 
-- 产品定义
-- 数据结构设计
-- 协作规则
-- 后续实现计划
+- `foxpilot init` / `fp init`
+- `foxpilot config set-language`
+- `foxpilot task create`
+- `foxpilot task list`
+- `foxpilot task show`
+- `foxpilot task update-status`
 
-## 第一阶段目标
+阅读完整中文说明：
 
-第一阶段先不做完整界面，优先完成：
+- [README.zh-CN.md](./README.zh-CN.md)
 
-- 项目与仓库模型定义
-- 任务模型与状态流转定义
-- `Beads + Superpowers + Codex` 协作规则
-- 后续初始化工具与桌面端的设计基础
-
-## 目录说明
-
-- `docs/specs/`：产品定义、架构设计、数据结构设计
-- `docs/workspace/`：任务工作区、计划、进度和模板
-
+当前默认交互语言为中文，首次交互式初始化时可选择中文、英文或日文，后续也可以通过 `config set-language` 单独切换。

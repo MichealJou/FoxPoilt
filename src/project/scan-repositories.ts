@@ -1,8 +1,16 @@
+/**
+ * @file src/project/scan-repositories.ts
+ * @author michaeljou
+ */
+
 import { access, readdir } from 'node:fs/promises'
 import path from 'node:path'
 
-import type { ProjectRepositoryConfig } from './project-config.js'
+import type { ProjectRepositoryConfig } from '@/project/project-config.js'
 
+/**
+ * Checks whether a directory contains a Git repository marker.
+ */
 async function isGitRepository(targetPath: string): Promise<boolean> {
   try {
     await access(path.join(targetPath, '.git'))
@@ -12,6 +20,9 @@ async function isGitRepository(targetPath: string): Promise<boolean> {
   }
 }
 
+/**
+ * Builds the fallback repository descriptor for the project root.
+ */
 function createRootCandidate(projectRoot: string, repoType: 'git' | 'directory'): ProjectRepositoryConfig {
   return {
     name: path.basename(projectRoot) || 'root',
@@ -21,6 +32,10 @@ function createRootCandidate(projectRoot: string, repoType: 'git' | 'directory')
   }
 }
 
+/**
+ * Scans the project root for repository candidates. The current MVP only
+ * detects the root repo and direct child Git repositories.
+ */
 export async function scanRepositories(
   projectRoot: string,
   options: { noScan?: boolean } = {},

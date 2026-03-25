@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest'
 
-import { createTempDir, removeTempDir } from '../helpers/tmp-dir.js'
+import { createTempDir, removeTempDir } from '@tests/helpers/tmp-dir.js'
 
 type DatabaseLike = {
   close?: () => void
@@ -130,8 +130,8 @@ async function loadModules(): Promise<{
   }
   createTaskStore: (db: unknown) => TaskStore
 }> {
-  const bootstrap = await import('../../src/db/bootstrap.js')
-  const catalogStore = await import('../../src/db/catalog-store.js')
+  const bootstrap = await import('@/db/bootstrap.js')
+  const catalogStore = await import('@/db/catalog-store.js')
   const taskStore = await import('../../src/db/task-store.js')
 
   return {

@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import { mkdir } from 'node:fs/promises'
 
-import { createTempDir, removeTempDir } from '../helpers/tmp-dir.js'
+import { createTempDir, removeTempDir } from '@tests/helpers/tmp-dir.js'
 
 type RepositoryCandidate = {
   name: string

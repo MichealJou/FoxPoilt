@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest'
 
-import { createTempDir, removeTempDir } from '../helpers/tmp-dir.js'
+import { createTempDir, removeTempDir } from '@tests/helpers/tmp-dir.js'
 
 type WriteProjectConfig = (input: {
   projectRoot: string
@@ -34,7 +34,7 @@ async function loadProjectConfigModule(): Promise<{
   ProjectAlreadyInitializedError: ErrorClass
 }> {
   try {
-    return await import('../../src/project/project-config.js')
+    return await import('@/project/project-config.js')
   } catch {
     return {
       writeProjectConfig: async () => ({

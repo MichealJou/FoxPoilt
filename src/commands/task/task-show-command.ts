@@ -1,11 +1,20 @@
-import type { CliResult } from '../init/init-types.js'
-import { bootstrapDatabase } from '../../db/bootstrap.js'
-import { createTaskStore } from '../../db/task-store.js'
-import { resolveGlobalDatabasePath } from '../../core/paths.js'
-import { ProjectNotInitializedError, resolveManagedProject } from '../../project/resolve-project.js'
+/**
+ * @file src/commands/task/task-show-command.ts
+ * @author michaeljou
+ */
 
-import type { TaskShowArgs, TaskShowContext, TaskShowDependencies } from './task-show-types.js'
+import type { CliResult } from '@/commands/init/init-types.js'
+import { bootstrapDatabase } from '@/db/bootstrap.js'
+import { createTaskStore } from '@/db/task-store.js'
+import { resolveGlobalDatabasePath } from '@/core/paths.js'
+import { getMessages } from '@/i18n/messages.js'
+import { ProjectNotInitializedError, resolveManagedProject } from '@/project/resolve-project.js'
 
+import type { TaskShowArgs, TaskShowContext, TaskShowDependencies } from '@/commands/task/task-show-types.js'
+
+/**
+ * Resolves the default dependency set for task detail lookup.
+ */
 function getDependencies(
   overrides: Partial<TaskShowDependencies> = {},
 ): TaskShowDependencies {
@@ -26,10 +35,15 @@ function buildHelpText(): string {
   ].join('\n')
 }
 
+/**
+ * Loads one task together with its targets for human-readable inspection.
+ */
 export async function runTaskShowCommand(
   args: TaskShowArgs,
   context: TaskShowContext,
 ): Promise<CliResult> {
+  const messages = getMessages(context.interfaceLanguage)
+
   if (args.help) {
     return {
       exitCode: 0,
@@ -40,7 +54,7 @@ export async function runTaskShowCommand(
   if (!args.id?.trim()) {
     return {
       exitCode: 1,
-      stdout: '[FoxPilot] 任务详情失败: id 不能为空',
+      stdout: messages.taskShow.idRequired,
     }
   }
 
@@ -56,7 +70,7 @@ export async function runTaskShowCommand(
     if (error instanceof ProjectNotInitializedError) {
       return {
         exitCode: 1,
-        stdout: `[FoxPilot] 任务详情失败: 项目尚未初始化\n- projectRoot: ${error.projectRoot}`,
+        stdout: `${messages.taskShow.projectNotInitialized}\n- projectRoot: ${error.projectRoot}`,
       }
     }
 
@@ -75,13 +89,13 @@ export async function runTaskShowCommand(
   if (!detail) {
     return {
       exitCode: 1,
-      stdout: `[FoxPilot] 任务详情失败: 未找到任务\n- taskId: ${args.id.trim()}`,
+      stdout: `${messages.taskShow.taskNotFound}\n- taskId: ${args.id.trim()}`,
     }
   }
 
   const targetLines =
     detail.targets.length === 0
-      ? ['- (none)']
+      ? [messages.taskShow.noTargets]
       : detail.targets.map((target, index) => {
           const targetValue = target.repository_path ?? target.target_value ?? '(none)'
           return `${index + 1}. [${target.target_type}] ${targetValue}`
@@ -90,7 +104,7 @@ export async function runTaskShowCommand(
   return {
     exitCode: 0,
     stdout: [
-      '[FoxPilot] 任务详情',
+      messages.taskShow.title,
       `- projectRoot: ${managedProject.projectRoot}`,
       `- taskId: ${detail.task.id}`,
       `- title: ${detail.task.title}`,
@@ -101,7 +115,7 @@ export async function runTaskShowCommand(
       `- updatedAt: ${detail.task.updated_at}`,
       `- description: ${detail.task.description ?? ''}`,
       '',
-      '[FoxPilot] 任务目标',
+      messages.taskShow.targetsTitle,
       ...targetLines,
     ].join('\n'),
   }

@@ -3,8 +3,8 @@ import path from 'node:path'
 
 import { afterEach, describe, expect, it } from 'vitest'
 
-import { runCli } from '../helpers/run-cli.js'
-import { createTempDir, removeTempDir } from '../helpers/tmp-dir.js'
+import { runCli } from '@tests/helpers/run-cli.js'
+import { createTempDir, removeTempDir } from '@tests/helpers/tmp-dir.js'
 
 const tempDirs: string[] = []
 

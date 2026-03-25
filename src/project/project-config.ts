@@ -1,23 +1,46 @@
+/**
+ * @file src/project/project-config.ts
+ * @author michaeljou
+ */
+
 import { access } from 'node:fs/promises'
 
-import { writeJsonFile } from '../core/json-file.js'
-import { resolveProjectConfigPath } from '../core/paths.js'
+import { writeJsonFile } from '@/core/json-file.js'
+import { resolveProjectConfigPath } from '@/core/paths.js'
 
+/**
+ * Repository metadata persisted inside `.foxpilot/project.json`.
+ */
 export type ProjectRepositoryConfig = {
+  /** Stable repository name shown in CLI output. */
   name: string
+  /** Path relative to the project root. */
   path: string
+  /** Repository classification discovered during init. */
   repoType: 'git' | 'directory' | 'subrepo'
+  /** Human-readable language stack summary. */
   languageStack: string
 }
 
+/**
+ * Managed project configuration written into each initialized project.
+ */
 export type ProjectConfig = {
+  /** Stable project slug used by catalog rows. */
   name: string
+  /** Human-readable display name derived from the slug. */
   displayName: string
+  /** Absolute project root path. */
   rootPath: string
+  /** Current project management status. */
   status: 'managed'
+  /** Repository entries contained by the managed project. */
   repositories: ProjectRepositoryConfig[]
 }
 
+/**
+ * Raised when the command tries to write over an existing project config.
+ */
 export class ProjectAlreadyInitializedError extends Error {
   constructor(public readonly configPath: string) {
     super(`Project already initialized: ${configPath}`)
@@ -25,6 +48,9 @@ export class ProjectAlreadyInitializedError extends Error {
   }
 }
 
+/**
+ * Converts a slug-like project name into a human-friendly display string.
+ */
 export function deriveProjectDisplayName(name: string): string {
   return name
     .split(/[-_]+/)
@@ -53,6 +79,8 @@ export async function writeProjectConfig(input: {
     throw new ProjectAlreadyInitializedError(configPath)
   }
 
+  // Persist the exact init result so later commands can resolve repositories
+  // without re-running discovery heuristics.
   const config: ProjectConfig = {
     name: input.name,
     displayName: deriveProjectDisplayName(input.name),

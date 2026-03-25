@@ -1,20 +1,29 @@
+/**
+ * @file src/commands/task/task-create-command.ts
+ * @author michaeljou
+ */
+
 import { randomUUID } from 'node:crypto'
 import path from 'node:path'
 
-import type { CliResult } from '../init/init-types.js'
-import { readGlobalConfig, GlobalConfigParseError } from '../../config/global-config.js'
-import { bootstrapDatabase } from '../../db/bootstrap.js'
-import { createTaskStore, type TaskTargetRow } from '../../db/task-store.js'
-import { resolveGlobalDatabasePath } from '../../core/paths.js'
+import type { CliResult } from '@/commands/init/init-types.js'
+import { readGlobalConfig, GlobalConfigParseError } from '@/config/global-config.js'
+import { bootstrapDatabase } from '@/db/bootstrap.js'
+import { createTaskStore, type TaskTargetRow } from '@/db/task-store.js'
+import { resolveGlobalDatabasePath } from '@/core/paths.js'
+import { getMessages } from '@/i18n/messages.js'
 import {
   ProjectNotInitializedError,
   RepositoryTargetNotFoundError,
   resolveManagedProject,
   resolveRepositoryTarget,
-} from '../../project/resolve-project.js'
+} from '@/project/resolve-project.js'
 
-import type { TaskCreateArgs, TaskCreateContext, TaskCreateDependencies } from './task-create-types.js'
+import type { TaskCreateArgs, TaskCreateContext, TaskCreateDependencies } from '@/commands/task/task-create-types.js'
 
+/**
+ * Resolves the default dependency set for task creation.
+ */
 function getDependencies(
   overrides: Partial<TaskCreateDependencies> = {},
 ): TaskCreateDependencies {
@@ -52,10 +61,15 @@ function resolveExecutor(defaultExecutor: string): 'codex' | 'beads' | 'none' {
   return 'none'
 }
 
+/**
+ * Creates a manual task for the current managed project.
+ */
 export async function runTaskCreateCommand(
   args: TaskCreateArgs,
   context: TaskCreateContext,
 ): Promise<CliResult> {
+  const messages = getMessages(context.interfaceLanguage)
+
   if (args.help) {
     return {
       exitCode: 0,
@@ -66,7 +80,7 @@ export async function runTaskCreateCommand(
   if (!args.title?.trim()) {
     return {
       exitCode: 1,
-      stdout: buildErrorOutput('[FoxPilot] 任务创建失败: title 不能为空'),
+      stdout: buildErrorOutput(messages.taskCreate.titleRequired),
     }
   }
 
@@ -79,7 +93,7 @@ export async function runTaskCreateCommand(
     if (error instanceof GlobalConfigParseError) {
       return {
         exitCode: 3,
-        stdout: buildErrorOutput('[FoxPilot] 任务创建失败: foxpilot.config.json 格式错误', [
+        stdout: buildErrorOutput(messages.taskCreate.malformedGlobalConfig, [
           `- ${error.configPath}`,
         ]),
       }
@@ -98,7 +112,7 @@ export async function runTaskCreateCommand(
     if (error instanceof ProjectNotInitializedError) {
       return {
         exitCode: 1,
-        stdout: buildErrorOutput('[FoxPilot] 任务创建失败: 项目尚未初始化', [
+        stdout: buildErrorOutput(messages.taskCreate.projectNotInitialized, [
           `- projectRoot: ${path.resolve(context.cwd, args.path ?? '.')}`,
         ]),
       }
@@ -114,7 +128,7 @@ export async function runTaskCreateCommand(
     if (error instanceof RepositoryTargetNotFoundError) {
       return {
         exitCode: 1,
-        stdout: buildErrorOutput('[FoxPilot] 任务创建失败: 未找到仓库目标', [
+        stdout: buildErrorOutput(messages.taskCreate.repositoryNotFound, [
           `- repository: ${error.repositorySelector}`,
         ]),
       }
@@ -169,7 +183,7 @@ export async function runTaskCreateCommand(
     db.close()
     return {
       exitCode: 1,
-      stdout: buildErrorOutput('[FoxPilot] 任务创建失败: 项目未接入全局索引', [
+      stdout: buildErrorOutput(messages.taskCreate.projectNotIndexed, [
         `- projectRoot: ${managedProject.projectRoot}`,
       ]),
     }
@@ -180,7 +194,7 @@ export async function runTaskCreateCommand(
   return {
     exitCode: 0,
     stdout: [
-      '[FoxPilot] 已创建任务',
+      messages.taskCreate.created,
       `- projectRoot: ${managedProject.projectRoot}`,
       `- taskId: ${taskId}`,
       `- title: ${args.title.trim()}`,

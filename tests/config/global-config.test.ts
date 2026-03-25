@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest'
 
-import { createTempDir, removeTempDir } from '../helpers/tmp-dir.js'
+import { createTempDir, removeTempDir } from '@tests/helpers/tmp-dir.js'
 
 type EnsureGlobalConfig = (input: { homeDir: string; workspaceRoot?: string }) => Promise<{
   configPath: string
@@ -9,6 +9,7 @@ type EnsureGlobalConfig = (input: { homeDir: string; workspaceRoot?: string }) =
     defaultProjectMode: string
     defaultTaskView: string
     defaultExecutor: string
+    interfaceLanguage: 'zh-CN' | 'en-US' | 'ja-JP'
   }
 }>
 
@@ -22,7 +23,7 @@ async function loadGlobalConfigModule(): Promise<{
   GlobalConfigParseError: ErrorClass
 }> {
   try {
-    return await import('../../src/config/global-config.js')
+    return await import('@/config/global-config.js')
   } catch {
     return {
       ensureGlobalConfig: async () => ({
@@ -32,6 +33,7 @@ async function loadGlobalConfigModule(): Promise<{
           defaultProjectMode: '',
           defaultTaskView: '',
           defaultExecutor: '',
+          interfaceLanguage: 'zh-CN',
         },
       }),
       findMatchingWorkspaceRoot: () => null,
@@ -56,6 +58,7 @@ describe('global config', () => {
 
     expect(result.configPath).toBe(`${tempHome}/.foxpilot/foxpilot.config.json`)
     expect(result.config.defaultExecutor).toBe('codex')
+    expect(result.config.interfaceLanguage).toBe('zh-CN')
   })
 
   it('merges workspace roots without overwriting existing defaults', async () => {
@@ -71,6 +74,22 @@ describe('global config', () => {
       '/Users/program/demo',
     ])
     expect(result.config.defaultExecutor).toBe('codex')
+  })
+
+  it('updates the stored interface language without losing workspace roots', async () => {
+    const tempHome = await createTempDir('foxpilot-home-')
+    tempDirs.push(tempHome)
+    const { ensureGlobalConfig } = await loadGlobalConfigModule()
+
+    await ensureGlobalConfig({ homeDir: tempHome, workspaceRoot: '/Users/program/code' })
+    const result = await ensureGlobalConfig({
+      homeDir: tempHome,
+      workspaceRoot: '/Users/program/code',
+      interfaceLanguage: 'en-US',
+    } as Parameters<EnsureGlobalConfig>[0])
+
+    expect(result.config.workspaceRoots).toEqual(['/Users/program/code'])
+    expect(result.config.interfaceLanguage).toBe('en-US')
   })
 
   it('throws a typed error when global config json is malformed', async () => {

@@ -1,3 +1,8 @@
+/**
+ * @file src/commands/init/init-command.ts
+ * @author michaeljou
+ */
+
 import { access, readFile, rm, stat, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 
@@ -7,31 +12,40 @@ import {
   ensureGlobalConfig,
   findMatchingWorkspaceRoot,
   type GlobalConfig,
-} from '../../config/global-config.js'
+} from '@/config/global-config.js'
 import {
   createCatalogStore,
   type ProjectCatalogInput,
   type ProjectRow,
   type RepositoryRow,
   type WorkspaceRootRow,
-} from '../../db/catalog-store.js'
-import { bootstrapDatabase } from '../../db/bootstrap.js'
-import { resolveGlobalConfigPath, resolveGlobalDatabasePath, resolveProjectConfigPath } from '../../core/paths.js'
+} from '@/db/catalog-store.js'
+import { bootstrapDatabase } from '@/db/bootstrap.js'
+import { resolveGlobalConfigPath, resolveGlobalDatabasePath, resolveProjectConfigPath } from '@/core/paths.js'
+import { isInterfaceLanguage, type InterfaceLanguage } from '@/i18n/interface-language.js'
+import { getMessages, type MessageCatalog } from '@/i18n/messages.js'
 import {
   ProjectAlreadyInitializedError,
   deriveProjectDisplayName,
   writeProjectConfig,
   type ProjectRepositoryConfig,
-} from '../../project/project-config.js'
-import { scanRepositories } from '../../project/scan-repositories.js'
+} from '@/project/project-config.js'
+import { scanRepositories } from '@/project/scan-repositories.js'
 
-import type { CliResult, InitArgs, InitCommandContext, InitCommandDependencies } from './init-types.js'
+import type { CliResult, InitArgs, InitCommandContext, InitCommandDependencies } from '@/commands/init/init-types.js'
 
+/**
+ * Snapshot of a file before init starts mutating local or global state.
+ */
 type FileSnapshot = {
   exists: boolean
   content?: string
 }
 
+/**
+ * Resolves the default dependency set while allowing tests to override only
+ * the collaborators they care about.
+ */
 function getDependencies(
   overrides: Partial<InitCommandDependencies> = {},
 ): InitCommandDependencies {
@@ -63,6 +77,9 @@ async function captureFileSnapshot(targetPath: string): Promise<FileSnapshot> {
   }
 }
 
+/**
+ * Restores a file to the exact pre-init state captured earlier.
+ */
 async function restoreFileSnapshot(targetPath: string, snapshot: FileSnapshot): Promise<void> {
   if (!snapshot.exists) {
     await rm(targetPath, { force: true })
@@ -127,25 +144,45 @@ function createRepositoryRows(
   }))
 }
 
-function parseStoredGlobalConfig(rawContent: string, configPath: string): GlobalConfig {
+/**
+ * Parses raw global config while preserving whether the language was explicitly
+ * chosen by the user. Init uses that signal to decide whether it must ask.
+ */
+function parseStoredGlobalConfig(rawContent: string, configPath: string): {
+  config: GlobalConfig
+  hasStoredInterfaceLanguage: boolean
+} {
   try {
     const parsed = JSON.parse(rawContent) as Partial<GlobalConfig>
+    let interfaceLanguage: InterfaceLanguage = defaultGlobalConfig.interfaceLanguage
+    if (parsed.interfaceLanguage && isInterfaceLanguage(parsed.interfaceLanguage)) {
+      interfaceLanguage = parsed.interfaceLanguage
+    }
+
     return {
-      ...defaultGlobalConfig,
-      ...parsed,
-      workspaceRoots: Array.isArray(parsed.workspaceRoots)
-        ? parsed.workspaceRoots.filter((item): item is string => typeof item === 'string')
-        : [],
+      config: {
+        ...defaultGlobalConfig,
+        ...parsed,
+        workspaceRoots: Array.isArray(parsed.workspaceRoots)
+          ? parsed.workspaceRoots.filter((item): item is string => typeof item === 'string')
+          : [],
+        interfaceLanguage,
+      },
+      hasStoredInterfaceLanguage: isInterfaceLanguage(parsed.interfaceLanguage ?? ''),
     }
   } catch (error) {
     throw new GlobalConfigParseError(configPath, { cause: error })
   }
 }
 
+/**
+ * Loads the mutable global config state together with a rollback snapshot.
+ */
 async function loadGlobalConfigSnapshot(homeDir: string): Promise<{
   configPath: string
   snapshot: FileSnapshot
   config: GlobalConfig
+  hasStoredInterfaceLanguage: boolean
 }> {
   const configPath = resolveGlobalConfigPath(homeDir)
   const snapshot = await captureFileSnapshot(configPath)
@@ -155,13 +192,17 @@ async function loadGlobalConfigSnapshot(homeDir: string): Promise<{
       configPath,
       snapshot,
       config: defaultGlobalConfig,
+      hasStoredInterfaceLanguage: false,
     }
   }
+
+  const parsedConfig = parseStoredGlobalConfig(snapshot.content ?? '', configPath)
 
   return {
     configPath,
     snapshot,
-    config: parseStoredGlobalConfig(snapshot.content ?? '', configPath),
+    config: parsedConfig.config,
+    hasStoredInterfaceLanguage: parsedConfig.hasStoredInterfaceLanguage,
   }
 }
 
@@ -179,6 +220,22 @@ function promptConfirm(lines: string[], stdin: string[], ...promptLines: string[
   return isAffirmative(consumeAnswer(stdin))
 }
 
+function selectInterfaceLanguage(lines: string[], stdin: string[]): InterfaceLanguage {
+  lines.push(getMessages('zh-CN').init.selectInterfaceLanguage)
+  lines.push(...getMessages('zh-CN').init.languageChoices)
+  const answer = consumeAnswer(stdin).toLowerCase()
+
+  if (answer === '2' || answer === 'en' || answer === 'en-us' || answer === 'english') {
+    return 'en-US'
+  }
+
+  if (answer === '3' || answer === 'ja' || answer === 'ja-jp' || answer === '日本語') {
+    return 'ja-JP'
+  }
+
+  return 'zh-CN'
+}
+
 function buildHelpText(): string {
   return [
     'foxpilot init',
@@ -192,6 +249,7 @@ function buildHelpText(): string {
 }
 
 function buildSuccessOutput(input: {
+  messages: MessageCatalog
   projectRoot: string
   projectName: string
   workspaceRoot: string
@@ -201,28 +259,28 @@ function buildSuccessOutput(input: {
   dbPath: string
 }): string {
   return [
-    '[FoxPilot] 初始化目标已确认',
+    input.messages.init.targetConfirmed,
     `- projectRoot: ${input.projectRoot}`,
     `- projectName: ${input.projectName}`,
     `- workspaceRoot: ${input.workspaceRoot}`,
     `- repositories: ${input.repositories.length}`,
     '',
-    '[FoxPilot] 已生成项目配置',
+    input.messages.init.projectConfigGenerated,
     `- ${input.projectConfigPath}`,
     '',
-    '[FoxPilot] 已确认全局配置',
+    input.messages.init.globalConfigConfirmed,
     `- ${input.globalConfigPath}`,
     '',
-    '[FoxPilot] 已确认全局数据库',
+    input.messages.init.globalDatabaseConfirmed,
     `- ${input.dbPath}`,
     '',
-    '[FoxPilot] 已写入项目索引',
+    input.messages.init.catalogWritten,
     '- workspace_root: upserted',
     '- project: upserted',
     `- repository: upserted(${input.repositories.length})`,
     '',
-    '[FoxPilot] 初始化完成',
-    '后续可继续执行任务登记、项目扫描建议或桌面端接管流程。',
+    input.messages.init.completed,
+    input.messages.init.completedNextStep,
   ].join('\n')
 }
 
@@ -230,11 +288,14 @@ function buildErrorOutput(title: string, detailLines: string[]): string {
   return [title, ...detailLines].join('\n')
 }
 
-async function validateProjectRoot(projectRoot: string): Promise<CliResult | null> {
+async function validateProjectRoot(
+  projectRoot: string,
+  messages: MessageCatalog,
+): Promise<CliResult | null> {
   if (!(await fileExists(projectRoot))) {
     return {
       exitCode: 1,
-      stdout: buildErrorOutput('[FoxPilot] 初始化失败: 目标路径不存在', [`- path: ${projectRoot}`]),
+      stdout: buildErrorOutput(messages.init.pathNotFound, [`- path: ${projectRoot}`]),
     }
   }
 
@@ -242,7 +303,7 @@ async function validateProjectRoot(projectRoot: string): Promise<CliResult | nul
   if (!stats.isDirectory()) {
     return {
       exitCode: 1,
-      stdout: buildErrorOutput('[FoxPilot] 初始化失败: 目标路径不是目录', [`- path: ${projectRoot}`]),
+      stdout: buildErrorOutput(messages.init.pathNotDirectory, [`- path: ${projectRoot}`]),
     }
   }
 
@@ -268,6 +329,7 @@ function resolveWorkspaceRoot(input: {
 async function runInteractivePrompts(input: {
   lines: string[]
   stdin: string[]
+  messages: MessageCatalog
   projectRoot: string
   projectName: string
   workspaceRoot: string
@@ -277,38 +339,38 @@ async function runInteractivePrompts(input: {
   projectName: string
   workspaceRoot: string
 }> {
-  const { lines, stdin, projectRoot, repositories } = input
+  const { lines, stdin, messages, projectRoot, repositories } = input
   let { projectName, workspaceRoot } = input
 
-  if (!promptConfirm(lines, stdin, `项目根目录: ${projectRoot}`, '是否使用这个目录初始化？ [Y/n]')) {
+  if (!promptConfirm(lines, stdin, messages.init.projectRootPrompt(projectRoot))) {
     return { cancelled: true, projectName, workspaceRoot }
   }
 
-  if (!promptConfirm(lines, stdin, `项目名默认为 ${projectName}，是否确认？ [Y/n]`)) {
-    lines.push('请输入项目名:')
+  if (!promptConfirm(lines, stdin, messages.init.projectNamePrompt(projectName))) {
+    lines.push(messages.init.enterProjectName)
     const customProjectName = consumeAnswer(stdin)
     if (customProjectName) {
       projectName = customProjectName
     }
   }
 
-  if (!promptConfirm(lines, stdin, `推断工作区根目录为 ${workspaceRoot}，是否确认？ [Y/n]`)) {
-    lines.push('请输入工作区根目录:')
+  if (!promptConfirm(lines, stdin, messages.init.workspaceRootPrompt(workspaceRoot))) {
+    lines.push(messages.init.enterWorkspaceRoot)
     const customWorkspaceRoot = consumeAnswer(stdin)
     if (customWorkspaceRoot) {
       workspaceRoot = customWorkspaceRoot
     }
   }
 
-  lines.push('识别到以下仓库候选:')
+  lines.push(messages.init.detectedRepositories)
   repositories.forEach((repository, index) => {
     lines.push(`${index + 1}. ${repository.name} -> ${repository.path}`)
   })
-  if (!promptConfirm(lines, stdin, '是否按该结果写入？ [Y/n]')) {
+  if (!promptConfirm(lines, stdin, messages.init.writeRepositoriesPrompt)) {
     return { cancelled: true, projectName, workspaceRoot }
   }
 
-  if (!promptConfirm(lines, stdin, '将生成项目配置并写入全局索引，是否继续？ [Y/n]')) {
+  if (!promptConfirm(lines, stdin, messages.init.continuePrompt)) {
     return { cancelled: true, projectName, workspaceRoot }
   }
 
@@ -319,6 +381,10 @@ async function runInteractivePrompts(input: {
   }
 }
 
+/**
+ * Rolls back global config and catalog writes when init fails after partial
+ * progress. This keeps retry behavior deterministic.
+ */
 async function cleanupAfterFailure(input: {
   globalConfigPath: string
   globalConfigSnapshot: FileSnapshot
@@ -334,7 +400,13 @@ async function cleanupAfterFailure(input: {
   }
 }
 
+/**
+ * Initializes a managed project, persists global config, boots the catalog
+ * database, and writes the project manifest with rollback on failure.
+ */
 export async function runInitCommand(args: InitArgs, context: InitCommandContext): Promise<CliResult> {
+  let messages = getMessages(context.interfaceLanguage)
+
   if (args.help) {
     return {
       exitCode: 0,
@@ -345,7 +417,7 @@ export async function runInitCommand(args: InitArgs, context: InitCommandContext
   const dependencies = getDependencies(context.dependencies)
   const projectRoot = path.resolve(context.cwd, args.path ?? '.')
   const projectConfigPath = resolveProjectConfigPath(projectRoot)
-  const validationError = await validateProjectRoot(projectRoot)
+  const validationError = await validateProjectRoot(projectRoot, messages)
 
   if (validationError) {
     return validationError
@@ -354,7 +426,7 @@ export async function runInitCommand(args: InitArgs, context: InitCommandContext
   if (await fileExists(projectConfigPath)) {
     return {
       exitCode: 2,
-      stdout: buildErrorOutput('[FoxPilot] 初始化中止: 项目已存在配置', [`- ${projectConfigPath}`]),
+      stdout: buildErrorOutput(messages.init.projectConfigExists, [`- ${projectConfigPath}`]),
     }
   }
 
@@ -365,7 +437,7 @@ export async function runInitCommand(args: InitArgs, context: InitCommandContext
     if (error instanceof GlobalConfigParseError) {
       return {
         exitCode: 3,
-        stdout: buildErrorOutput('[FoxPilot] 初始化失败: foxpilot.config.json 格式错误', [
+        stdout: buildErrorOutput(messages.init.malformedGlobalConfig, [
           `- ${error.configPath}`,
         ]),
       }
@@ -375,7 +447,19 @@ export async function runInitCommand(args: InitArgs, context: InitCommandContext
   }
 
   const lines: string[] = []
+  const interactiveInput = [...context.stdin]
   let projectName = args.name ?? (path.basename(projectRoot) || 'project')
+  let interfaceLanguage = globalConfigState.config.interfaceLanguage
+
+  // The first interactive run chooses the interface language once and persists
+  // it into global config for all later commands.
+  if (args.mode === 'interactive' && !globalConfigState.hasStoredInterfaceLanguage) {
+    interfaceLanguage = selectInterfaceLanguage(lines, interactiveInput)
+    messages = getMessages(interfaceLanguage)
+  } else {
+    messages = getMessages(interfaceLanguage)
+  }
+
   let workspaceRoot = resolveWorkspaceRoot({
     explicitWorkspaceRoot: args.workspaceRoot,
     cwd: context.cwd,
@@ -387,7 +471,8 @@ export async function runInitCommand(args: InitArgs, context: InitCommandContext
   if (args.mode === 'interactive') {
     const interactiveResult = await runInteractivePrompts({
       lines,
-      stdin: [...context.stdin],
+      stdin: interactiveInput,
+      messages,
       projectRoot,
       projectName,
       workspaceRoot,
@@ -397,7 +482,7 @@ export async function runInitCommand(args: InitArgs, context: InitCommandContext
     if (interactiveResult.cancelled) {
       return {
         exitCode: 1,
-        stdout: [...lines, '[FoxPilot] 初始化已取消'].join('\n'),
+        stdout: [...lines, messages.init.cancelled].join('\n'),
       }
     }
 
@@ -408,7 +493,7 @@ export async function runInitCommand(args: InitArgs, context: InitCommandContext
   if (!isWithin(workspaceRoot, projectRoot)) {
     return {
       exitCode: 1,
-      stdout: buildErrorOutput('[FoxPilot] 初始化失败: workspace root 不包含项目路径', [
+      stdout: buildErrorOutput(messages.init.workspaceRootMismatch, [
         `- workspaceRoot: ${workspaceRoot}`,
         `- projectRoot: ${projectRoot}`,
       ]),
@@ -420,12 +505,13 @@ export async function runInitCommand(args: InitArgs, context: InitCommandContext
     ensureResult = await dependencies.ensureGlobalConfig({
       homeDir: context.homeDir,
       workspaceRoot,
+      interfaceLanguage,
     })
   } catch (error) {
     if (error instanceof GlobalConfigParseError) {
       return {
         exitCode: 3,
-        stdout: buildErrorOutput('[FoxPilot] 初始化失败: foxpilot.config.json 格式错误', [
+        stdout: buildErrorOutput(messages.init.malformedGlobalConfig, [
           `- ${error.configPath}`,
         ]),
       }
@@ -434,7 +520,7 @@ export async function runInitCommand(args: InitArgs, context: InitCommandContext
     await restoreFileSnapshot(globalConfigState.configPath, globalConfigState.snapshot)
     return {
       exitCode: 1,
-      stdout: '[FoxPilot] 初始化失败: 全局配置写入失败',
+      stdout: messages.init.globalConfigWriteFailed,
     }
   }
 
@@ -451,7 +537,7 @@ export async function runInitCommand(args: InitArgs, context: InitCommandContext
     }
     return {
       exitCode: 4,
-      stdout: buildErrorOutput('[FoxPilot] 初始化失败: foxpilot.db 初始化失败', [`- ${dbPath}`]),
+      stdout: buildErrorOutput(messages.init.dbBootstrapFailed, [`- ${dbPath}`]),
     }
   }
 
@@ -476,7 +562,7 @@ export async function runInitCommand(args: InitArgs, context: InitCommandContext
     })
     return {
       exitCode: 1,
-      stdout: '[FoxPilot] 初始化失败: 项目索引写入失败',
+      stdout: messages.init.catalogWriteFailed,
     }
   }
 
@@ -500,13 +586,13 @@ export async function runInitCommand(args: InitArgs, context: InitCommandContext
     if (error instanceof ProjectAlreadyInitializedError) {
       return {
         exitCode: 2,
-        stdout: buildErrorOutput('[FoxPilot] 初始化中止: 项目已存在配置', [`- ${error.configPath}`]),
+        stdout: buildErrorOutput(messages.init.projectConfigExists, [`- ${error.configPath}`]),
       }
     }
 
     return {
       exitCode: 1,
-      stdout: '[FoxPilot] 初始化失败: 项目配置写入失败',
+      stdout: messages.init.projectConfigWriteFailed,
     }
   }
 
@@ -515,6 +601,7 @@ export async function runInitCommand(args: InitArgs, context: InitCommandContext
   return {
     exitCode: 0,
     stdout: [...lines, buildSuccessOutput({
+      messages,
       projectRoot,
       projectName,
       workspaceRoot,

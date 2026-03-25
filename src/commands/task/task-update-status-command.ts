@@ -1,15 +1,24 @@
-import type { CliResult } from '../init/init-types.js'
-import { bootstrapDatabase } from '../../db/bootstrap.js'
-import { createTaskStore } from '../../db/task-store.js'
-import { resolveGlobalDatabasePath } from '../../core/paths.js'
-import { ProjectNotInitializedError, resolveManagedProject } from '../../project/resolve-project.js'
+/**
+ * @file src/commands/task/task-update-status-command.ts
+ * @author michaeljou
+ */
+
+import type { CliResult } from '@/commands/init/init-types.js'
+import { bootstrapDatabase } from '@/db/bootstrap.js'
+import { createTaskStore } from '@/db/task-store.js'
+import { resolveGlobalDatabasePath } from '@/core/paths.js'
+import { getMessages } from '@/i18n/messages.js'
+import { ProjectNotInitializedError, resolveManagedProject } from '@/project/resolve-project.js'
 
 import type {
   TaskUpdateStatusArgs,
   TaskUpdateStatusContext,
   TaskUpdateStatusDependencies,
-} from './task-update-status-types.js'
+} from '@/commands/task/task-update-status-types.js'
 
+/**
+ * Resolves the default dependency set for task status updates.
+ */
 function getDependencies(
   overrides: Partial<TaskUpdateStatusDependencies> = {},
 ): TaskUpdateStatusDependencies {
@@ -31,10 +40,15 @@ function buildHelpText(): string {
   ].join('\n')
 }
 
+/**
+ * Updates the persisted status of one task inside the current project scope.
+ */
 export async function runTaskUpdateStatusCommand(
   args: TaskUpdateStatusArgs,
   context: TaskUpdateStatusContext,
 ): Promise<CliResult> {
+  const messages = getMessages(context.interfaceLanguage)
+
   if (args.help) {
     return {
       exitCode: 0,
@@ -45,14 +59,14 @@ export async function runTaskUpdateStatusCommand(
   if (!args.id?.trim()) {
     return {
       exitCode: 1,
-      stdout: '[FoxPilot] 任务状态更新失败: id 不能为空',
+      stdout: messages.taskUpdateStatus.idRequired,
     }
   }
 
   if (!args.status) {
     return {
       exitCode: 1,
-      stdout: '[FoxPilot] 任务状态更新失败: status 非法或缺失',
+      stdout: messages.taskUpdateStatus.statusRequired,
     }
   }
 
@@ -68,7 +82,7 @@ export async function runTaskUpdateStatusCommand(
     if (error instanceof ProjectNotInitializedError) {
       return {
         exitCode: 1,
-        stdout: `[FoxPilot] 任务状态更新失败: 项目尚未初始化\n- projectRoot: ${error.projectRoot}`,
+        stdout: `${messages.taskUpdateStatus.projectNotInitialized}\n- projectRoot: ${error.projectRoot}`,
       }
     }
 
@@ -81,7 +95,7 @@ export async function runTaskUpdateStatusCommand(
   } catch {
     return {
       exitCode: 4,
-      stdout: `[FoxPilot] 任务状态更新失败: foxpilot.db 初始化失败\n- ${resolveGlobalDatabasePath(context.homeDir)}`,
+      stdout: `${messages.taskUpdateStatus.dbBootstrapFailed}\n- ${resolveGlobalDatabasePath(context.homeDir)}`,
     }
   }
   const taskStore = dependencies.createTaskStore(db)
@@ -95,7 +109,7 @@ export async function runTaskUpdateStatusCommand(
     db.close()
     return {
       exitCode: 1,
-      stdout: `[FoxPilot] 任务状态更新失败: 未找到任务\n- taskId: ${args.id.trim()}`,
+      stdout: `${messages.taskUpdateStatus.taskNotFound}\n- taskId: ${args.id.trim()}`,
     }
   }
 
@@ -111,14 +125,14 @@ export async function runTaskUpdateStatusCommand(
   if (!updated) {
     return {
       exitCode: 1,
-      stdout: `[FoxPilot] 任务状态更新失败: 未找到任务\n- taskId: ${args.id.trim()}`,
+      stdout: `${messages.taskUpdateStatus.taskNotFound}\n- taskId: ${args.id.trim()}`,
     }
   }
 
   return {
     exitCode: 0,
     stdout: [
-      '[FoxPilot] 已更新任务状态',
+      messages.taskUpdateStatus.updated,
       `- projectRoot: ${managedProject.projectRoot}`,
       `- taskId: ${args.id.trim()}`,
       `- from: ${existingTask.status}`,

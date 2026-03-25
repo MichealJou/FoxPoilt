@@ -4,8 +4,8 @@ import path from 'node:path'
 import Database from 'better-sqlite3'
 import { afterEach, describe, expect, it } from 'vitest'
 
-import { runCli } from '../helpers/run-cli.js'
-import { createTempDir, removeTempDir } from '../helpers/tmp-dir.js'
+import { runCli } from '@tests/helpers/run-cli.js'
+import { createTempDir, removeTempDir } from '@tests/helpers/tmp-dir.js'
 
 const tempDirs: string[] = []
 
@@ -93,6 +93,52 @@ describe('foxpilot init CLI', () => {
 
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('[FoxPilot] 初始化完成')
+  })
+
+  it('asks for interface language on first interactive init and persists the selection', async () => {
+    const homeDir = await createTempDir('foxpilot-home-')
+    const projectRoot = await createProjectFixture('foxpilot-project-')
+    tempDirs.push(homeDir)
+
+    const result = await runCli(['init'], {
+      cwd: projectRoot,
+      homeDir,
+      stdin: ['2', 'y', 'y', 'y', 'y', 'y'],
+    })
+
+    expect(result.exitCode).toBe(0)
+    expect(result.stdout).toContain('Select interface language')
+    expect(result.stdout).toContain('[FoxPilot] Initialization completed')
+
+    const rawConfig = await readFile(
+      path.join(homeDir, '.foxpilot', 'foxpilot.config.json'),
+      'utf8',
+    )
+    expect(rawConfig).toContain('"interfaceLanguage": "en-US"')
+  })
+
+  it('reuses the stored interface language on later init runs without prompting again', async () => {
+    const homeDir = await createTempDir('foxpilot-home-')
+    const firstProjectRoot = await createProjectFixture('foxpilot-project-')
+    const secondProjectRoot = await createProjectFixture('foxpilot-project-')
+    tempDirs.push(homeDir)
+
+    const firstResult = await runCli(['init'], {
+      cwd: firstProjectRoot,
+      homeDir,
+      stdin: ['2', 'y', 'y', 'y', 'y', 'y'],
+    })
+    expect(firstResult.exitCode).toBe(0)
+
+    const secondResult = await runCli(['init'], {
+      cwd: secondProjectRoot,
+      homeDir,
+      stdin: ['y', 'y', 'y', 'y', 'y'],
+    })
+
+    expect(secondResult.exitCode).toBe(0)
+    expect(secondResult.stdout).not.toContain('Select interface language')
+    expect(secondResult.stdout).toContain('[FoxPilot] Initialization completed')
   })
 
   it('does not leave partial init artifacts when sqlite bootstrap fails', async () => {

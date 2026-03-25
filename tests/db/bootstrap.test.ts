@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest'
 
-import { createTempDir, removeTempDir } from '../helpers/tmp-dir.js'
+import { createTempDir, removeTempDir } from '@tests/helpers/tmp-dir.js'
 
 type DatabaseLike = {
   prepare: (sql: string) => {
@@ -15,7 +15,7 @@ async function loadBootstrapModule(): Promise<{
   bootstrapDatabase: BootstrapDatabase
 }> {
   try {
-    return await import('../../src/db/bootstrap.js')
+    return await import('@/db/bootstrap.js')
   } catch {
     return {
       bootstrapDatabase: async () => ({

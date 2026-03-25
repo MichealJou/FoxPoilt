@@ -1,11 +1,20 @@
-import type { CliResult } from '../init/init-types.js'
-import { bootstrapDatabase } from '../../db/bootstrap.js'
-import { createTaskStore } from '../../db/task-store.js'
-import { resolveGlobalDatabasePath } from '../../core/paths.js'
-import { ProjectNotInitializedError, resolveManagedProject } from '../../project/resolve-project.js'
+/**
+ * @file src/commands/task/task-list-command.ts
+ * @author michaeljou
+ */
 
-import type { TaskListArgs, TaskListContext, TaskListDependencies } from './task-list-types.js'
+import type { CliResult } from '@/commands/init/init-types.js'
+import { bootstrapDatabase } from '@/db/bootstrap.js'
+import { createTaskStore } from '@/db/task-store.js'
+import { resolveGlobalDatabasePath } from '@/core/paths.js'
+import { getMessages } from '@/i18n/messages.js'
+import { ProjectNotInitializedError, resolveManagedProject } from '@/project/resolve-project.js'
 
+import type { TaskListArgs, TaskListContext, TaskListDependencies } from '@/commands/task/task-list-types.js'
+
+/**
+ * Resolves the default dependency set for task listing.
+ */
 function getDependencies(
   overrides: Partial<TaskListDependencies> = {},
 ): TaskListDependencies {
@@ -26,10 +35,15 @@ function buildHelpText(): string {
   ].join('\n')
 }
 
+/**
+ * Lists tasks for the current project with an optional status filter.
+ */
 export async function runTaskListCommand(
   args: TaskListArgs,
   context: TaskListContext,
 ): Promise<CliResult> {
+  const messages = getMessages(context.interfaceLanguage)
+
   if (args.help) {
     return {
       exitCode: 0,
@@ -49,7 +63,7 @@ export async function runTaskListCommand(
     if (error instanceof ProjectNotInitializedError) {
       return {
         exitCode: 1,
-        stdout: `[FoxPilot] 任务列表失败: 项目尚未初始化\n- projectRoot: ${error.projectRoot}`,
+        stdout: `${messages.taskList.projectNotInitialized}\n- projectRoot: ${error.projectRoot}`,
       }
     }
 
@@ -69,7 +83,7 @@ export async function runTaskListCommand(
     return {
       exitCode: 0,
       stdout: [
-        '[FoxPilot] 当前没有匹配任务',
+        messages.taskList.empty,
         `- projectRoot: ${managedProject.projectRoot}`,
       ].join('\n'),
     }
@@ -78,7 +92,7 @@ export async function runTaskListCommand(
   return {
     exitCode: 0,
     stdout: [
-      '[FoxPilot] 任务列表',
+      messages.taskList.title,
       `- projectRoot: ${managedProject.projectRoot}`,
       `- total: ${tasks.length}`,
       '',

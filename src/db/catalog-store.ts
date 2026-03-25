@@ -1,15 +1,33 @@
-import type { SqliteDatabase } from './connect.js'
+/**
+ * @file src/db/catalog-store.ts
+ * @author michaeljou
+ */
 
+import type { SqliteDatabase } from '@/db/connect.js'
+
+/**
+ * Row model for the `workspace_root` catalog table.
+ */
 export type WorkspaceRootRow = {
+  /** Stable synthetic identifier derived from the absolute path. */
   id: string
+  /** Display name shown in CLI output. */
   name: string
+  /** Absolute workspace root path. */
   path: string
+  /** SQLite-compatible boolean flag. */
   enabled: number
+  /** Optional free-form description. */
   description: string | null
+  /** ISO timestamp of initial creation. */
   created_at: string
+  /** ISO timestamp of the latest mutation. */
   updated_at: string
 }
 
+/**
+ * Row model for the `project` catalog table.
+ */
 export type ProjectRow = {
   id: string
   workspace_root_id: string
@@ -23,6 +41,9 @@ export type ProjectRow = {
   updated_at: string
 }
 
+/**
+ * Row model for the `repository` catalog table.
+ */
 export type RepositoryRow = {
   id: string
   project_id: string
@@ -36,6 +57,9 @@ export type RepositoryRow = {
   updated_at: string
 }
 
+/**
+ * Minimal write payload for keeping the catalog tables in sync.
+ */
 export type ProjectCatalogInput = {
   workspaceRoot: WorkspaceRootRow
   project: ProjectRow
@@ -47,6 +71,9 @@ function countRows(db: SqliteDatabase, tableName: 'workspace_root' | 'project' |
   return row.count
 }
 
+/**
+ * Creates a catalog store with transaction-wrapped upsert semantics.
+ */
 export function createCatalogStore(db: SqliteDatabase) {
   const upsertWorkspaceRootStmt = db.prepare(`
     INSERT INTO workspace_root (
@@ -115,6 +142,8 @@ export function createCatalogStore(db: SqliteDatabase) {
     }
   })
 
+  // Project upsert replaces repository rows as a unit so the catalog never
+  // mixes repositories from different scans or init attempts.
   const upsertProjectCatalogTx = db.transaction((input: ProjectCatalogInput) => {
     upsertWorkspaceRootStmt.run(input.workspaceRoot)
     upsertProjectStmt.run(input.project)
@@ -125,6 +154,8 @@ export function createCatalogStore(db: SqliteDatabase) {
     }
   })
 
+  // Cleanup is also transactional so rollback paths can remove partial catalog
+  // state created during init failures.
   const deleteProjectCatalogTx = db.transaction((projectId: string, workspaceRootId: string) => {
     deleteProjectRepositoriesStmt.run(projectId)
     deleteProjectStmt.run(projectId)
