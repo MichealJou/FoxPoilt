@@ -11,42 +11,42 @@ import type { writeProjectConfig } from '@/project/project-config.js'
 import type { scanRepositories } from '@/project/scan-repositories.js'
 
 /**
- * Supported initialization interaction modes.
+ * 初始化流程支持的交互模式。
  */
 export type InitMode = 'interactive' | 'non-interactive'
 
 /**
- * Normalized arguments for `foxpilot init`.
+ * `foxpilot init` 的标准化参数。
  */
 export type InitArgs = {
-  /** Top-level command identifier. */
+  /** 顶层命令标识。 */
   command: 'init'
-  /** Whether to render help instead of executing initialization. */
+  /** 是否直接输出帮助，而不是执行初始化。 */
   help: boolean
-  /** Optional project root override. */
+  /** 可选的项目根目录覆盖值。 */
   path?: string
-  /** Optional project slug override. */
+  /** 可选的项目标识覆盖值。 */
   name?: string
-  /** Optional workspace root override. */
+  /** 可选的工作区根目录覆盖值。 */
   workspaceRoot?: string
-  /** Chosen execution mode. */
+  /** 选定的执行模式。 */
   mode: InitMode
-  /** Whether repository scanning should be skipped. */
+  /** 是否跳过仓库扫描。 */
   noScan: boolean
 }
 
 /**
- * Standard CLI return contract used by all command handlers.
+ * 所有命令处理器共用的标准 CLI 返回结构。
  */
 export type CliResult = {
-  /** Process exit code surfaced by the CLI wrapper. */
+  /** 由 CLI 包装层向外暴露的进程退出码。 */
   exitCode: number
-  /** User-facing output already formatted as plain text. */
+  /** 已经格式化好的面向用户的纯文本输出。 */
   stdout: string
 }
 
 /**
- * Injectable collaborators used by the init command.
+ * init 命令使用的可注入依赖。
  */
 export type InitCommandDependencies = {
   ensureGlobalConfig: typeof ensureGlobalConfig
@@ -57,7 +57,7 @@ export type InitCommandDependencies = {
 }
 
 /**
- * Runtime context used by init, including optional test overrides.
+ * init 命令使用的运行时上下文，包含可选的测试覆盖依赖。
  */
 export type InitCommandContext = CliRuntimeContext & {
   dependencies?: Partial<InitCommandDependencies>

@@ -13,7 +13,7 @@ import { ProjectNotInitializedError, resolveManagedProject } from '@/project/res
 import type { TaskListArgs, TaskListContext, TaskListDependencies } from '@/commands/task/task-list-types.js'
 
 /**
- * Resolves the default dependency set for task listing.
+ * 解析任务列表命令使用的默认依赖集合。
  */
 function getDependencies(
   overrides: Partial<TaskListDependencies> = {},
@@ -40,7 +40,7 @@ function buildHelpText(language: Parameters<typeof getMessages>[0]): string {
 }
 
 /**
- * Lists tasks for the current project with an optional status filter.
+ * 列出当前项目任务，并支持可选状态过滤。
  */
 export async function runTaskListCommand(
   args: TaskListArgs,

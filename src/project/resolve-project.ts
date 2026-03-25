@@ -12,7 +12,9 @@ import { resolveProjectConfigPath } from '@/core/paths.js'
 import type { ProjectConfig, ProjectRepositoryConfig } from '@/project/project-config.js'
 
 /**
- * Raised when a CLI command is executed outside a managed project.
+ * 当 CLI 命令在未初始化的受管项目之外执行时抛出。
+ *
+ * 这个错误的核心职责不是表达系统异常，而是向命令层传达“当前没有合法项目上下文”。
  */
 export class ProjectNotInitializedError extends Error {
   constructor(
@@ -25,8 +27,9 @@ export class ProjectNotInitializedError extends Error {
 }
 
 /**
- * Raised when a task command references a repository that does not exist in
- * the project config.
+ * 当任务命令引用了项目配置中不存在的仓库时抛出。
+ *
+ * 它用于区分“项目不存在”和“项目存在但仓库选择器无效”这两类问题。
  */
 export class RepositoryTargetNotFoundError extends Error {
   constructor(public readonly repositorySelector: string) {
@@ -47,8 +50,11 @@ async function fileExists(targetPath: string): Promise<boolean> {
 async function findManagedProjectRoot(startPath: string): Promise<string | null> {
   let currentPath = path.resolve(startPath)
 
-  // Walk upward until a managed project marker is found or the filesystem root
-  // is reached.
+  /**
+   * 设计逻辑：
+   * 1. 命令允许在项目子目录中执行，因此需要向上回溯查找 `.foxpilot/project.json`。
+   * 2. 一旦走到文件系统根仍未命中，就说明当前目录不属于任何受管项目。
+   */
   while (true) {
     if (await fileExists(resolveProjectConfigPath(currentPath))) {
       return currentPath
@@ -64,8 +70,11 @@ async function findManagedProjectRoot(startPath: string): Promise<string | null>
 }
 
 /**
- * Resolves the active managed project either from `--path` or by walking up
- * from the current working directory.
+ * 通过 `--path` 或从当前目录向上查找的方式解析当前受管项目。
+ *
+ * 设计逻辑：
+ * 1. 显式 `--path` 的优先级高于当前目录推断。
+ * 2. 命令层不需要关心项目查找细节，只需要拿到稳定的项目上下文。
  */
 export async function resolveManagedProject(input: {
   cwd: string
@@ -96,7 +105,11 @@ export async function resolveManagedProject(input: {
 }
 
 /**
- * Resolves an optional repository selector against the initialized project.
+ * 根据已初始化的项目配置解析可选的仓库选择器。
+ *
+ * 设计逻辑：
+ * 1. 同时支持按仓库名和按相对路径匹配，减少用户记忆成本。
+ * 2. 当未传选择器时返回 `null`，表示任务不绑定特定仓库目标。
  */
 export function resolveRepositoryTarget(
   projectConfig: ProjectConfig,

@@ -9,7 +9,7 @@ import type { createTaskStore } from '@/db/task-store.js'
 import type { resolveManagedProject } from '@/project/resolve-project.js'
 
 /**
- * Supported task states for filtering and updates.
+ * 用于过滤和更新的任务状态集合。
  */
 export type TaskStatus =
   | 'todo'
@@ -22,20 +22,20 @@ export type TaskStatus =
   | 'cancelled'
 
 export type TaskListArgs = {
-  /** Top-level command identifier. */
+  /** 顶层命令标识。 */
   command: 'task'
   /** Subcommand identifier. */
   subcommand: 'list'
   /** Whether help should be rendered. */
   help: boolean
-  /** Optional project root override. */
+  /** 可选的项目根目录覆盖值。 */
   path?: string
   /** Optional status filter applied at query time. */
   status?: TaskStatus
 }
 
 /**
- * Injectable collaborators used by task listing.
+ * 任务列表命令使用的可注入依赖。
  */
 export type TaskListDependencies = {
   resolveManagedProject: typeof resolveManagedProject
@@ -44,7 +44,7 @@ export type TaskListDependencies = {
 }
 
 /**
- * Runtime context used while listing tasks.
+ * 执行任务列表命令时使用的运行时上下文。
  */
 export type TaskListContext = CliRuntimeContext & {
   dependencies?: Partial<TaskListDependencies>

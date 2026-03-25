@@ -6,12 +6,12 @@
 import Database from 'better-sqlite3'
 
 /**
- * Concrete SQLite handle type used across the persistence layer.
+ * 持久化层统一使用的 SQLite 连接类型。
  */
 export type SqliteDatabase = Database.Database
 
 /**
- * Opens a synchronous SQLite connection.
+ * 打开一个同步 SQLite 连接。
  */
 export function connectDb(dbPath: string): SqliteDatabase {
   return new Database(dbPath)

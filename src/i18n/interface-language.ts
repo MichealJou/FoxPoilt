@@ -4,17 +4,17 @@
  */
 
 /**
- * Supported interface languages exposed by the CLI.
+ * CLI 暴露的交互语言列表。
  */
 export const interfaceLanguages = ['zh-CN', 'en-US', 'ja-JP'] as const
 
 /**
- * Literal union generated from the supported language list.
+ * 基于语言列表生成的字面量联合类型。
  */
 export type InterfaceLanguage = (typeof interfaceLanguages)[number]
 
 /**
- * Runtime guard used when reading persisted language values from JSON.
+ * 读取 JSON 中持久化语言值时使用的运行时类型守卫。
  */
 export function isInterfaceLanguage(value: string): value is InterfaceLanguage {
   return interfaceLanguages.includes(value as InterfaceLanguage)

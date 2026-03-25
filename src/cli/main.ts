@@ -18,8 +18,7 @@ import { resolveInterfaceLanguage } from '@/config/global-config.js'
 import { getMessages } from '@/i18n/messages.js'
 
 /**
- * CLI entrypoint that resolves the effective language and dispatches to the
- * concrete command handler.
+ * CLI 入口函数，负责解析当前生效语言并分发到具体命令处理器。
  */
 export async function main(
   argv: string[],

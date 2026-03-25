@@ -11,23 +11,54 @@ import { resolveGlobalConfigPath } from '@/core/paths.js'
 import { isInterfaceLanguage, type InterfaceLanguage } from '@/i18n/interface-language.js'
 
 /**
- * Serializable user-level configuration shared across all local projects.
+ * 所有本地项目共享的用户级配置。
+ *
+ * 设计意图：
+ * 1. 这份配置只保存“跨项目复用”的默认偏好，不保存某个具体项目的业务状态。
+ * 2. 配置文件允许用户手工编辑，因此读取时必须做默认值补齐和字段校正。
+ * 3. 语言字段放在这里，是为了让所有命令在进入业务逻辑前就能拿到统一的交互语言。
  */
 export type GlobalConfig = {
-  /** Workspace roots known to the current user profile. */
+  /**
+   * 当前用户确认过的工作区根目录列表。
+   *
+   * 这里保存的是“工作区边界”，不是项目列表。
+   * 后续命令会用它来推断项目默认归属，并选择最长匹配的工作区根目录。
+   */
   workspaceRoots: string[]
-  /** Default project registration mode for future commands. */
+  /**
+   * 后续命令默认使用的项目登记模式。
+   *
+   * 当前 MVP 只实际使用 `workspace_root`，但这里先保留扩展位，
+   * 避免后续引入新模式时必须立刻修改配置结构。
+   */
   defaultProjectMode: string
-  /** Preferred task list presentation mode. */
+  /**
+   * 默认任务列表展示模式。
+   *
+   * 这个字段当前主要作为配置占位，为后续表格视图、看板视图等展示形态做兼容。
+   */
   defaultTaskView: string
-  /** Preferred executor when new tasks are created manually. */
+  /**
+   * 手动创建新任务时的默认执行器。
+   *
+   * 任务创建时会把这个值折叠成 `current_executor`，因此它表达的是“新任务默认归谁处理”。
+   */
   defaultExecutor: string
-  /** Persisted interface language used for user-facing CLI output. */
+  /**
+   * 面向用户的 CLI 默认交互语言。
+   *
+   * 首次交互式初始化可以写入这个字段，后续所有命令都会先读取它再决定输出语言。
+   */
   interfaceLanguage: InterfaceLanguage
 }
 
 /**
- * Baseline config written when no global file exists yet.
+ * 当全局配置文件尚不存在时使用的基线配置。
+ *
+ * 设计逻辑：
+ * 1. 默认语言固定为中文，符合当前产品的默认交互方向。
+ * 2. 其余默认值以“最保守可运行”为目标，优先保证命令能工作，而不是表达复杂偏好。
  */
 export const defaultGlobalConfig: GlobalConfig = {
   workspaceRoots: [],
@@ -45,7 +76,11 @@ export class GlobalConfigParseError extends Error {
 }
 
 /**
- * Normalizes workspace roots to absolute unique paths so matching is stable.
+ * 将工作区根目录标准化为唯一的绝对路径。
+ *
+ * 设计逻辑：
+ * 1. 一律转绝对路径，避免同一个目录因相对路径写法不同而重复出现。
+ * 2. 去重后保留首次出现顺序，减少用户手工编辑后带来的不确定性。
  */
 function normalizePaths(paths: string[]): string[] {
   const seen = new Set<string>()
@@ -69,7 +104,11 @@ function isWithin(rootPath: string, targetPath: string): boolean {
 }
 
 /**
- * Returns the longest matching workspace root so nested workspaces win.
+ * 返回最长匹配的工作区根目录。
+ *
+ * 设计逻辑：
+ * 1. 允许工作区嵌套存在，例如 `/Users/program` 和 `/Users/program/code`。
+ * 2. 当项目路径同时命中多个工作区时，必须选更具体的那个，否则项目会被错误归到更大的上层空间。
  */
 export function findMatchingWorkspaceRoot(projectRoot: string, workspaceRoots: string[]): string | null {
   const matches = normalizePaths(workspaceRoots)
@@ -117,7 +156,11 @@ function normalizeGlobalConfig(config: Partial<GlobalConfig>): GlobalConfig {
 }
 
 /**
- * Loads global config from disk and always returns a fully hydrated object.
+ * 从磁盘加载全局配置，并返回补齐默认值后的完整对象。
+ *
+ * 设计逻辑：
+ * 1. 读取层负责“容错和补齐”，业务层只消费稳定结构。
+ * 2. 即使旧版本配置缺字段，也能在这里被兼容，而不是把兼容逻辑散落到每个命令里。
  */
 export async function readGlobalConfig(input: { homeDir: string }): Promise<{
   configPath: string
@@ -148,6 +191,15 @@ function mergeGlobalConfig(
   }
 }
 
+/**
+ * 确保全局配置文件存在，并按需合并工作区根目录或交互语言。
+ *
+ * 设计逻辑：
+ * 1. 这是“增量写入”接口，不会无条件覆盖整个配置。
+ * 2. 只有调用方显式传入的字段才会更新，未传入的字段保持原值。
+ * 3. `workspaceRoot` 和 `interfaceLanguage` 被设计成同一次写入可同时更新，
+ *    这样 `init` 可以在一次磁盘写入里完成环境登记和语言持久化。
+ */
 export async function ensureGlobalConfig(input: {
   homeDir: string
   workspaceRoot?: string
@@ -165,8 +217,11 @@ export async function ensureGlobalConfig(input: {
 }
 
 /**
- * Resolves the current interface language without turning malformed config
- * into a hard blocker for every command.
+ * 解析当前交互语言。
+ *
+ * 设计逻辑：
+ * 1. 语言解析属于“入口前置步骤”，不能因为配置损坏就让所有命令都在入口直接崩掉。
+ * 2. 因此这里采用兜底策略，读取失败时回退到默认中文，把真正的配置错误交给具体命令处理。
  */
 export async function resolveInterfaceLanguage(input: { homeDir: string }): Promise<InterfaceLanguage> {
   try {

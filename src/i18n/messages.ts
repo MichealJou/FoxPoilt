@@ -6,7 +6,7 @@
 import type { InterfaceLanguage } from '@/i18n/interface-language.js'
 
 /**
- * Fully localized message bundle consumed by command handlers.
+ * 命令处理器使用的完整本地化消息集合。
  */
 export type MessageCatalog = {
   common: {
@@ -309,7 +309,7 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
 }
 
 /**
- * Returns the message bundle for the already-resolved interface language.
+ * 根据已解析的交互语言返回对应的消息集合。
  */
 export function getMessages(language: InterfaceLanguage): MessageCatalog {
   return messageCatalogs[language]

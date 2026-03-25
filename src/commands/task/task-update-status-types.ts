@@ -9,12 +9,12 @@ import type { createTaskStore } from '@/db/task-store.js'
 import type { resolveManagedProject } from '@/project/resolve-project.js'
 
 /**
- * Supported task states accepted by `task update-status`.
+ * `task update-status` 接受的任务状态集合。
  */
 export type TaskUpdateStatus = 'todo' | 'analyzing' | 'awaiting_plan_confirm' | 'executing' | 'awaiting_result_confirm' | 'done' | 'blocked' | 'cancelled'
 
 /**
- * Normalized arguments for `task update-status`.
+ * `task update-status` 的标准化参数。
  */
 export type TaskUpdateStatusArgs = {
   command: 'task'
@@ -26,7 +26,7 @@ export type TaskUpdateStatusArgs = {
 }
 
 /**
- * Injectable collaborators used by task status updates.
+ * 任务状态更新命令使用的可注入依赖。
  */
 export type TaskUpdateStatusDependencies = {
   resolveManagedProject: typeof resolveManagedProject
@@ -35,7 +35,7 @@ export type TaskUpdateStatusDependencies = {
 }
 
 /**
- * Runtime context used while changing task state.
+ * 执行任务状态变更命令时使用的运行时上下文。
  */
 export type TaskUpdateStatusContext = CliRuntimeContext & {
   dependencies?: Partial<TaskUpdateStatusDependencies>

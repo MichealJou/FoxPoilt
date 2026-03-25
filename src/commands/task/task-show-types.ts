@@ -9,7 +9,7 @@ import type { createTaskStore } from '@/db/task-store.js'
 import type { resolveManagedProject } from '@/project/resolve-project.js'
 
 /**
- * Normalized arguments for `task show`.
+ * `task show` 的标准化参数。
  */
 export type TaskShowArgs = {
   command: 'task'
@@ -20,7 +20,7 @@ export type TaskShowArgs = {
 }
 
 /**
- * Injectable collaborators used by task detail lookups.
+ * 任务详情查询命令使用的可注入依赖。
  */
 export type TaskShowDependencies = {
   resolveManagedProject: typeof resolveManagedProject
@@ -29,7 +29,7 @@ export type TaskShowDependencies = {
 }
 
 /**
- * Runtime context used while loading task detail.
+ * 执行任务详情查询命令时使用的运行时上下文。
  */
 export type TaskShowContext = CliRuntimeContext & {
   dependencies?: Partial<TaskShowDependencies>

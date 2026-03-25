@@ -10,7 +10,7 @@ import type { createTaskStore } from '@/db/task-store.js'
 import type { resolveManagedProject } from '@/project/resolve-project.js'
 
 /**
- * Normalized arguments for `task create`.
+ * `task create` 的标准化参数。
  */
 export type TaskCreateArgs = {
   command: 'task'
@@ -25,7 +25,7 @@ export type TaskCreateArgs = {
 }
 
 /**
- * Injectable collaborators used by task creation.
+ * 任务创建命令使用的可注入依赖。
  */
 export type TaskCreateDependencies = {
   readGlobalConfig: typeof readGlobalConfig
@@ -35,7 +35,7 @@ export type TaskCreateDependencies = {
 }
 
 /**
- * Runtime context used while creating tasks.
+ * 执行任务创建命令时使用的运行时上下文。
  */
 export type TaskCreateContext = CliRuntimeContext & {
   dependencies?: Partial<TaskCreateDependencies>

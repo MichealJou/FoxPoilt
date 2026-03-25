@@ -17,7 +17,7 @@ import type {
 } from '@/commands/task/task-update-status-types.js'
 
 /**
- * Resolves the default dependency set for task status updates.
+ * 解析任务状态更新命令使用的默认依赖集合。
  */
 function getDependencies(
   overrides: Partial<TaskUpdateStatusDependencies> = {},
@@ -45,7 +45,7 @@ function buildHelpText(language: Parameters<typeof getMessages>[0]): string {
 }
 
 /**
- * Updates the persisted status of one task inside the current project scope.
+ * 更新当前项目范围内某个任务的持久化状态。
  */
 export async function runTaskUpdateStatusCommand(
   args: TaskUpdateStatusArgs,

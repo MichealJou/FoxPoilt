@@ -9,7 +9,7 @@ import path from 'node:path'
 import type { ProjectRepositoryConfig } from '@/project/project-config.js'
 
 /**
- * Checks whether a directory contains a Git repository marker.
+ * 检查目录中是否包含 Git 仓库标记。
  */
 async function isGitRepository(targetPath: string): Promise<boolean> {
   try {
@@ -21,7 +21,7 @@ async function isGitRepository(targetPath: string): Promise<boolean> {
 }
 
 /**
- * Builds the fallback repository descriptor for the project root.
+ * 为项目根目录构建兜底仓库描述。
  */
 function createRootCandidate(projectRoot: string, repoType: 'git' | 'directory'): ProjectRepositoryConfig {
   return {
@@ -33,8 +33,7 @@ function createRootCandidate(projectRoot: string, repoType: 'git' | 'directory')
 }
 
 /**
- * Scans the project root for repository candidates. The current MVP only
- * detects the root repo and direct child Git repositories.
+ * 扫描项目根目录中的仓库候选项，当前 MVP 只识别根仓库和直接子目录中的 Git 仓库。
  */
 export async function scanRepositories(
   projectRoot: string,

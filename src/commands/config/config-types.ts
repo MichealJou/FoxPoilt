@@ -8,7 +8,7 @@ import type { ensureGlobalConfig } from '@/config/global-config.js'
 import type { InterfaceLanguage } from '@/i18n/interface-language.js'
 
 /**
- * Normalized arguments for `config set-language`.
+ * `config set-language` 的标准化参数。
  */
 export type ConfigSetLanguageArgs = {
   command: 'config'
@@ -18,14 +18,14 @@ export type ConfigSetLanguageArgs = {
 }
 
 /**
- * Injectable collaborators used by language configuration commands.
+ * 语言配置命令使用的可注入依赖。
  */
 export type ConfigSetLanguageDependencies = {
   ensureGlobalConfig: typeof ensureGlobalConfig
 }
 
 /**
- * Runtime context used while executing config commands.
+ * 执行配置命令时使用的运行时上下文。
  */
 export type ConfigSetLanguageContext = CliRuntimeContext & {
   dependencies?: Partial<ConfigSetLanguageDependencies>

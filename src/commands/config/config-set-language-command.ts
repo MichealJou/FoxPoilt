@@ -14,7 +14,7 @@ import type {
 } from '@/commands/config/config-types.js'
 
 /**
- * Resolves the default dependency set for the config language command.
+ * 解析语言配置命令使用的默认依赖集合。
  */
 function getDependencies(
   overrides: Partial<ConfigSetLanguageDependencies> = {},
@@ -38,7 +38,7 @@ function buildHelpText(language: Parameters<typeof getMessages>[0]): string {
 }
 
 /**
- * Persists the selected interface language into the global config file.
+ * 将选中的交互语言持久化到全局配置文件。
  */
 export async function runConfigSetLanguageCommand(
   args: ConfigSetLanguageArgs,

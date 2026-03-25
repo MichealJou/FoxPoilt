@@ -6,19 +6,19 @@
 import type { InterfaceLanguage } from '@/i18n/interface-language.js'
 
 /**
- * Shared runtime context injected into every CLI command.
+ * 注入到每个 CLI 命令中的共享运行时上下文。
  */
 export type CliRuntimeContext = {
-  /** Executed binary name, used for help text and alias-aware behavior. */
+  /** 当前执行的二进制名称，用于帮助输出和别名感知行为。 */
   binName: 'foxpilot' | 'fp'
-  /** Process working directory used to resolve relative user input. */
+  /** 用于解析相对用户输入的进程工作目录。 */
   cwd: string
-  /** Home directory used to resolve global config and SQLite paths. */
+  /** 用于解析全局配置和 SQLite 路径的主目录。 */
   homeDir: string
-  /** Buffered stdin answers for interactive command tests and scripted runs. */
+  /** 供交互式命令测试和脚本执行使用的 stdin 缓冲答案。 */
   stdin: string[]
-  /** Effective UI language resolved before command dispatch. */
+  /** 在命令分发前解析出的当前有效交互语言。 */
   interfaceLanguage: InterfaceLanguage
-  /** Optional dependency overrides used by tests and failure injection. */
+  /** 测试和故障注入场景使用的可选依赖覆盖项。 */
   dependencies?: Record<string, unknown>
 }

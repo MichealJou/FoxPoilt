@@ -35,16 +35,23 @@ import { scanRepositories } from '@/project/scan-repositories.js'
 import type { CliResult, InitArgs, InitCommandContext, InitCommandDependencies } from '@/commands/init/init-types.js'
 
 /**
- * Snapshot of a file before init starts mutating local or global state.
+ * 记录 init 开始修改本地或全局状态之前的文件快照。
+ *
+ * 这类快照用于补偿和回滚，确保初始化在失败时不会留下半成品状态。
  */
 type FileSnapshot = {
+  /** 目标文件在快照采集时是否存在。 */
   exists: boolean
+  /** 文件存在时的原始文本内容。 */
   content?: string
 }
 
 /**
- * Resolves the default dependency set while allowing tests to override only
- * the collaborators they care about.
+ * 解析默认依赖集合，同时允许测试只覆盖自己关心的依赖。
+ *
+ * 设计逻辑：
+ * 1. 业务逻辑默认走真实依赖。
+ * 2. 测试只替换局部依赖，避免每个用例都重新手工拼整套上下文。
  */
 function getDependencies(
   overrides: Partial<InitCommandDependencies> = {},
@@ -78,7 +85,9 @@ async function captureFileSnapshot(targetPath: string): Promise<FileSnapshot> {
 }
 
 /**
- * Restores a file to the exact pre-init state captured earlier.
+ * 将文件恢复到 init 之前记录的精确状态。
+ *
+ * 如果文件原本不存在，就直接删除；如果原本存在，就恢复原始文本内容。
  */
 async function restoreFileSnapshot(targetPath: string, snapshot: FileSnapshot): Promise<void> {
   if (!snapshot.exists) {
@@ -98,6 +107,13 @@ function buildWorkspaceRootName(workspaceRoot: string): string {
   return path.basename(workspaceRoot) || workspaceRoot
 }
 
+/**
+ * 构造 `workspace_root` 表记录。
+ *
+ * 设计逻辑：
+ * 1. 工作区主键直接绑定绝对路径，避免额外的映射表。
+ * 2. 显示名只做轻量推断，不在初始化阶段引入复杂命名规则。
+ */
 function createWorkspaceRootRow(workspaceRoot: string, now: string): WorkspaceRootRow {
   return {
     id: `workspace_root:${workspaceRoot}`,
@@ -110,6 +126,11 @@ function createWorkspaceRootRow(workspaceRoot: string, now: string): WorkspaceRo
   }
 }
 
+/**
+ * 构造 `project` 表记录。
+ *
+ * 项目记录表达的是“这个项目已经被手动初始化并受 FoxPilot 管理”。
+ */
 function createProjectRow(projectRoot: string, workspaceRoot: string, name: string, now: string): ProjectRow {
   return {
     id: `project:${projectRoot}`,
@@ -125,6 +146,11 @@ function createProjectRow(projectRoot: string, workspaceRoot: string, name: stri
   }
 }
 
+/**
+ * 将项目配置中的仓库列表转换成全局索引表记录。
+ *
+ * 仓库主键显式携带项目根路径，保证不同项目下同名仓库不会冲突。
+ */
 function createRepositoryRows(
   projectRoot: string,
   repositories: ProjectRepositoryConfig[],
@@ -145,8 +171,11 @@ function createRepositoryRows(
 }
 
 /**
- * Parses raw global config while preserving whether the language was explicitly
- * chosen by the user. Init uses that signal to decide whether it must ask.
+ * 解析原始全局配置，同时保留语言是否由用户显式选择这一事实。
+ *
+ * 设计逻辑：
+ * 1. 仅仅知道最终语言值还不够，还要知道它是不是用户明确选过的。
+ * 2. 如果语言只是默认值，而不是用户选择值，首次交互式 init 仍然要弹出语言选择。
  */
 function parseStoredGlobalConfig(rawContent: string, configPath: string): {
   config: GlobalConfig
@@ -176,7 +205,11 @@ function parseStoredGlobalConfig(rawContent: string, configPath: string): {
 }
 
 /**
- * Loads the mutable global config state together with a rollback snapshot.
+ * 加载可变更的全局配置状态，并同时保留回滚快照。
+ *
+ * 设计逻辑：
+ * 1. init 会同时改全局配置和数据库索引，因此必须先拿到回滚基线。
+ * 2. 这样一旦后续任一步失败，就能把磁盘状态恢复到命令开始前。
  */
 async function loadGlobalConfigSnapshot(homeDir: string): Promise<{
   configPath: string
@@ -220,6 +253,13 @@ function promptConfirm(lines: string[], stdin: string[], ...promptLines: string[
   return isAffirmative(consumeAnswer(stdin))
 }
 
+/**
+ * 在首次交互式初始化时选择交互语言。
+ *
+ * 设计逻辑：
+ * 1. 提示文案同时展示三种语言，保证用户即使还没选语言也能理解。
+ * 2. 未输入或输入无法识别时默认回退中文，避免初始化被非关键输入阻塞。
+ */
 function selectInterfaceLanguage(lines: string[], stdin: string[]): InterfaceLanguage {
   lines.push(getMessages('zh-CN').init.selectInterfaceLanguage)
   lines.push(...getMessages('zh-CN').init.languageChoices)
@@ -290,6 +330,12 @@ function buildErrorOutput(title: string, detailLines: string[]): string {
   return [title, ...detailLines].join('\n')
 }
 
+/**
+ * 校验项目根目录是否合法。
+ *
+ * 这里只处理“路径是否存在、是否为目录”这类前置校验，
+ * 更细的业务约束交给后续流程处理。
+ */
 async function validateProjectRoot(
   projectRoot: string,
   messages: MessageCatalog,
@@ -322,6 +368,11 @@ function resolveWorkspaceRoot(input: {
     return path.resolve(input.cwd, input.explicitWorkspaceRoot)
   }
 
+  /**
+   * 设计逻辑：
+   * 1. 如果用户没显式传入工作区根目录，就优先复用已有配置里的最长匹配工作区。
+   * 2. 如果完全匹配不到，再回退为项目根目录的父目录。
+   */
   return (
     findMatchingWorkspaceRoot(input.projectRoot, input.existingWorkspaceRoots) ??
     path.dirname(input.projectRoot)
@@ -384,8 +435,11 @@ async function runInteractivePrompts(input: {
 }
 
 /**
- * Rolls back global config and catalog writes when init fails after partial
- * progress. This keeps retry behavior deterministic.
+ * 当 init 在部分成功后失败时，回滚全局配置和索引写入。
+ *
+ * 设计逻辑：
+ * 1. 回滚顺序先恢复全局配置，再删除索引，避免出现“配置恢复了但索引还脏着”的中间状态。
+ * 2. 这样可以让用户再次执行 init 时看到一个可预测、可重试的环境。
  */
 async function cleanupAfterFailure(input: {
   globalConfigPath: string
@@ -403,8 +457,12 @@ async function cleanupAfterFailure(input: {
 }
 
 /**
- * Initializes a managed project, persists global config, boots the catalog
- * database, and writes the project manifest with rollback on failure.
+ * 初始化受管项目，写入全局配置，启动索引数据库，并写入项目清单。
+ *
+ * 设计逻辑：
+ * 1. 初始化不是单文件写入，而是“项目配置 + 全局配置 + 全局索引”的多资源事务流程。
+ * 2. 真正的数据库事务无法覆盖文件系统，因此这里通过“快照 + 补偿”实现近似事务效果。
+ * 3. 项目配置写在最后，只有当前面的全局状态和索引都准备好后，才把项目正式标记为已接管。
  */
 export async function runInitCommand(args: InitArgs, context: InitCommandContext): Promise<CliResult> {
   let messages = getMessages(context.interfaceLanguage)
@@ -453,8 +511,11 @@ export async function runInitCommand(args: InitArgs, context: InitCommandContext
   let projectName = args.name ?? (path.basename(projectRoot) || 'project')
   let interfaceLanguage = globalConfigState.config.interfaceLanguage
 
-  // The first interactive run chooses the interface language once and persists
-  // it into global config for all later commands.
+  /**
+   * 设计逻辑：
+   * 1. 只有首次交互式初始化才主动询问语言。
+   * 2. 一旦语言已经被持久化，后续 init 不再重复打扰用户。
+   */
   if (args.mode === 'interactive' && !globalConfigState.hasStoredInterfaceLanguage) {
     interfaceLanguage = selectInterfaceLanguage(lines, interactiveInput)
     messages = getMessages(interfaceLanguage)

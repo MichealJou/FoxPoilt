@@ -13,7 +13,7 @@ import { ProjectNotInitializedError, resolveManagedProject } from '@/project/res
 import type { TaskShowArgs, TaskShowContext, TaskShowDependencies } from '@/commands/task/task-show-types.js'
 
 /**
- * Resolves the default dependency set for task detail lookup.
+ * 解析任务详情命令使用的默认依赖集合。
  */
 function getDependencies(
   overrides: Partial<TaskShowDependencies> = {},
@@ -40,7 +40,7 @@ function buildHelpText(language: Parameters<typeof getMessages>[0]): string {
 }
 
 /**
- * Loads one task together with its targets for human-readable inspection.
+ * 加载单个任务及其目标信息，供人工查看。
  */
 export async function runTaskShowCommand(
   args: TaskShowArgs,

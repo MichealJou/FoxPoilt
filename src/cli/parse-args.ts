@@ -6,46 +6,45 @@
 import type { InterfaceLanguage } from '@/i18n/interface-language.js'
 
 /**
- * Parsed CLI arguments normalized into the command model used by `main`.
+ * 解析后的 CLI 参数，会被标准化为 `main` 使用的命令模型。
  */
 export type CliArgs = {
-  /** Top-level command name such as `init`, `task`, or `config`. */
+  /** 如 `init`、`task`、`config` 这样的顶层命令名。 */
   command?: string
-  /** Second-level command name for grouped commands. */
+  /** 分组命令使用的二级命令名。 */
   subcommand?: string
-  /** Whether help output should short-circuit normal execution. */
+  /** 是否直接输出帮助并短路正常执行流程。 */
   help: boolean
-  /** Optional project root override. */
+  /** 可选的项目根目录覆盖值。 */
   path?: string
-  /** Optional project slug or display source name. */
+  /** 可选的项目标识或显示来源名称。 */
   name?: string
-  /** Optional workspace root override. */
+  /** 可选的工作区根目录覆盖值。 */
   workspaceRoot?: string
-  /** Init execution mode. */
+  /** init 执行模式。 */
   mode: 'interactive' | 'non-interactive'
-  /** Whether repository scanning should be skipped during init. */
+  /** 在 init 过程中是否跳过仓库扫描。 */
   noScan: boolean
-  /** Manual task title. */
+  /** 手动任务标题。 */
   title?: string
-  /** Manual task description. */
+  /** 手动任务描述。 */
   description?: string
-  /** Task priority used for initial creation. */
+  /** 任务初始创建时使用的优先级。 */
   priority: 'P0' | 'P1' | 'P2' | 'P3'
-  /** Task type category used for routing and display. */
+  /** 用于路由和展示的任务类型分类。 */
   taskType: 'generic' | 'frontend' | 'backend' | 'cross_repo' | 'docs' | 'init'
-  /** Optional repository selector for scoped task creation. */
+  /** 用于限定任务作用范围的可选仓库选择器。 */
   repository?: string
-  /** Optional status filter or target status. */
+  /** 可选的状态过滤条件或目标状态。 */
   status?: 'todo' | 'analyzing' | 'awaiting_plan_confirm' | 'executing' | 'awaiting_result_confirm' | 'done' | 'blocked' | 'cancelled'
-  /** Optional task identifier used by detail and update commands. */
+  /** 详情和状态更新命令使用的可选任务标识。 */
   id?: string
-  /** Optional interface language used by config commands. */
+  /** 配置命令使用的可选交互语言。 */
   lang?: InterfaceLanguage
 }
 
 /**
- * Parses raw argv into a command-centric object so command handlers stay
- * focused on behavior instead of token walking.
+ * 将原始 argv 解析为以命令为中心的对象，让命令处理器专注于业务行为。
  */
 export function parseArgs(argv: string[]): CliArgs {
   const [command] = argv

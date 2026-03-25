@@ -22,7 +22,7 @@ import {
 import type { TaskCreateArgs, TaskCreateContext, TaskCreateDependencies } from '@/commands/task/task-create-types.js'
 
 /**
- * Resolves the default dependency set for task creation.
+ * 解析任务创建命令使用的默认依赖集合。
  */
 function getDependencies(
   overrides: Partial<TaskCreateDependencies> = {},
@@ -66,7 +66,7 @@ function resolveExecutor(defaultExecutor: string): 'codex' | 'beads' | 'none' {
 }
 
 /**
- * Creates a manual task for the current managed project.
+ * 为当前受管项目创建一个手动任务。
  */
 export async function runTaskCreateCommand(
   args: TaskCreateArgs,
