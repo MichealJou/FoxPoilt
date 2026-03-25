@@ -81,6 +81,25 @@ describe('task list CLI', () => {
     expect(result.stdout).toContain('fp task list')
   })
 
+  it('localizes task list help output after language is switched', async () => {
+    const homeDir = await createTempDir('foxpilot-home-')
+    tempDirs.push(homeDir)
+
+    const setLanguage = await runCli(
+      ['config', 'set-language', '--lang', 'en-US'],
+      { homeDir },
+    )
+    expect(setLanguage.exitCode).toBe(0)
+
+    const result = await runCli(
+      ['task', 'list', '--help'],
+      { homeDir },
+    )
+
+    expect(result.exitCode).toBe(0)
+    expect(result.stdout).toContain('List tasks for the current project')
+  })
+
   it('returns a clear error when the project is not initialized', async () => {
     const homeDir = await createTempDir('foxpilot-home-')
     const projectRoot = await createTempDir('foxpilot-project-')

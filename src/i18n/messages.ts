@@ -13,6 +13,7 @@ export type MessageCatalog = {
     unknownCommand: string
   }
   init: {
+    helpDescription: string
     cancelled: string
     targetConfirmed: string
     projectConfigGenerated: string
@@ -42,6 +43,7 @@ export type MessageCatalog = {
     projectConfigWriteFailed: string
   }
   taskCreate: {
+    helpDescription: string
     titleRequired: string
     malformedGlobalConfig: string
     projectNotInitialized: string
@@ -50,11 +52,13 @@ export type MessageCatalog = {
     created: string
   }
   taskList: {
+    helpDescription: string
     projectNotInitialized: string
     empty: string
     title: string
   }
   taskShow: {
+    helpDescription: string
     idRequired: string
     projectNotInitialized: string
     taskNotFound: string
@@ -63,6 +67,7 @@ export type MessageCatalog = {
     noTargets: string
   }
   taskUpdateStatus: {
+    helpDescription: string
     idRequired: string
     statusRequired: string
     projectNotInitialized: string
@@ -71,6 +76,7 @@ export type MessageCatalog = {
     updated: string
   }
   configSetLanguage: {
+    helpDescription: string
     invalidLanguage: string
     malformedGlobalConfig: string
     updated: string
@@ -83,6 +89,7 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       unknownCommand: '[FoxPilot] 未知命令',
     },
     init: {
+      helpDescription: '初始化一个受管项目，并写入项目配置、全局配置和 SQLite 索引。',
       cancelled: '[FoxPilot] 初始化已取消',
       targetConfirmed: '[FoxPilot] 初始化目标已确认',
       projectConfigGenerated: '[FoxPilot] 已生成项目配置',
@@ -112,6 +119,7 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       projectConfigWriteFailed: '[FoxPilot] 初始化失败: 项目配置写入失败',
     },
     taskCreate: {
+      helpDescription: '为当前受管项目创建一个手动任务。',
       titleRequired: '[FoxPilot] 任务创建失败: title 不能为空',
       malformedGlobalConfig: '[FoxPilot] 任务创建失败: foxpilot.config.json 格式错误',
       projectNotInitialized: '[FoxPilot] 任务创建失败: 项目尚未初始化',
@@ -120,11 +128,13 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       created: '[FoxPilot] 已创建任务',
     },
     taskList: {
+      helpDescription: '列出当前项目下的任务，可按状态过滤。',
       projectNotInitialized: '[FoxPilot] 任务列表失败: 项目尚未初始化',
       empty: '[FoxPilot] 当前没有匹配任务',
       title: '[FoxPilot] 任务列表',
     },
     taskShow: {
+      helpDescription: '查看单个任务的详情和目标列表。',
       idRequired: '[FoxPilot] 任务详情失败: id 不能为空',
       projectNotInitialized: '[FoxPilot] 任务详情失败: 项目尚未初始化',
       taskNotFound: '[FoxPilot] 任务详情失败: 未找到任务',
@@ -133,6 +143,7 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       noTargets: '- (none)',
     },
     taskUpdateStatus: {
+      helpDescription: '更新当前项目中某个任务的状态。',
       idRequired: '[FoxPilot] 任务状态更新失败: id 不能为空',
       statusRequired: '[FoxPilot] 任务状态更新失败: status 非法或缺失',
       projectNotInitialized: '[FoxPilot] 任务状态更新失败: 项目尚未初始化',
@@ -141,6 +152,7 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       updated: '[FoxPilot] 已更新任务状态',
     },
     configSetLanguage: {
+      helpDescription: '设置 CLI 交互语言。',
       invalidLanguage: '[FoxPilot] 语言设置失败: lang 非法或缺失',
       malformedGlobalConfig: '[FoxPilot] 语言设置失败: foxpilot.config.json 格式错误',
       updated: '[FoxPilot] 已更新交互语言',
@@ -151,6 +163,7 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       unknownCommand: '[FoxPilot] Unknown command',
     },
     init: {
+      helpDescription: 'Initialize a managed project and write project config, global config, and SQLite catalog state.',
       cancelled: '[FoxPilot] Initialization cancelled',
       targetConfirmed: '[FoxPilot] Initialization target confirmed',
       projectConfigGenerated: '[FoxPilot] Project config generated',
@@ -180,6 +193,7 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       projectConfigWriteFailed: '[FoxPilot] Initialization failed: failed to write project config',
     },
     taskCreate: {
+      helpDescription: 'Create a manual task for the current managed project.',
       titleRequired: '[FoxPilot] Task creation failed: title is required',
       malformedGlobalConfig: '[FoxPilot] Task creation failed: foxpilot.config.json is malformed',
       projectNotInitialized: '[FoxPilot] Task creation failed: project is not initialized',
@@ -188,11 +202,13 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       created: '[FoxPilot] Task created',
     },
     taskList: {
+      helpDescription: 'List tasks for the current project.',
       projectNotInitialized: '[FoxPilot] Task list failed: Project is not initialized',
       empty: '[FoxPilot] No matching tasks',
       title: '[FoxPilot] Task list',
     },
     taskShow: {
+      helpDescription: 'Show detail and targets for a single task.',
       idRequired: '[FoxPilot] Task detail failed: id is required',
       projectNotInitialized: '[FoxPilot] Task detail failed: project is not initialized',
       taskNotFound: '[FoxPilot] Task detail failed: task was not found',
@@ -201,6 +217,7 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       noTargets: '- (none)',
     },
     taskUpdateStatus: {
+      helpDescription: 'Update the status of one task in the current project.',
       idRequired: '[FoxPilot] Task status update failed: id is required',
       statusRequired: '[FoxPilot] Task status update failed: status is invalid or missing',
       projectNotInitialized: '[FoxPilot] Task status update failed: project is not initialized',
@@ -209,6 +226,7 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       updated: '[FoxPilot] Task status updated',
     },
     configSetLanguage: {
+      helpDescription: 'Set the CLI interface language.',
       invalidLanguage: '[FoxPilot] Language update failed: lang is invalid or missing',
       malformedGlobalConfig: '[FoxPilot] Language update failed: foxpilot.config.json is malformed',
       updated: '[FoxPilot] Interface language updated',
@@ -219,6 +237,7 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       unknownCommand: '[FoxPilot] 不明なコマンドです',
     },
     init: {
+      helpDescription: '管理対象プロジェクトを初期化し、プロジェクト設定・グローバル設定・SQLite 索引を作成します。',
       cancelled: '[FoxPilot] 初期化をキャンセルしました',
       targetConfirmed: '[FoxPilot] 初期化対象を確認しました',
       projectConfigGenerated: '[FoxPilot] プロジェクト設定を生成しました',
@@ -248,6 +267,7 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       projectConfigWriteFailed: '[FoxPilot] 初期化に失敗しました: プロジェクト設定の書き込みに失敗しました',
     },
     taskCreate: {
+      helpDescription: '現在の管理対象プロジェクトに手動タスクを作成します。',
       titleRequired: '[FoxPilot] タスク作成に失敗しました: title は必須です',
       malformedGlobalConfig: '[FoxPilot] タスク作成に失敗しました: foxpilot.config.json の形式が不正です',
       projectNotInitialized: '[FoxPilot] タスク作成に失敗しました: プロジェクトが未初期化です',
@@ -256,11 +276,13 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       created: '[FoxPilot] タスクを作成しました',
     },
     taskList: {
+      helpDescription: '現在のプロジェクトのタスク一覧を表示します。',
       projectNotInitialized: '[FoxPilot] タスクリストに失敗しました: プロジェクトが未初期化です',
       empty: '[FoxPilot] 条件に一致するタスクはありません',
       title: '[FoxPilot] タスクリスト',
     },
     taskShow: {
+      helpDescription: '単一タスクの詳細と対象一覧を表示します。',
       idRequired: '[FoxPilot] タスク詳細に失敗しました: id は必須です',
       projectNotInitialized: '[FoxPilot] タスク詳細に失敗しました: プロジェクトが未初期化です',
       taskNotFound: '[FoxPilot] タスク詳細に失敗しました: タスクが見つかりません',
@@ -269,6 +291,7 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       noTargets: '- (none)',
     },
     taskUpdateStatus: {
+      helpDescription: '現在のプロジェクト内のタスク状態を更新します。',
       idRequired: '[FoxPilot] タスク状態更新に失敗しました: id は必須です',
       statusRequired: '[FoxPilot] タスク状態更新に失敗しました: status が不正または不足しています',
       projectNotInitialized: '[FoxPilot] タスク状態更新に失敗しました: プロジェクトが未初期化です',
@@ -277,6 +300,7 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       updated: '[FoxPilot] タスク状態を更新しました',
     },
     configSetLanguage: {
+      helpDescription: 'CLI の表示言語を設定します。',
       invalidLanguage: '[FoxPilot] 言語設定に失敗しました: lang が不正または不足しています',
       malformedGlobalConfig: '[FoxPilot] 言語設定に失敗しました: foxpilot.config.json の形式が不正です',
       updated: '[FoxPilot] インターフェース言語を更新しました',

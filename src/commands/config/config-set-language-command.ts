@@ -25,8 +25,12 @@ function getDependencies(
   }
 }
 
-function buildHelpText(): string {
+function buildHelpText(language: Parameters<typeof getMessages>[0]): string {
+  const messages = getMessages(language)
+
   return [
+    messages.configSetLanguage.helpDescription,
+    '',
     'foxpilot config set-language',
     'fp config set-language',
     '--lang zh-CN|en-US|ja-JP',
@@ -45,7 +49,7 @@ export async function runConfigSetLanguageCommand(
   if (args.help) {
     return {
       exitCode: 0,
-      stdout: buildHelpText(),
+      stdout: buildHelpText(context.interfaceLanguage),
     }
   }
 

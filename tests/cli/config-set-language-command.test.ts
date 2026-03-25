@@ -53,4 +53,23 @@ describe('config set-language CLI', () => {
     expect(result.exitCode).toBe(1)
     expect(result.stdout).toContain('Project is not initialized')
   })
+
+  it('localizes config help output after language is switched', async () => {
+    const homeDir = await createTempDir('foxpilot-home-')
+    tempDirs.push(homeDir)
+
+    const setLanguage = await runCli(
+      ['config', 'set-language', '--lang', 'en-US'],
+      { homeDir },
+    )
+    expect(setLanguage.exitCode).toBe(0)
+
+    const result = await runCli(
+      ['config', 'set-language', '--help'],
+      { homeDir },
+    )
+
+    expect(result.exitCode).toBe(0)
+    expect(result.stdout).toContain('Set the CLI interface language')
+  })
 })

@@ -30,8 +30,12 @@ function getDependencies(
   }
 }
 
-function buildHelpText(): string {
+function buildHelpText(language: Parameters<typeof getMessages>[0]): string {
+  const messages = getMessages(language)
+
   return [
+    messages.taskUpdateStatus.helpDescription,
+    '',
     'foxpilot task update-status',
     'fp task update-status',
     '--id <task-id>',
@@ -52,7 +56,7 @@ export async function runTaskUpdateStatusCommand(
   if (args.help) {
     return {
       exitCode: 0,
-      stdout: buildHelpText(),
+      stdout: buildHelpText(context.interfaceLanguage),
     }
   }
 

@@ -44,6 +44,25 @@ describe('foxpilot init CLI', () => {
     expect(result.stdout).toContain('foxpilot init')
   })
 
+  it('localizes init help output after language is switched', async () => {
+    const homeDir = await createTempDir('foxpilot-home-')
+    tempDirs.push(homeDir)
+
+    const setLanguage = await runCli(
+      ['config', 'set-language', '--lang', 'en-US'],
+      { homeDir },
+    )
+    expect(setLanguage.exitCode).toBe(0)
+
+    const result = await runCli(
+      ['init', '--help'],
+      { homeDir },
+    )
+
+    expect(result.exitCode).toBe(0)
+    expect(result.stdout).toContain('Initialize a managed project')
+  })
+
   it('initializes a project in non-interactive mode', async () => {
     const homeDir = await createTempDir('foxpilot-home-')
     const projectRoot = await createProjectFixture('foxpilot-project-')

@@ -236,8 +236,10 @@ function selectInterfaceLanguage(lines: string[], stdin: string[]): InterfaceLan
   return 'zh-CN'
 }
 
-function buildHelpText(): string {
+function buildHelpText(messages: MessageCatalog): string {
   return [
+    messages.init.helpDescription,
+    '',
     'foxpilot init',
     'fp init',
     '--path <project-root>',
@@ -410,7 +412,7 @@ export async function runInitCommand(args: InitArgs, context: InitCommandContext
   if (args.help) {
     return {
       exitCode: 0,
-      stdout: buildHelpText(),
+      stdout: buildHelpText(messages),
     }
   }
 

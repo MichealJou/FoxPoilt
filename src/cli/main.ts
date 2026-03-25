@@ -30,15 +30,6 @@ export async function main(
   const interfaceLanguage = context.interfaceLanguage ?? await resolveInterfaceLanguage({ homeDir })
   const messages = getMessages(interfaceLanguage)
 
-  // Help for init is kept as a lightweight fast path because it does not need
-  // the full command dependency graph.
-  if (args.command === 'init' && args.help) {
-    return {
-      exitCode: 0,
-      stdout: 'foxpilot init\nfp init',
-    }
-  }
-
   if (args.command === 'init') {
     return runInitCommand(
       {

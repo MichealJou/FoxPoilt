@@ -26,8 +26,12 @@ function getDependencies(
   }
 }
 
-function buildHelpText(): string {
+function buildHelpText(language: Parameters<typeof getMessages>[0]): string {
+  const messages = getMessages(language)
+
   return [
+    messages.taskShow.helpDescription,
+    '',
     'foxpilot task show',
     'fp task show',
     '--id <task-id>',
@@ -47,7 +51,7 @@ export async function runTaskShowCommand(
   if (args.help) {
     return {
       exitCode: 0,
-      stdout: buildHelpText(),
+      stdout: buildHelpText(context.interfaceLanguage),
     }
   }
 
