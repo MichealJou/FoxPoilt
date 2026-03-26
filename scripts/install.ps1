@@ -71,14 +71,42 @@ try {
     --install-root $InstallDir `
     --executable-path (Join-Path $InstallDir "foxpilot.cmd") | Out-Null
 
+  $userPath = [Environment]::GetEnvironmentVariable("Path", "User")
+  $userPathEntries = @()
+  if ($userPath) {
+    $userPathEntries = $userPath.Split(';') | Where-Object { $_ -and $_.Trim().Length -gt 0 }
+  }
+
+  $hasUserBin = $false
+  foreach ($entry in $userPathEntries) {
+    if ([System.StringComparer]::OrdinalIgnoreCase.Equals($entry, $BinDir)) {
+      $hasUserBin = $true
+      break
+    }
+  }
+
+  if (-not $hasUserBin) {
+    $nextUserPath = if ($userPathEntries.Count -eq 0) {
+      $BinDir
+    } else {
+      "$BinDir;$($userPathEntries -join ';')"
+    }
+
+    [Environment]::SetEnvironmentVariable("Path", $nextUserPath, "User")
+  }
+
+  if (-not (($env:Path -split ';') | Where-Object { [System.StringComparer]::OrdinalIgnoreCase.Equals($_, $BinDir) })) {
+    $env:Path = "$BinDir;$env:Path"
+  }
+
   Write-Output "[FoxPilot] Release 安装完成"
   Write-Output "- version: $Version"
   Write-Output "- asset: $assetName"
   Write-Output "- installDir: $InstallDir"
   Write-Output "- binDir: $BinDir"
   Write-Output ""
-  Write-Output "如果命令未立即生效，请把下面目录加入 PATH："
-  Write-Output $BinDir
+  Write-Output "[FoxPilot] 已写入用户 PATH"
+  Write-Output "如果当前终端里还不能直接执行命令，请重新打开 PowerShell。"
 } finally {
   if (Test-Path $tmpDir) {
     Remove-Item -Recurse -Force $tmpDir

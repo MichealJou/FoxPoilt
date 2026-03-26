@@ -59,6 +59,9 @@ FoxPilot 目前适合下面几类场景：
 curl -fsSL https://github.com/MichealJou/FoxPoilt/releases/latest/download/install.sh | sh
 ```
 
+安装脚本会自动把 `~/.foxpilot/bin` 写入你的 shell 启动文件。
+如果当前终端还不能直接执行命令，重新打开终端即可。
+
 #### 方式 2：Homebrew 安装
 
 > 🍺 适合已经习惯用 Homebrew 管理 CLI 的用户。
@@ -104,6 +107,8 @@ curl -fsSL https://github.com/MichealJou/FoxPoilt/releases/latest/download/insta
 ```powershell
 irm https://github.com/MichealJou/FoxPoilt/releases/latest/download/install.ps1 | iex
 ```
+
+安装脚本会自动写入用户级 `PATH`，通常重新打开 PowerShell 后即可生效。
 
 #### 方式 2：npm 全局安装
 

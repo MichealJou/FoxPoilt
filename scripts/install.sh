@@ -111,13 +111,42 @@ node "${install_dir}/dist/install/register-installation.js" \
   --install-root "${install_dir}" \
   --executable-path "${install_dir}/foxpilot" >/dev/null
 
+path_config_output=""
+path_config_exit_code=0
+
+if path_config_output="$(
+  node "${install_dir}/dist/install/configure-shell-path.js" \
+    --bin-dir "${bin_dir}" \
+    --shell-path "${SHELL:-}" 2>&1
+)"; then
+  path_config_exit_code=0
+else
+  path_config_exit_code=$?
+fi
+
 cat <<EOF
 [FoxPilot] Release 安装完成
 - version: ${version}
 - asset: ${asset_name}
 - installDir: ${install_dir}
 - binDir: ${bin_dir}
-
-如果命令未立即生效，请把下面目录加入 PATH：
-${bin_dir}
 EOF
+
+if [ "$path_config_exit_code" -eq 0 ]; then
+  profile_path="$(printf '%s\n' "${path_config_output}" | sed -n 's/^- profilePath: //p' | head -n 1)"
+  printf '%s\n' "${path_config_output}"
+  if [ -n "${profile_path}" ]; then
+    cat <<EOF
+
+如果当前终端里还不能直接执行命令，请重新打开终端，或执行：
+source "${profile_path}"
+EOF
+  fi
+else
+  cat <<EOF
+[FoxPilot] 未能自动写入 PATH，请手动把下面目录加入 PATH：
+${bin_dir}
+
+${path_config_output}
+EOF
+fi

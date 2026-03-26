@@ -59,6 +59,9 @@ FoxPilot は現在、次のような用途に向いています。
 curl -fsSL https://github.com/MichealJou/FoxPoilt/releases/latest/download/install.sh | sh
 ```
 
+インストーラは `~/.foxpilot/bin` をシェル起動ファイルへ自動で追記します。
+現在のターミナルでコマンドが見つからない場合は、ターミナルを開き直してください。
+
 #### 方法 2: Homebrew
 
 > 🍺 Homebrew で CLI を管理している利用者向けです。
@@ -104,6 +107,8 @@ curl -fsSL https://github.com/MichealJou/FoxPoilt/releases/latest/download/insta
 ```powershell
 irm https://github.com/MichealJou/FoxPoilt/releases/latest/download/install.ps1 | iex
 ```
+
+インストーラはユーザー PATH を自動更新します。必要なら PowerShell を開き直してください。
 
 #### 方法 2: npm グローバルインストール
 

@@ -16,6 +16,7 @@ set -euo pipefail
 # 10. 已安装包支持 dry-run 预演而不落库。
 
 workspace_root="$(pwd)"
+package_version="$(node -p "require('./package.json').version")"
 tmp_root="$(mktemp -d)"
 pack_dir="$tmp_root/pack"
 consumer_dir="$tmp_root/consumer"
@@ -43,7 +44,7 @@ version_output="$(
   ./node_modules/.bin/foxpilot version
 )"
 
-echo "$version_output" | grep -- 'version: 0.1.0' >/dev/null
+echo "$version_output" | grep -- "version: $package_version" >/dev/null
 
 install_info_before_init="$(
   HOME="$home_dir" ./node_modules/.bin/foxpilot install-info

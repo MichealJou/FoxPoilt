@@ -59,6 +59,9 @@ If you want the fastest path, use this order:
 curl -fsSL https://github.com/MichealJou/FoxPoilt/releases/latest/download/install.sh | sh
 ```
 
+The installer automatically writes `~/.foxpilot/bin` into your shell startup file.
+If the current terminal still cannot find the command, reopen the terminal.
+
 #### Option 2: Homebrew
 
 > 🍺 Best if you already manage CLIs with Homebrew.
@@ -104,6 +107,8 @@ curl -fsSL https://github.com/MichealJou/FoxPoilt/releases/latest/download/insta
 ```powershell
 irm https://github.com/MichealJou/FoxPoilt/releases/latest/download/install.ps1 | iex
 ```
+
+The installer automatically updates the user-level `PATH`. Reopen PowerShell if needed.
 
 #### Option 2: Global npm Install
 
