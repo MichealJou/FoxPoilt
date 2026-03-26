@@ -261,6 +261,8 @@ CREATE TABLE task (
   current_executor TEXT NOT NULL DEFAULT 'none' CHECK (
     current_executor IN ('codex', 'beads', 'none')
   ),
+  external_source TEXT,
+  external_id TEXT,
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL,
   FOREIGN KEY (project_id) REFERENCES project(id)
@@ -272,6 +274,8 @@ CREATE TABLE task (
 - `task` 只保存当前状态，不保存完整执行历史
 - `current_executor` 只表达当前责任执行器
 - 多次分析、执行、验证历史统一进入 `task_run`
+- `external_source` 和 `external_id` 用于最小外部同步幂等键
+- 手工任务允许 `external_source` / `external_id` 为空
 
 ### 5.5 task_target
 

@@ -13,6 +13,7 @@ import type { CliResult, InitCommandContext } from '@/commands/init/init-types.j
 import { runTaskCreateCommand } from '@/commands/task/task-create-command.js'
 import { runTaskEditCommand } from '@/commands/task/task-edit-command.js'
 import { runTaskHistoryCommand } from '@/commands/task/task-history-command.js'
+import { runTaskImportBeadsCommand } from '@/commands/task/task-import-beads-command.js'
 import { runTaskListCommand } from '@/commands/task/task-list-command.js'
 import { runTaskNextCommand } from '@/commands/task/task-next-command.js'
 import { runTaskShowCommand } from '@/commands/task/task-show-command.js'
@@ -253,6 +254,26 @@ export async function main(
         help: args.help,
         path: args.path,
         id: args.id,
+      },
+      {
+        binName: context.binName ?? 'foxpilot',
+        cwd: context.cwd ?? process.cwd(),
+        homeDir,
+        stdin: [...(context.stdin ?? [])],
+        interfaceLanguage,
+        dependencies: context.dependencies,
+      },
+    )
+  }
+
+  if (args.command === 'task' && args.subcommand === 'import-beads') {
+    return runTaskImportBeadsCommand(
+      {
+        command: 'task',
+        subcommand: 'import-beads',
+        help: args.help,
+        path: args.path,
+        file: args.file,
       },
       {
         binName: context.binName ?? 'foxpilot',

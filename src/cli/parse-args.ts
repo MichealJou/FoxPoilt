@@ -50,6 +50,8 @@ export type CliArgs = {
   executor?: 'codex' | 'beads' | 'none'
   /** 配置命令使用的可选交互语言。 */
   lang?: InterfaceLanguage
+  /** 从外部快照导入任务时使用的文件路径。 */
+  file?: string
 }
 
 /**
@@ -85,6 +87,7 @@ export function parseArgs(argv: string[]): CliArgs {
   let id: string | undefined
   let executor: 'codex' | 'beads' | 'none' | undefined
   let lang: InterfaceLanguage | undefined
+  let file: string | undefined
   let status:
     | 'todo'
     | 'analyzing'
@@ -231,6 +234,12 @@ export function parseArgs(argv: string[]): CliArgs {
         lang = nextValue
       }
       index += 1
+      continue
+    }
+
+    if (value === '--file') {
+      file = rest[index + 1]
+      index += 1
     }
   }
 
@@ -254,5 +263,6 @@ export function parseArgs(argv: string[]): CliArgs {
     id,
     executor,
     lang,
+    file,
   }
 }

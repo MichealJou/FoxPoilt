@@ -28,6 +28,9 @@ FoxPilot is a local multi-project task control tool for developer workspaces. It
   - Inspect task detail and targets
 - `foxpilot task history`
   - Inspect task run history
+- `foxpilot task import-beads`
+  - Import Beads tasks from a local JSON snapshot
+  - Apply idempotent create, update, and skip behavior by external task ID
 - `foxpilot task suggest-scan`
   - Generate scan suggestion tasks for registered repositories
   - Skip repositories that already have unfinished suggestions
@@ -122,6 +125,12 @@ Show task history:
 foxpilot task history --id task:example
 ```
 
+Import a Beads snapshot:
+
+```bash
+foxpilot task import-beads --file ./fixtures/beads-snapshot.json
+```
+
 Generate scan suggestion tasks:
 
 ```bash
@@ -155,4 +164,4 @@ foxpilot task update-status --id task:example --status executing
 
 ## Status
 
-The repository is now in the CLI MVP implementation stage. Core initialization, manual task management, next-task selection, task metadata editing, scan suggestion tasks, executor switching, priority adjustment, task run history, and minimal transition-guard flows are available, and the next iterations will extend collaboration orchestration.
+The repository is now in the CLI MVP implementation stage. Core initialization, manual task management, local Beads snapshot import, next-task selection, task metadata editing, scan suggestion tasks, executor switching, priority adjustment, task run history, and minimal transition-guard flows are available, and the next iterations will extend collaboration orchestration.

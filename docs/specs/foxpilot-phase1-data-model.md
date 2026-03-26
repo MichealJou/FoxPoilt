@@ -128,6 +128,8 @@ FoxPilot 的任务默认挂在项目层。
 - `execution_mode`
 - `requires_plan_confirm`
 - `current_executor`
+- `external_source`
+- `external_id`
 - `created_at`
 - `updated_at`
 
@@ -166,6 +168,12 @@ FoxPilot 的任务默认挂在项目层。
   - `codex`
   - `beads`
   - `none`
+- `external_source`：
+  - 第一阶段最小值先支持 `beads`
+  - 手工任务允许为空
+- `external_id`：
+  - 保存外部系统中的稳定任务标识
+  - 仅在外部同步任务中有值
 
 ### 3.5 任务目标 task_target
 
@@ -305,4 +313,3 @@ FoxPilot 第一阶段必须保持以下通用性：
 1. SQLite 表结构设计
 2. 本地配置文件结构设计
 3. 命令初始化输入输出设计
-

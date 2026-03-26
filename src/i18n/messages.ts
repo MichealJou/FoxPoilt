@@ -107,6 +107,17 @@ export type MessageCatalog = {
     created: string
     taskTitle: (repositoryName: string) => string
   }
+  taskImportBeads: {
+    helpDescription: string
+    fileRequired: string
+    fileReadFailed: string
+    invalidJson: string
+    invalidPayload: string
+    projectNotInitialized: string
+    dbBootstrapFailed: string
+    completed: string
+    rejectedTitle: string
+  }
   taskUpdateStatus: {
       helpDescription: string
       idRequired: string
@@ -246,6 +257,17 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       created: '[FoxPilot] 已生成扫描建议任务',
       taskTitle: (repositoryName) => `扫描建议: ${repositoryName}`,
     },
+    taskImportBeads: {
+      helpDescription: '从本地 JSON 快照导入 Beads 任务。',
+      fileRequired: '[FoxPilot] Beads 导入失败: file 不能为空',
+      fileReadFailed: '[FoxPilot] Beads 导入失败: 无法读取导入文件',
+      invalidJson: '[FoxPilot] Beads 导入失败: JSON 格式错误',
+      invalidPayload: '[FoxPilot] Beads 导入失败: 导入文件必须是任务数组',
+      projectNotInitialized: '[FoxPilot] Beads 导入失败: 项目尚未初始化',
+      dbBootstrapFailed: '[FoxPilot] Beads 导入失败: foxpilot.db 初始化失败',
+      completed: '[FoxPilot] 已完成 Beads 任务导入',
+      rejectedTitle: '[FoxPilot] 以下记录已拒绝',
+    },
     taskUpdateStatus: {
       helpDescription: '更新当前项目中某个任务的状态。',
       idRequired: '[FoxPilot] 任务状态更新失败: id 不能为空',
@@ -383,6 +405,17 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       created: '[FoxPilot] Scan suggestion tasks created',
       taskTitle: (repositoryName) => `Scan suggestion: ${repositoryName}`,
     },
+    taskImportBeads: {
+      helpDescription: 'Import Beads tasks from a local JSON snapshot.',
+      fileRequired: '[FoxPilot] Beads import failed: file is required',
+      fileReadFailed: '[FoxPilot] Beads import failed: unable to read snapshot file',
+      invalidJson: '[FoxPilot] Beads import failed: invalid JSON format',
+      invalidPayload: '[FoxPilot] Beads import failed: snapshot must be an array of tasks',
+      projectNotInitialized: '[FoxPilot] Beads import failed: project is not initialized',
+      dbBootstrapFailed: '[FoxPilot] Beads import failed: failed to initialize foxpilot.db',
+      completed: '[FoxPilot] Beads import completed',
+      rejectedTitle: '[FoxPilot] Rejected records',
+    },
     taskUpdateStatus: {
       helpDescription: 'Update the status of one task in the current project.',
       idRequired: '[FoxPilot] Task status update failed: id is required',
@@ -519,6 +552,17 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       dbBootstrapFailed: '[FoxPilot] 走査提案に失敗しました: foxpilot.db の初期化に失敗しました',
       created: '[FoxPilot] 走査提案タスクを生成しました',
       taskTitle: (repositoryName) => `スキャン提案: ${repositoryName}`,
+    },
+    taskImportBeads: {
+      helpDescription: 'ローカル JSON スナップショットから Beads タスクを取り込みます。',
+      fileRequired: '[FoxPilot] Beads 取り込みに失敗しました: file は必須です',
+      fileReadFailed: '[FoxPilot] Beads 取り込みに失敗しました: スナップショットファイルを読み込めません',
+      invalidJson: '[FoxPilot] Beads 取り込みに失敗しました: JSON 形式が不正です',
+      invalidPayload: '[FoxPilot] Beads 取り込みに失敗しました: スナップショットはタスク配列である必要があります',
+      projectNotInitialized: '[FoxPilot] Beads 取り込みに失敗しました: プロジェクトが未初期化です',
+      dbBootstrapFailed: '[FoxPilot] Beads 取り込みに失敗しました: foxpilot.db の初期化に失敗しました',
+      completed: '[FoxPilot] Beads タスクの取り込みが完了しました',
+      rejectedTitle: '[FoxPilot] 以下のレコードは拒否されました',
     },
     taskUpdateStatus: {
       helpDescription: '現在のプロジェクト内のタスク状態を更新します。',

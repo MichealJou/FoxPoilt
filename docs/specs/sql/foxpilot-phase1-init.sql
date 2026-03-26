@@ -70,6 +70,8 @@ CREATE TABLE IF NOT EXISTS task (
   current_executor TEXT NOT NULL DEFAULT 'none' CHECK (
     current_executor IN ('codex', 'beads', 'none')
   ),
+  external_source TEXT,
+  external_id TEXT,
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL,
   FOREIGN KEY (project_id) REFERENCES project(id)
@@ -129,6 +131,10 @@ ON task(status, priority);
 
 CREATE INDEX IF NOT EXISTS idx_task_updated_at
 ON task(updated_at);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_task_external_ref
+ON task(project_id, external_source, external_id)
+WHERE external_source IS NOT NULL AND external_id IS NOT NULL;
 
 CREATE INDEX IF NOT EXISTS idx_task_target_task_id
 ON task_target(task_id);

@@ -10,8 +10,14 @@ FoxPilot 是一个面向本地开发环境的多项目任务中控工具。
 - `foxpilot config set-language`
 - `foxpilot task create`
 - `foxpilot task list`
+- `foxpilot task next`
+- `foxpilot task edit`
 - `foxpilot task show`
 - `foxpilot task history`
+- `foxpilot task import-beads`
+- `foxpilot task suggest-scan`
+- `foxpilot task update-executor`
+- `foxpilot task update-priority`
 - `foxpilot task update-status`
 
 阅读完整中文说明：

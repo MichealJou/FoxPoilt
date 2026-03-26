@@ -42,10 +42,27 @@ export type TaskRow = {
   requires_plan_confirm: number
   /** 当前默认执行方。 */
   current_executor: 'codex' | 'beads' | 'none'
+  /** 外部任务来源键；本地创建任务为空。 */
+  external_source: 'beads' | null
+  /** 外部系统中的稳定任务 ID；本地创建任务为空。 */
+  external_id: string | null
   /** 任务首次创建时间。 */
   created_at: string
   /** 任务最近一次状态或内容更新时间。 */
   updated_at: string
+}
+
+/**
+ * 写入 `task` 表时使用的输入结构。
+ *
+ * 现有大多数创建路径都属于本地任务，不应被强制要求填写外部来源字段；
+ * 因此这里把外部同步标识改成可选，再由仓储层统一补成 `null`。
+ */
+export type TaskCreateInputRow = Omit<TaskRow, 'external_source' | 'external_id'> & {
+  /** 外部来源键；未提供时表示本地任务。 */
+  external_source?: TaskRow['external_source']
+  /** 外部系统中的任务 ID；未提供时表示本地任务。 */
+  external_id?: TaskRow['external_id']
 }
 
 /**
@@ -186,6 +203,36 @@ export type TaskDetail = {
   }>
 }
 
+/**
+ * 外部同步命中后返回的最小快照。
+ *
+ * 这份结构只保留导入命令判断“要不要更新”的字段，避免把整行 `task` 都读上来。
+ */
+export type ExternalTaskSnapshotRow = {
+  /** 本地任务主键。 */
+  id: string
+  /** 当前任务标题。 */
+  title: string
+  /** 当前任务状态。 */
+  status: TaskRow['status']
+  /** 当前任务优先级。 */
+  priority: TaskRow['priority']
+  /** 当前任务类型。 */
+  task_type: TaskRow['task_type']
+  /** 当前执行模式。 */
+  execution_mode: TaskRow['execution_mode']
+  /** 当前是否要求人工确认计划。 */
+  requires_plan_confirm: number
+  /** 当前默认执行方。 */
+  current_executor: TaskRow['current_executor']
+  /** 外部来源键。 */
+  external_source: NonNullable<TaskRow['external_source']>
+  /** 外部任务 ID。 */
+  external_id: string
+  /** 当前仓库目标；没有仓库目标时为空。 */
+  repository_id: string | null
+}
+
 function countRows(db: SqliteDatabase, tableName: 'task' | 'task_target' | 'task_run'): number {
   const row = db.prepare(`SELECT COUNT(*) AS count FROM ${tableName}`).get() as { count: number }
   return row.count
@@ -195,10 +242,12 @@ export function createTaskStore(db: SqliteDatabase) {
   const insertTaskStmt = db.prepare(`
     INSERT INTO task (
       id, project_id, title, description, source_type, status, priority, task_type,
-      execution_mode, requires_plan_confirm, current_executor, created_at, updated_at
+      execution_mode, requires_plan_confirm, current_executor, external_source, external_id,
+      created_at, updated_at
     ) VALUES (
       @id, @project_id, @title, @description, @source_type, @status, @priority, @task_type,
-      @execution_mode, @requires_plan_confirm, @current_executor, @created_at, @updated_at
+      @execution_mode, @requires_plan_confirm, @current_executor, @external_source, @external_id,
+      @created_at, @updated_at
     )
   `)
 
@@ -223,12 +272,66 @@ export function createTaskStore(db: SqliteDatabase) {
    * 1. 任务主记录和目标记录要么一起成功，要么一起失败。
    * 2. 否则会出现“有任务没目标”或“有目标没任务”的脏状态。
    */
-  const createTaskTx = db.transaction((input: { task: TaskRow; targets: TaskTargetRow[] }) => {
-    insertTaskStmt.run(input.task)
+  const createTaskTx = db.transaction((input: { task: TaskCreateInputRow; targets: TaskTargetRow[] }) => {
+    insertTaskStmt.run({
+      ...input.task,
+      external_source: input.task.external_source ?? null,
+      external_id: input.task.external_id ?? null,
+    })
 
     for (const target of input.targets) {
       insertTaskTargetStmt.run(target)
     }
+  })
+
+  /**
+   * 把外部快照覆盖到现有任务，并同步替换仓库目标。
+   *
+   * 这里显式保留事务，是为了保证：
+   * - 任务标题、状态、优先级更新成功时；
+   * - 仓库目标也必须同步成功；
+   * - 不能留下“任务已经更新，但目标还是旧仓库”的半同步状态。
+   */
+  const syncImportedTaskTx = db.transaction((input: {
+    projectId: string
+    taskId: string
+    task: Pick<
+      TaskRow,
+      | 'title'
+      | 'source_type'
+      | 'status'
+      | 'priority'
+      | 'task_type'
+      | 'execution_mode'
+      | 'requires_plan_confirm'
+      | 'current_executor'
+      | 'external_source'
+      | 'external_id'
+    >
+    repositoryTarget: TaskTargetRow
+    updatedAt: string
+  }) => {
+    updateImportedTaskSnapshotStmt.run({
+      project_id: input.projectId,
+      id: input.taskId,
+      title: input.task.title,
+      source_type: input.task.source_type,
+      status: input.task.status,
+      priority: input.task.priority,
+      task_type: input.task.task_type,
+      execution_mode: input.task.execution_mode,
+      requires_plan_confirm: input.task.requires_plan_confirm,
+      current_executor: input.task.current_executor,
+      external_source: input.task.external_source,
+      external_id: input.task.external_id,
+      updated_at: input.updatedAt,
+    })
+
+    deleteTaskTargetsStmt.run({
+      task_id: input.taskId,
+    })
+
+    insertTaskTargetStmt.run(input.repositoryTarget)
   })
 
   const listTasksStmt = db.prepare(`
@@ -311,6 +414,47 @@ export function createTaskStore(db: SqliteDatabase) {
       AND id = @id
   `)
 
+  const getTaskByExternalRefStmt = db.prepare(`
+    SELECT
+      t.id,
+      t.title,
+      t.status,
+      t.priority,
+      t.task_type,
+      t.execution_mode,
+      t.requires_plan_confirm,
+      t.current_executor,
+      t.external_source,
+      t.external_id,
+      tt.repository_id
+    FROM task t
+    LEFT JOIN task_target tt
+      ON tt.task_id = t.id
+      AND tt.target_type = 'repository'
+    WHERE t.project_id = @project_id
+      AND t.external_source = @external_source
+      AND t.external_id = @external_id
+    ORDER BY tt.created_at ASC
+    LIMIT 1
+  `)
+
+  const updateImportedTaskSnapshotStmt = db.prepare(`
+    UPDATE task
+    SET title = @title,
+        source_type = @source_type,
+        status = @status,
+        priority = @priority,
+        task_type = @task_type,
+        execution_mode = @execution_mode,
+        requires_plan_confirm = @requires_plan_confirm,
+        current_executor = @current_executor,
+        external_source = @external_source,
+        external_id = @external_id,
+        updated_at = @updated_at
+    WHERE project_id = @project_id
+      AND id = @id
+  `)
+
   const getTaskDetailStmt = db.prepare(`
     SELECT id, title, description, status, priority, task_type, current_executor, updated_at
     FROM task
@@ -325,6 +469,11 @@ export function createTaskStore(db: SqliteDatabase) {
     LEFT JOIN repository r ON r.id = tt.repository_id
     WHERE tt.task_id = ?
     ORDER BY tt.created_at ASC
+  `)
+
+  const deleteTaskTargetsStmt = db.prepare(`
+    DELETE FROM task_target
+    WHERE task_id = @task_id
   `)
 
   const listTaskRunsStmt = db.prepare(`
@@ -379,7 +528,7 @@ export function createTaskStore(db: SqliteDatabase) {
      *
      * 这是任务登记的主入口。
      */
-    createTask(input: { task: TaskRow; targets: TaskTargetRow[] }): void {
+    createTask(input: { task: TaskCreateInputRow; targets: TaskTargetRow[] }): void {
       createTaskTx(input)
     },
     /** 返回任务行数，主要供测试验证存储状态使用。 */
@@ -426,6 +575,26 @@ export function createTaskStore(db: SqliteDatabase) {
           project_id: input.projectId,
           id: input.taskId,
         }) as TaskSummaryRow | undefined) ?? null
+      )
+    },
+    /**
+     * 按外部来源键读取已导入任务。
+     *
+     * 导入命令依赖这个查询来实现幂等：
+     * - 命中则比较差异，决定更新还是跳过；
+     * - 未命中则创建新任务。
+     */
+    getTaskByExternalRef(input: {
+      projectId: string
+      externalSource: NonNullable<TaskRow['external_source']>
+      externalId: string
+    }): ExternalTaskSnapshotRow | null {
+      return (
+        (getTaskByExternalRefStmt.get({
+          project_id: input.projectId,
+          external_source: input.externalSource,
+          external_id: input.externalId,
+        }) as ExternalTaskSnapshotRow | undefined) ?? null
       )
     },
     /**
@@ -542,6 +711,32 @@ export function createTaskStore(db: SqliteDatabase) {
       })
 
       return result.changes > 0
+    },
+    /**
+     * 用最新外部快照覆盖已有任务的当前态和仓库目标。
+     *
+     * 这一层不处理“是否应该更新”的判断，只负责在被命令层确认后安全落库。
+     */
+    syncImportedTaskSnapshot(input: {
+      projectId: string
+      taskId: string
+      task: Pick<
+        TaskRow,
+        | 'title'
+        | 'source_type'
+        | 'status'
+        | 'priority'
+        | 'task_type'
+        | 'execution_mode'
+        | 'requires_plan_confirm'
+        | 'current_executor'
+        | 'external_source'
+        | 'external_id'
+      >
+      repositoryTarget: TaskTargetRow
+      updatedAt: string
+    }): void {
+      syncImportedTaskTx(input)
     },
     /**
      * 新建一条运行历史。
