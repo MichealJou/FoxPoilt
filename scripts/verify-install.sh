@@ -189,6 +189,17 @@ echo "$dry_run_output" | grep -- '- created: 0' >/dev/null
   echo "$bd_after_push" | grep -- '验证安装后可直接回写 bd' >/dev/null
   echo "$bd_after_push" | grep -- '"status": "in_progress"' >/dev/null
   echo "$bd_after_push" | grep -- '"priority": 0' >/dev/null
+
+  push_repository_output="$(
+    HOME="$home_dir" "$consumer_dir/node_modules/.bin/foxpilot" task push-beads \
+      --path "$project_dir" \
+      --repository frontend \
+      --dry-run
+  )"
+
+  echo "$push_repository_output" | grep -- '- mode: repository' >/dev/null
+  echo "$push_repository_output" | grep -- '- repository: frontend' >/dev/null
+  echo "$push_repository_output" | grep -- '- dryRun: true' >/dev/null
 )
 
 sync_all_output="$(
@@ -212,6 +223,17 @@ live_diff_output="$(
 echo "$live_diff_output" | grep -- '- mode: all-repositories' >/dev/null
 echo "$live_diff_output" | grep -- '- previewedRepositories: 1' >/dev/null
 echo "$live_diff_output" | grep -- '- skippedRepositories: 1' >/dev/null
+
+push_all_output="$(
+  HOME="$home_dir" "$consumer_dir/node_modules/.bin/foxpilot" task push-beads \
+    --path "$project_dir" \
+    --all-repositories \
+    --dry-run
+)"
+
+echo "$push_all_output" | grep -- '- mode: all-repositories' >/dev/null
+echo "$push_all_output" | grep -- '- pushedRepositories: 1' >/dev/null
+echo "$push_all_output" | grep -- '- skippedRepositories: 1' >/dev/null
 
 printf '[FoxPilot] verify:install passed\n'
 printf -- '- workspace: %s\n' "$workspace_root"

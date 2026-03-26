@@ -24,6 +24,10 @@ export type TaskPushBeadsArgs = {
   help: boolean
   /** 可选项目根目录覆盖值。 */
   path?: string
+  /** 指定单个仓库做批量回写。 */
+  repository?: string
+  /** 为 true 时，对项目内全部仓库执行聚合回写。 */
+  allRepositories: boolean
   /** FoxPilot 内部任务主键。 */
   id?: string
   /** 外部任务号；未提供内部 ID 时默认按 Beads 来源解析。 */

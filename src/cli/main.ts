@@ -287,6 +287,8 @@ export async function main(
         subcommand: 'push-beads',
         help: args.help,
         path: args.path,
+        repository: args.repository,
+        allRepositories: args.allRepositories,
         id: args.id,
         externalId: args.externalId,
         externalSource: args.externalSource,

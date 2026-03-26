@@ -100,11 +100,13 @@ export type MessageCatalog = {
   }
   taskPushBeads: {
     helpDescription: string
+    targetRequired: string
     idRequired: string
     projectNotInitialized: string
     dbBootstrapFailed: string
     taskNotFound: string
     notImportedTask: string
+    repositoryNotFound: string
     repositoryNotInitialized: string
     pushFailed: string
     completed: string
@@ -303,11 +305,13 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
     },
     taskPushBeads: {
       helpDescription: '把当前项目中的单条 Beads 导入任务回写到本地 bd 仓库。',
+      targetRequired: '[FoxPilot] Beads 回写失败: id、external-id、repository 或 --all-repositories 必须提供其一',
       idRequired: '[FoxPilot] Beads 回写失败: id 或 external-id 不能为空',
       projectNotInitialized: '[FoxPilot] Beads 回写失败: 项目尚未初始化',
       dbBootstrapFailed: '[FoxPilot] Beads 回写失败: foxpilot.db 初始化失败',
       taskNotFound: '[FoxPilot] Beads 回写失败: 未找到任务',
       notImportedTask: '[FoxPilot] Beads 回写失败: 任务不是 Beads 导入任务',
+      repositoryNotFound: '[FoxPilot] Beads 回写失败: repository 不存在',
       repositoryNotInitialized: '[FoxPilot] Beads 回写失败: 目标仓库未初始化本地 Beads',
       pushFailed: '[FoxPilot] Beads 回写失败: 无法执行 bd update',
       completed: '[FoxPilot] 已完成 Beads 回写',
@@ -504,11 +508,13 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
     },
     taskPushBeads: {
       helpDescription: 'Push one imported Beads task from the current project back to the local bd repository.',
+      targetRequired: '[FoxPilot] Beads push failed: id, external-id, repository, or --all-repositories is required',
       idRequired: '[FoxPilot] Beads push failed: id or external-id is required',
       projectNotInitialized: '[FoxPilot] Beads push failed: project is not initialized',
       dbBootstrapFailed: '[FoxPilot] Beads push failed: failed to initialize foxpilot.db',
       taskNotFound: '[FoxPilot] Beads push failed: task was not found',
       notImportedTask: '[FoxPilot] Beads push failed: task is not an imported Beads task',
+      repositoryNotFound: '[FoxPilot] Beads push failed: repository was not found',
       repositoryNotInitialized: '[FoxPilot] Beads push failed: target repository has not initialized local Beads',
       pushFailed: '[FoxPilot] Beads push failed: unable to execute bd update',
       completed: '[FoxPilot] Beads push completed',
@@ -705,11 +711,13 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
     },
     taskPushBeads: {
       helpDescription: '現在のプロジェクト内の単一 Beads 取り込みタスクをローカル bd リポジトリへ書き戻します。',
+      targetRequired: '[FoxPilot] Beads 書き戻しに失敗しました: id、external-id、repository、--all-repositories のいずれかが必須です',
       idRequired: '[FoxPilot] Beads 書き戻しに失敗しました: id または external-id は必須です',
       projectNotInitialized: '[FoxPilot] Beads 書き戻しに失敗しました: プロジェクトが未初期化です',
       dbBootstrapFailed: '[FoxPilot] Beads 書き戻しに失敗しました: foxpilot.db の初期化に失敗しました',
       taskNotFound: '[FoxPilot] Beads 書き戻しに失敗しました: タスクが見つかりません',
       notImportedTask: '[FoxPilot] Beads 書き戻しに失敗しました: タスクは Beads 取り込みタスクではありません',
+      repositoryNotFound: '[FoxPilot] Beads 書き戻しに失敗しました: repository が見つかりません',
       repositoryNotInitialized: '[FoxPilot] Beads 書き戻しに失敗しました: 対象リポジトリでローカル Beads が未初期化です',
       pushFailed: '[FoxPilot] Beads 書き戻しに失敗しました: bd update を実行できません',
       completed: '[FoxPilot] Beads 書き戻しが完了しました',

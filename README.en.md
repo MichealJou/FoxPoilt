@@ -45,7 +45,7 @@ FoxPilot is a local multi-project task control tool for developer workspaces. It
   - Support `--dry-run`, repository-scoped `--close-missing`, and `--all-repositories`
 - `foxpilot task push-beads`
   - Push one imported Beads task back to the local `bd` repository
-  - Support `--id`, `--external-id`, and `--dry-run`
+  - Support `--id`, `--external-id`, `--repository`, `--all-repositories`, and `--dry-run`
 - `foxpilot task export-beads`
   - Export Beads sync tasks in the current project back to a local JSON snapshot
   - Produce a snapshot compatible with `import-beads`
@@ -180,6 +180,8 @@ Push one modified task back to local `bd`:
 ```bash
 foxpilot task push-beads --external-id BEADS-1001
 foxpilot task push-beads --id task:example --dry-run
+foxpilot task push-beads --repository frontend
+foxpilot task push-beads --all-repositories --dry-run
 ```
 
 Export a Beads snapshot:

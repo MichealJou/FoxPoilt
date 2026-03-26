@@ -177,6 +177,23 @@ export type OpenImportedTaskReferenceRow = {
 }
 
 /**
+ * 当前项目内全部外部同步任务的最小引用。
+ *
+ * 这份结构用于“回写外部系统”场景，因此不再过滤未完成状态。
+ * 即使任务已经被本地推进到 `done` 或 `cancelled`，也仍然可能需要把关闭结果回写出去。
+ */
+export type ImportedTaskReferenceRow = {
+  /** 本地任务主键。 */
+  id: string
+  /** 外部系统来源键。 */
+  external_source: NonNullable<TaskRow['external_source']>
+  /** 外部系统稳定任务号。 */
+  external_id: string
+  /** 当前任务绑定的仓库主键；若无仓库目标则为空。 */
+  repository_id: string | null
+}
+
+/**
  * 更新前用于存在性检查的最小任务投影。
  *
  * 这个结构只保留状态变更前真正需要读出的最小字段，避免多查无关信息。
@@ -605,6 +622,37 @@ export function createTaskStore(db: SqliteDatabase) {
     ORDER BY t.external_id ASC
   `)
 
+  const listImportedTaskReferencesStmt = db.prepare(`
+    SELECT
+      t.id,
+      t.external_source,
+      t.external_id,
+      (
+        SELECT tt.repository_id
+        FROM task_target tt
+        WHERE tt.task_id = t.id
+          AND tt.target_type = 'repository'
+        ORDER BY tt.created_at ASC
+        LIMIT 1
+      ) AS repository_id
+    FROM task t
+    WHERE t.project_id = @project_id
+      AND t.source_type = 'beads_sync'
+      AND t.external_source = @external_source
+      AND t.external_id IS NOT NULL
+      AND (
+        @repository_id IS NULL
+        OR EXISTS (
+          SELECT 1
+          FROM task_target tt
+          WHERE tt.task_id = t.id
+            AND tt.target_type = 'repository'
+            AND tt.repository_id = @repository_id
+        )
+      )
+    ORDER BY t.external_id ASC
+  `)
+
   const listExportableBeadsTasksStmt = db.prepare(`
     SELECT
       t.external_id,
@@ -977,6 +1025,25 @@ export function createTaskStore(db: SqliteDatabase) {
         external_source: input.externalSource,
         repository_id: input.repositoryId ?? null,
       }) as OpenImportedTaskReferenceRow[]
+    },
+    /**
+     * 列出当前项目里全部 Beads 导入任务引用。
+     *
+     * 这条查询服务于“反向回写”：
+     * - 不过滤 `done` / `cancelled`；
+     * - 因为这些状态也需要被折叠成 bd 的 `closed` 再写回来源仓库；
+     * - 允许按仓库进一步收窄。
+     */
+    listImportedTaskReferences(input: {
+      projectId: string
+      externalSource: NonNullable<TaskRow['external_source']>
+      repositoryId?: string
+    }): ImportedTaskReferenceRow[] {
+      return listImportedTaskReferencesStmt.all({
+        project_id: input.projectId,
+        external_source: input.externalSource,
+        repository_id: input.repositoryId ?? null,
+      }) as ImportedTaskReferenceRow[]
     },
     /**
      * 列出当前项目里可导出为 Beads 本地快照的任务。
