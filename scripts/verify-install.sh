@@ -9,10 +9,11 @@ set -euo pipefail
 # 3. 非交互 `init` 能真实写出项目配置、全局配置和数据库；
 # 4. 已安装包内置的 Beads 样例快照可以被真实导入。
 # 5. 已安装包可以直接通过外部任务号读取导入任务。
-# 6. 已安装包支持把当前 Beads 同步任务重新导出为本地快照。
-# 7. 已安装包支持只读的差异预览。
-# 8. 已安装包支持显式收口快照中已缺失的外部任务。
-# 9. 已安装包支持 dry-run 预演而不落库。
+# 6. 已安装包支持把单条导入任务回写到本地 bd 仓库。
+# 7. 已安装包支持把当前 Beads 同步任务重新导出为本地快照。
+# 8. 已安装包支持只读的差异预览。
+# 9. 已安装包支持显式收口快照中已缺失的外部任务。
+# 10. 已安装包支持 dry-run 预演而不落库。
 
 workspace_root="$(pwd)"
 tmp_root="$(mktemp -d)"
@@ -156,6 +157,38 @@ echo "$dry_run_output" | grep -- '- created: 0' >/dev/null
 
   echo "$synced_show_output" | grep -- 'externalSource: beads' >/dev/null
   echo "$synced_show_output" | grep -- "externalId: $local_beads_id" >/dev/null
+
+  HOME="$home_dir" "$consumer_dir/node_modules/.bin/foxpilot" task edit \
+    --path "$project_dir" \
+    --external-id "$local_beads_id" \
+    --title '回写后的前端 beads 任务' \
+    --description '验证安装后可直接回写 bd' >/dev/null
+
+  HOME="$home_dir" "$consumer_dir/node_modules/.bin/foxpilot" task update-priority \
+    --path "$project_dir" \
+    --external-id "$local_beads_id" \
+    --priority P0 >/dev/null
+
+  HOME="$home_dir" "$consumer_dir/node_modules/.bin/foxpilot" task update-status \
+    --path "$project_dir" \
+    --external-id "$local_beads_id" \
+    --status analyzing >/dev/null
+
+  push_output="$(
+    HOME="$home_dir" "$consumer_dir/node_modules/.bin/foxpilot" task push-beads \
+      --path "$project_dir" \
+      --external-id "$local_beads_id"
+  )"
+
+  echo "$push_output" | grep -- '- externalId: '"$local_beads_id" >/dev/null
+  echo "$push_output" | grep -- '- priority: 0' >/dev/null
+  echo "$push_output" | grep -- '- status: in_progress' >/dev/null
+
+  bd_after_push="$(bd list --json --all)"
+  echo "$bd_after_push" | grep -- '回写后的前端 beads 任务' >/dev/null
+  echo "$bd_after_push" | grep -- '验证安装后可直接回写 bd' >/dev/null
+  echo "$bd_after_push" | grep -- '"status": "in_progress"' >/dev/null
+  echo "$bd_after_push" | grep -- '"priority": 0' >/dev/null
 )
 
 sync_all_output="$(

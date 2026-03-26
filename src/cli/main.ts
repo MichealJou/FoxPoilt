@@ -19,6 +19,7 @@ import { runTaskHistoryCommand } from '@/commands/task/task-history-command.js'
 import { runTaskImportBeadsCommand } from '@/commands/task/task-import-beads-command.js'
 import { runTaskListCommand } from '@/commands/task/task-list-command.js'
 import { runTaskNextCommand } from '@/commands/task/task-next-command.js'
+import { runTaskPushBeadsCommand } from '@/commands/task/task-push-beads-command.js'
 import { runTaskShowCommand } from '@/commands/task/task-show-command.js'
 import { runTaskSuggestScanCommand } from '@/commands/task/task-suggest-scan-command.js'
 import { runTaskSyncBeadsCommand } from '@/commands/task/task-sync-beads-command.js'
@@ -267,6 +268,29 @@ export async function main(
         id: args.id,
         externalId: args.externalId,
         externalSource: args.externalSource,
+      },
+      {
+        binName: context.binName ?? 'foxpilot',
+        cwd: context.cwd ?? process.cwd(),
+        homeDir,
+        stdin: [...(context.stdin ?? [])],
+        interfaceLanguage,
+        dependencies: context.dependencies,
+      },
+    )
+  }
+
+  if (args.command === 'task' && args.subcommand === 'push-beads') {
+    return runTaskPushBeadsCommand(
+      {
+        command: 'task',
+        subcommand: 'push-beads',
+        help: args.help,
+        path: args.path,
+        id: args.id,
+        externalId: args.externalId,
+        externalSource: args.externalSource,
+        dryRun: args.dryRun,
       },
       {
         binName: context.binName ?? 'foxpilot',

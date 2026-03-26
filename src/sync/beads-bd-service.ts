@@ -21,6 +21,13 @@ type BdIssueListRow = {
 }
 
 /**
+ * 当前通过 `bd update` 可直接回写的最小状态集合。
+ *
+ * FoxPilot 的内部状态更细，因此回写时要折叠到 bd 当前支持的几种主状态。
+ */
+export type BdWritableStatus = 'open' | 'in_progress' | 'blocked' | 'closed'
+
+/**
  * 基于 bd CLI 标准化后的本地快照结果。
  *
  * 这里和 JSON 文件导入保持同样的双轨输出：
@@ -121,6 +128,90 @@ export function mapBdPriorityToTaskPriority(rawPriority: number): TaskRow['prior
     default:
       return null
   }
+}
+
+/**
+ * 把 FoxPilot 当前任务状态折叠回 bd 支持的状态值。
+ *
+ * 设计逻辑：
+ * - `todo` 对应尚未开始，因此回写为 `open`；
+ * - 分析、计划确认、执行、结果确认都属于“正在推进”，统一回写为 `in_progress`；
+ * - `blocked` 保持原样；
+ * - `done` 与 `cancelled` 当前都只能折叠为 `closed`。
+ */
+export function mapTaskStatusToBdStatus(status: TaskRow['status']): BdWritableStatus {
+  switch (status) {
+    case 'todo':
+      return 'open'
+    case 'blocked':
+      return 'blocked'
+    case 'done':
+    case 'cancelled':
+      return 'closed'
+    case 'analyzing':
+    case 'awaiting_plan_confirm':
+    case 'executing':
+    case 'awaiting_result_confirm':
+      return 'in_progress'
+  }
+}
+
+/**
+ * 把 FoxPilot 的 P0-P3 优先级回写为 bd 的 0-3。
+ *
+ * 当前不生成 bd 的 4，因为 FoxPilot 现阶段没有比 P3 更低的一档。
+ */
+export function mapTaskPriorityToBdPriority(priority: TaskRow['priority']): 0 | 1 | 2 | 3 {
+  switch (priority) {
+    case 'P0':
+      return 0
+    case 'P1':
+      return 1
+    case 'P2':
+      return 2
+    case 'P3':
+      return 3
+  }
+}
+
+/**
+ * 把单条已导入任务的当前快照回写到仓库内的 bd 数据库。
+ *
+ * 当前只回写最稳定、最容易双向对齐的几个字段：
+ * - title
+ * - description
+ * - priority
+ * - status
+ *
+ * 不回写 executor / task_type 等 FoxPilot 本地编排字段，避免把本地语义强行塞回 bd。
+ */
+export async function runBdUpdate(input: {
+  repositoryRoot: string
+  externalTaskId: string
+  title: string
+  description: string | null
+  priority: 0 | 1 | 2 | 3
+  status: BdWritableStatus
+}): Promise<void> {
+  await execFileAsync(
+    'bd',
+    [
+      'update',
+      input.externalTaskId,
+      '--title',
+      input.title,
+      '--description',
+      input.description ?? '',
+      '--priority',
+      String(input.priority),
+      '--status',
+      input.status,
+    ],
+    {
+      cwd: input.repositoryRoot,
+      maxBuffer: 10 * 1024 * 1024,
+    },
+  )
 }
 
 /**
