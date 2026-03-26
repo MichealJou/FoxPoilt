@@ -376,6 +376,252 @@ describe('task import-beads CLI', () => {
     db.close()
   })
 
+  it('keeps missing imported tasks unchanged when --close-missing is not enabled', async () => {
+    const { homeDir, projectRoot } = await createManagedProjectWithRepositories()
+    const firstSnapshotPath = await writeSnapshotFile(projectRoot, 'beads-initial.json', [
+      {
+        externalTaskId: 'BEADS-601',
+        title: '保留任务 A',
+        status: 'ready',
+        priority: 'P2',
+        repository: '.',
+      },
+      {
+        externalTaskId: 'BEADS-602',
+        title: '后续会从快照里消失',
+        status: 'doing',
+        priority: 'P1',
+        repository: 'frontend',
+      },
+    ])
+
+    expect((await runCli(
+      ['task', 'import-beads', '--file', firstSnapshotPath],
+      { cwd: projectRoot, homeDir },
+    )).exitCode).toBe(0)
+
+    const secondSnapshotPath = await writeSnapshotFile(projectRoot, 'beads-second.json', [
+      {
+        externalTaskId: 'BEADS-601',
+        title: '保留任务 A',
+        status: 'ready',
+        priority: 'P2',
+        repository: '.',
+      },
+    ])
+
+    const result = await runCli(
+      ['task', 'import-beads', '--file', secondSnapshotPath],
+      { cwd: projectRoot, homeDir },
+    )
+
+    expect(result.exitCode).toBe(0)
+    expect(result.stdout).toContain('- created: 0')
+    expect(result.stdout).toContain('- updated: 0')
+    expect(result.stdout).toContain('- skipped: 1')
+
+    const db = new Database(path.join(homeDir, '.foxpilot', 'foxpilot.db'))
+    const row = db.prepare(`
+      SELECT status
+      FROM task
+      WHERE external_source = 'beads'
+        AND external_id = 'BEADS-602'
+      LIMIT 1
+    `).get() as { status: string }
+    expect(row.status).toBe('executing')
+    db.close()
+  })
+
+  it('marks missing imported tasks as cancelled when --close-missing is enabled', async () => {
+    const { homeDir, projectRoot } = await createManagedProjectWithRepositories()
+    const firstSnapshotPath = await writeSnapshotFile(projectRoot, 'beads-initial-close.json', [
+      {
+        externalTaskId: 'BEADS-701',
+        title: '继续保留',
+        status: 'ready',
+        priority: 'P2',
+        repository: '.',
+      },
+      {
+        externalTaskId: 'BEADS-702',
+        title: '应该被收口',
+        status: 'doing',
+        priority: 'P1',
+        repository: 'frontend',
+      },
+    ])
+
+    expect((await runCli(
+      ['task', 'import-beads', '--file', firstSnapshotPath],
+      { cwd: projectRoot, homeDir },
+    )).exitCode).toBe(0)
+
+    const secondSnapshotPath = await writeSnapshotFile(projectRoot, 'beads-close.json', [
+      {
+        externalTaskId: 'BEADS-701',
+        title: '继续保留',
+        status: 'ready',
+        priority: 'P2',
+        repository: '.',
+      },
+    ])
+
+    const result = await runCli(
+      ['task', 'import-beads', '--file', secondSnapshotPath, '--close-missing'],
+      { cwd: projectRoot, homeDir },
+    )
+
+    expect(result.exitCode).toBe(0)
+    expect(result.stdout).toContain('- created: 0')
+    expect(result.stdout).toContain('- updated: 0')
+    expect(result.stdout).toContain('- skipped: 1')
+    expect(result.stdout).toContain('- closed: 1')
+
+    const db = new Database(path.join(homeDir, '.foxpilot', 'foxpilot.db'))
+    const rows = db.prepare(`
+      SELECT external_id, status
+      FROM task
+      WHERE external_source = 'beads'
+      ORDER BY external_id ASC
+    `).all() as Array<{
+      external_id: string
+      status: string
+    }>
+    expect(rows).toEqual([
+      {
+        external_id: 'BEADS-701',
+        status: 'todo',
+      },
+      {
+        external_id: 'BEADS-702',
+        status: 'cancelled',
+      },
+    ])
+    db.close()
+  })
+
+  it('does not close tasks whose external id is still declared but the record is rejected', async () => {
+    const { homeDir, projectRoot } = await createManagedProjectWithRepositories()
+    const firstSnapshotPath = await writeSnapshotFile(projectRoot, 'beads-safe-initial.json', [
+      {
+        externalTaskId: 'BEADS-801',
+        title: '后续会变成坏记录',
+        status: 'doing',
+        priority: 'P1',
+        repository: '.',
+      },
+    ])
+
+    expect((await runCli(
+      ['task', 'import-beads', '--file', firstSnapshotPath],
+      { cwd: projectRoot, homeDir },
+    )).exitCode).toBe(0)
+
+    const secondSnapshotPath = await writeSnapshotFile(projectRoot, 'beads-safe-next.json', [
+      {
+        externalTaskId: 'BEADS-801',
+        title: '后续会变成坏记录',
+        status: 'doing',
+        priority: 'P1',
+        repository: 'unknown-repo',
+      },
+    ])
+
+    const result = await runCli(
+      ['task', 'import-beads', '--file', secondSnapshotPath, '--close-missing'],
+      { cwd: projectRoot, homeDir },
+    )
+
+    expect(result.exitCode).toBe(0)
+    expect(result.stdout).toContain('- rejected: 1')
+    expect(result.stdout).toContain('- closed: 0')
+
+    const db = new Database(path.join(homeDir, '.foxpilot', 'foxpilot.db'))
+    const row = db.prepare(`
+      SELECT status
+      FROM task
+      WHERE external_source = 'beads'
+        AND external_id = 'BEADS-801'
+      LIMIT 1
+    `).get() as { status: string }
+    expect(row.status).toBe('executing')
+    db.close()
+  })
+
+  it('supports dry-run preview without writing imported tasks', async () => {
+    const { homeDir, projectRoot } = await createManagedProjectWithRepositories()
+    const snapshotPath = await writeSnapshotFile(projectRoot, 'beads-dry-run.json', [
+      {
+        externalTaskId: 'BEADS-901',
+        title: '只预演不落库',
+        status: 'ready',
+        priority: 'P2',
+        repository: '.',
+      },
+    ])
+
+    const result = await runCli(
+      ['task', 'import-beads', '--file', snapshotPath, '--dry-run'],
+      { cwd: projectRoot, homeDir },
+    )
+
+    expect(result.exitCode).toBe(0)
+    expect(result.stdout).toContain('- dryRun: true')
+    expect(result.stdout).toContain('- created: 1')
+    expect(result.stdout).toContain('- updated: 0')
+    expect(result.stdout).toContain('- skipped: 0')
+    expect(result.stdout).toContain('- closed: 0')
+
+    const db = new Database(path.join(homeDir, '.foxpilot', 'foxpilot.db'))
+    const row = db.prepare(`
+      SELECT COUNT(*) AS count
+      FROM task
+      WHERE external_source = 'beads'
+    `).get() as { count: number }
+    expect(row.count).toBe(0)
+    db.close()
+  })
+
+  it('supports dry-run together with close-missing without changing existing tasks', async () => {
+    const { homeDir, projectRoot } = await createManagedProjectWithRepositories()
+    const firstSnapshotPath = await writeSnapshotFile(projectRoot, 'beads-dry-run-initial.json', [
+      {
+        externalTaskId: 'BEADS-902',
+        title: '后续预演收口',
+        status: 'doing',
+        priority: 'P1',
+        repository: '.',
+      },
+    ])
+
+    expect((await runCli(
+      ['task', 'import-beads', '--file', firstSnapshotPath],
+      { cwd: projectRoot, homeDir },
+    )).exitCode).toBe(0)
+
+    const secondSnapshotPath = await writeSnapshotFile(projectRoot, 'beads-dry-run-close.json', [])
+
+    const result = await runCli(
+      ['task', 'import-beads', '--file', secondSnapshotPath, '--dry-run', '--close-missing'],
+      { cwd: projectRoot, homeDir },
+    )
+
+    expect(result.exitCode).toBe(0)
+    expect(result.stdout).toContain('- dryRun: true')
+    expect(result.stdout).toContain('- closed: 1')
+
+    const db = new Database(path.join(homeDir, '.foxpilot', 'foxpilot.db'))
+    const row = db.prepare(`
+      SELECT status
+      FROM task
+      WHERE external_source = 'beads'
+        AND external_id = 'BEADS-902'
+      LIMIT 1
+    `).get() as { status: string }
+    expect(row.status).toBe('executing')
+    db.close()
+  })
+
   it('prints help and accepts fp alias', async () => {
     const result = await runCli(
       ['task', 'import-beads', '--help'],
@@ -386,6 +632,8 @@ describe('task import-beads CLI', () => {
     expect(result.stdout).toContain('foxpilot task import-beads')
     expect(result.stdout).toContain('fp task import-beads')
     expect(result.stdout).toContain('--file <json-file>')
+    expect(result.stdout).toContain('--close-missing')
+    expect(result.stdout).toContain('--dry-run')
   })
 
   it('returns a clear error when the project is not initialized', async () => {

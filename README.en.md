@@ -34,6 +34,8 @@ FoxPilot is a local multi-project task control tool for developer workspaces. It
 - `foxpilot task import-beads`
   - Import Beads tasks from a local JSON snapshot
   - Apply idempotent create, update, and skip behavior by external task ID
+  - Support `--close-missing` to cancel unfinished imported tasks missing from the current snapshot
+  - Support `--dry-run` to preview import results without writing to SQLite
 - `foxpilot task beads-summary`
   - Show an aggregated summary of imported Beads tasks in the current project
 - `foxpilot task suggest-scan`
@@ -137,6 +139,8 @@ Import a Beads snapshot:
 
 ```bash
 foxpilot task import-beads --file ./examples/beads-snapshot.sample.json
+foxpilot task import-beads --file ./examples/beads-snapshot.sample.json --close-missing
+foxpilot task import-beads --file ./examples/beads-snapshot.sample.json --dry-run --close-missing
 ```
 
 Show the Beads summary:

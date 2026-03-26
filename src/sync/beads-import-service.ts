@@ -57,6 +57,34 @@ export type NormalizeBeadsSnapshotResult = {
 export type BeadsImportAction = 'create' | 'update' | 'skip'
 
 /**
+ * 从原始快照里提取所有“已经声明过”的外部任务号。
+ *
+ * 这里故意不要求整条记录完全合法，只要 `externalTaskId` 本身存在且可解析，
+ * 就把它纳入结果集合。这样在执行 `--close-missing` 时，即使某条记录因为
+ * 仓库、状态等字段不合法被拒绝，也不会误把同一外部任务当成“已消失”而关闭。
+ */
+export function collectDeclaredBeadsExternalTaskIds(records: unknown[]): Set<string> {
+  const declaredIds = new Set<string>()
+
+  for (const record of records) {
+    if (!record || typeof record !== 'object' || Array.isArray(record)) {
+      continue
+    }
+
+    const item = record as BeadsSnapshotRecord
+    const externalTaskId = typeof item.externalTaskId === 'string'
+      ? item.externalTaskId.trim()
+      : ''
+
+    if (externalTaskId) {
+      declaredIds.add(externalTaskId)
+    }
+  }
+
+  return declaredIds
+}
+
+/**
  * 把项目根目录和仓库相对路径拼成稳定仓库主键。
  *
  * 这个规则必须和 `init` / `task create` / `task suggest-scan` 完全一致，

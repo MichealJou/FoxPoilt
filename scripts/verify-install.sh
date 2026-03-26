@@ -9,6 +9,8 @@ set -euo pipefail
 # 3. 非交互 `init` 能真实写出项目配置、全局配置和数据库；
 # 4. 已安装包内置的 Beads 样例快照可以被真实导入。
 # 5. 已安装包可以直接通过外部任务号读取导入任务。
+# 6. 已安装包支持显式收口快照中已缺失的外部任务。
+# 7. 已安装包支持 dry-run 预演而不落库。
 
 workspace_root="$(pwd)"
 tmp_root="$(mktemp -d)"
@@ -70,6 +72,45 @@ show_output="$(
 echo "$show_output" | grep -- 'externalSource: beads' >/dev/null
 echo "$show_output" | grep -- 'externalId: BEADS-1001' >/dev/null
 echo "$show_output" | grep -- '补齐登录态回归检查' >/dev/null
+
+cat >"$consumer_dir/beads-close-missing.json" <<'EOF'
+[
+  {
+    "externalTaskId": "BEADS-1001",
+    "title": "补齐登录态回归检查",
+    "status": "ready",
+    "priority": "P1",
+    "repository": "."
+  }
+]
+EOF
+
+close_output="$(
+  HOME="$home_dir" ./node_modules/.bin/foxpilot task import-beads \
+    --path "$project_dir" \
+    --file "$consumer_dir/beads-close-missing.json" \
+    --close-missing
+)"
+
+echo "$close_output" | grep -- '- closed: 2' >/dev/null
+
+closed_show_output="$(
+  HOME="$home_dir" ./node_modules/.bin/foxpilot task show \
+    --path "$project_dir" \
+    --external-id "BEADS-1002"
+)"
+
+echo "$closed_show_output" | grep -- 'status: cancelled' >/dev/null
+
+dry_run_output="$(
+  HOME="$home_dir" ./node_modules/.bin/foxpilot task import-beads \
+    --path "$project_dir" \
+    --file "$consumer_dir/beads-close-missing.json" \
+    --dry-run
+)"
+
+echo "$dry_run_output" | grep -- '- dryRun: true' >/dev/null
+echo "$dry_run_output" | grep -- '- created: 0' >/dev/null
 
 printf '[FoxPilot] verify:install passed\n'
 printf -- '- workspace: %s\n' "$workspace_root"

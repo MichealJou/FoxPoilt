@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  collectDeclaredBeadsExternalTaskIds,
   decideBeadsImportAction,
   normalizeBeadsSnapshot,
 } from '@/sync/beads-import-service.js'
@@ -31,6 +32,25 @@ function createProjectConfig(): ProjectConfig {
 }
 
 describe('beads import service', () => {
+  it('collects declared external ids even when records are otherwise invalid', () => {
+    const result = collectDeclaredBeadsExternalTaskIds([
+      {
+        externalTaskId: 'BEADS-901',
+        title: '合法声明',
+      },
+      {
+        externalTaskId: ' BEADS-902 ',
+        repository: 'unknown',
+      },
+      {
+        title: '没有 externalTaskId',
+      },
+      null,
+    ])
+
+    expect([...result]).toEqual(['BEADS-901', 'BEADS-902'])
+  })
+
   it('normalizes valid records and maps status and repository correctly', () => {
     const result = normalizeBeadsSnapshot({
       records: [

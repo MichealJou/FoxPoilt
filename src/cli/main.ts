@@ -306,6 +306,8 @@ export async function main(
         help: args.help,
         path: args.path,
         file: args.file,
+        closeMissing: args.closeMissing,
+        dryRun: args.dryRun,
       },
       {
         binName: context.binName ?? 'foxpilot',

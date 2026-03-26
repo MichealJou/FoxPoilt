@@ -15,6 +15,8 @@ import type { resolveManagedProject } from '@/project/resolve-project.js'
  * 这一版导入命令只接受最小输入集合：
  * - 可选的受管项目路径；
  * - 必填的本地快照文件路径。
+ * - 可选的“缺失任务收口”开关。
+ * - 可选的“只预演不落库”开关。
  *
  * 命令不会直接访问网络，也不会读取真实 Beads API。
  */
@@ -29,6 +31,10 @@ export type TaskImportBeadsArgs = {
   path?: string
   /** 本地 JSON 快照文件路径。 */
   file?: string
+  /** 为 true 时，收口当前快照中已缺失的未完成导入任务。 */
+  closeMissing: boolean
+  /** 为 true 时，只输出导入统计，不真正写入数据库。 */
+  dryRun: boolean
 }
 
 /**

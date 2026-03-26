@@ -17,6 +17,7 @@ import {
   resolveManagedProject,
 } from '@/project/resolve-project.js'
 import {
+  collectDeclaredBeadsExternalTaskIds,
   decideBeadsImportAction,
   normalizeBeadsSnapshot,
 } from '@/sync/beads-import-service.js'
@@ -56,6 +57,8 @@ function buildHelpText(language: Parameters<typeof getMessages>[0]): string {
     'foxpilot task import-beads',
     'fp task import-beads',
     '--file <json-file>',
+    '--close-missing',
+    '--dry-run',
     '--path <project-root>',
   ].join('\n')
 }
@@ -67,6 +70,8 @@ function buildHelpText(language: Parameters<typeof getMessages>[0]): string {
  * - 快照里合法且未出现过的外部任务 -> 创建；
  * - 命中已有导入任务且当前态有变化 -> 更新；
  * - 命中已有导入任务但当前态完全一致 -> 跳过；
+ * - 传入 `--close-missing` 时，显式收口当前快照里已缺失的未完成导入任务；
+ * - 传入 `--dry-run` 时，只输出统计，不真正写库；
  * - 单条记录字段不合法 -> 记入 rejected 清单。
  */
 export async function runTaskImportBeadsCommand(
@@ -146,6 +151,7 @@ export async function runTaskImportBeadsCommand(
 
   const taskStore = dependencies.createTaskStore(db)
   const projectId = `project:${managedProject.projectRoot}`
+  const declaredExternalIds = collectDeclaredBeadsExternalTaskIds(payload)
   const normalized = normalizeBeadsSnapshot({
     records: payload,
     projectRoot: managedProject.projectRoot,
@@ -154,6 +160,7 @@ export async function runTaskImportBeadsCommand(
   let created = 0
   let updated = 0
   let skipped = 0
+  let closed = 0
 
   for (const record of normalized.accepted) {
     const now = new Date().toISOString()
@@ -174,6 +181,11 @@ export async function runTaskImportBeadsCommand(
     const action = decideBeadsImportAction(existingTask, record)
 
     if (action === 'create') {
+      if (args.dryRun) {
+        created += 1
+        continue
+      }
+
       const taskId = `task:${randomUUID()}`
 
       taskStore.createTask({
@@ -211,6 +223,11 @@ export async function runTaskImportBeadsCommand(
       continue
     }
 
+    if (args.dryRun) {
+      updated += 1
+      continue
+    }
+
     taskStore.syncImportedTaskSnapshot({
       projectId,
       taskId: existingTask!.id,
@@ -235,6 +252,36 @@ export async function runTaskImportBeadsCommand(
     updated += 1
   }
 
+  if (args.closeMissing) {
+    const now = new Date().toISOString()
+    const openImportedTasks = taskStore.listOpenImportedTaskReferences({
+      projectId,
+      externalSource: 'beads',
+    })
+
+    for (const task of openImportedTasks) {
+      if (declaredExternalIds.has(task.external_id)) {
+        continue
+      }
+
+      if (args.dryRun) {
+        closed += 1
+        continue
+      }
+
+      const wasClosed = taskStore.updateTaskStatus({
+        projectId,
+        taskId: task.id,
+        status: 'cancelled',
+        updatedAt: now,
+      })
+
+      if (wasClosed) {
+        closed += 1
+      }
+    }
+  }
+
   db.close()
 
   return {
@@ -243,9 +290,11 @@ export async function runTaskImportBeadsCommand(
       messages.taskImportBeads.completed,
       `- projectRoot: ${managedProject.projectRoot}`,
       `- file: ${filePath}`,
+      `- dryRun: ${args.dryRun ? 'true' : 'false'}`,
       `- created: ${created}`,
       `- updated: ${updated}`,
       `- skipped: ${skipped}`,
+      `- closed: ${closed}`,
       `- rejected: ${normalized.rejected.length}`,
       ...(normalized.rejected.length > 0
         ? ['', messages.taskImportBeads.rejectedTitle, ...normalized.rejected.map((item) => `- ${item}`)]

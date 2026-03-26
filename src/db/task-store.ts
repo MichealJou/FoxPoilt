@@ -161,6 +161,20 @@ export type OpenScanSuggestionRepositoryRow = {
 }
 
 /**
+ * 当前项目里仍处于未完成状态的外部同步任务引用。
+ *
+ * 这个投影服务于“缺失任务收口”场景，只保留关闭任务所需的最小字段。
+ */
+export type OpenImportedTaskReferenceRow = {
+  /** 本地任务主键。 */
+  id: string
+  /** 外部系统来源键。 */
+  external_source: NonNullable<TaskRow['external_source']>
+  /** 外部系统稳定任务号。 */
+  external_id: string
+}
+
+/**
  * 更新前用于存在性检查的最小任务投影。
  *
  * 这个结构只保留状态变更前真正需要读出的最小字段，避免多查无关信息。
@@ -539,6 +553,20 @@ export function createTaskStore(db: SqliteDatabase) {
       AND t.source_type = 'beads_sync'
   `)
 
+  const listOpenImportedTaskReferencesStmt = db.prepare(`
+    SELECT
+      id,
+      external_source,
+      external_id
+    FROM task
+    WHERE project_id = @project_id
+      AND source_type = 'beads_sync'
+      AND external_source = @external_source
+      AND external_id IS NOT NULL
+      AND status NOT IN ('done', 'cancelled')
+    ORDER BY external_id ASC
+  `)
+
   const getLatestOpenTaskRunStmt = db.prepare(`
     SELECT id
     FROM task_run
@@ -867,6 +895,23 @@ export function createTaskStore(db: SqliteDatabase) {
       return getBeadsTaskSummaryStmt.get({
         project_id: input.projectId,
       }) as BeadsTaskSummaryRow
+    },
+    /**
+     * 列出当前项目里“仍处于未完成状态”的外部同步任务引用。
+     *
+     * 这条查询专门服务于同步收口：
+     * - 只看 `beads_sync` 来源；
+     * - 已完成或已取消的记录不会被重复收口；
+     * - 只返回关闭任务所需的最小字段。
+     */
+    listOpenImportedTaskReferences(input: {
+      projectId: string
+      externalSource: NonNullable<TaskRow['external_source']>
+    }): OpenImportedTaskReferenceRow[] {
+      return listOpenImportedTaskReferencesStmt.all({
+        project_id: input.projectId,
+        external_source: input.externalSource,
+      }) as OpenImportedTaskReferenceRow[]
     },
     /**
      * 加载任务详情以及与仓库关联的目标信息。

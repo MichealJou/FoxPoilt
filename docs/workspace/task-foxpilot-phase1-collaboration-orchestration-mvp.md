@@ -39,3 +39,5 @@
 - [x] 已完成 `task import-beads` 本地快照导入 MVP
 - [x] 已补齐外部来源幂等键与老库兼容迁移
 - [x] 已把 Beads 导入逻辑抽到独立同步服务
+- [x] 已补齐 `--close-missing` 缺失任务收口能力
+- [x] 已补齐 `--dry-run` 导入预演能力

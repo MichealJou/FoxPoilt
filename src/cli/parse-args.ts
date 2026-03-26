@@ -56,6 +56,10 @@ export type CliArgs = {
   lang?: InterfaceLanguage
   /** 从外部快照导入任务时使用的文件路径。 */
   file?: string
+  /** 是否在导入后收口当前快照中已经缺失的外部任务。 */
+  closeMissing: boolean
+  /** 是否只预演导入结果而不写入数据库。 */
+  dryRun: boolean
 }
 
 /**
@@ -94,6 +98,8 @@ export function parseArgs(argv: string[]): CliArgs {
   let executor: 'codex' | 'beads' | 'none' | undefined
   let lang: InterfaceLanguage | undefined
   let file: string | undefined
+  let closeMissing = false
+  let dryRun = false
   let status:
     | 'todo'
     | 'analyzing'
@@ -261,6 +267,16 @@ export function parseArgs(argv: string[]): CliArgs {
     if (value === '--file') {
       file = rest[index + 1]
       index += 1
+      continue
+    }
+
+    if (value === '--close-missing') {
+      closeMissing = true
+      continue
+    }
+
+    if (value === '--dry-run') {
+      dryRun = true
     }
   }
 
@@ -287,5 +303,7 @@ export function parseArgs(argv: string[]): CliArgs {
     executor,
     lang,
     file,
+    closeMissing,
+    dryRun,
   }
 }
