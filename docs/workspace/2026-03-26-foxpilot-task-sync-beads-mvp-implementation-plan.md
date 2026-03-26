@@ -17,6 +17,7 @@
 - 成功同步
 - `--dry-run`
 - 单仓库 `--close-missing`
+- `--all-repositories`
 - 缺少 `--repository`
 - `bd list` 调用失败
 - SQLite bootstrap 失败
@@ -28,12 +29,14 @@
 - 解析 JSON
 - 把 bd 状态和优先级映射到 FoxPilot 当前模型
 - 产出可直接落库的标准化记录和 rejected 清单
+- 增加“仓库是否已初始化本地 Beads”的最小探测
 
 ### Task 4: 复用现有导入落库层
 
 - 把创建、更新、跳过、收口逻辑抽到共享同步层
 - 让 `task import-beads` 和 `task sync-beads` 共用同一套落库规则
 - 给 `close-missing` 增加仓库级过滤
+- 支持对项目内全部仓库做聚合同步，并跳过未启用 Beads 的仓库
 
 ### Task 5: 同步文档与安装验证
 

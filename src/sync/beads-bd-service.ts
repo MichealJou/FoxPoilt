@@ -4,6 +4,8 @@
  */
 
 import { execFile } from 'node:child_process'
+import { access } from 'node:fs/promises'
+import path from 'node:path'
 import { promisify } from 'node:util'
 
 import type { TaskRow } from '@/db/task-store.js'
@@ -49,6 +51,24 @@ export async function runBdList(input: {
   })
 
   return result.stdout
+}
+
+/**
+ * 判断某个仓库是否已经初始化本地 Beads 数据。
+ *
+ * 当前先采用最稳的最小规则：只检查 `.beads` 目录是否存在。
+ * 这样可以在“同步全部仓库”时提前跳过未启用 Beads 的仓库，
+ * 避免把正常的“没接入”误判成同步失败。
+ */
+export async function hasLocalBeadsRepository(input: {
+  repositoryRoot: string
+}): Promise<boolean> {
+  try {
+    await access(path.join(input.repositoryRoot, '.beads'))
+    return true
+  } catch {
+    return false
+  }
 }
 
 /**

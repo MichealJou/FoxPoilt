@@ -318,7 +318,7 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
     },
     taskSyncBeads: {
       helpDescription: '直接从指定仓库的 bd list 输出同步本地 Beads 任务。',
-      repositoryRequired: '[FoxPilot] 本地 Beads 同步失败: repository 不能为空',
+      repositoryRequired: '[FoxPilot] 本地 Beads 同步失败: repository 或 --all-repositories 必须提供其一',
       repositoryNotFound: '[FoxPilot] 本地 Beads 同步失败: repository 不存在',
       readFailed: '[FoxPilot] 本地 Beads 同步失败: 无法读取 bd list 输出',
       invalidJson: '[FoxPilot] 本地 Beads 同步失败: bd list 输出不是合法 JSON',
@@ -507,7 +507,7 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
     },
     taskSyncBeads: {
       helpDescription: 'Sync Beads tasks directly from bd list output in a selected repository.',
-      repositoryRequired: '[FoxPilot] Local Beads sync failed: repository is required',
+      repositoryRequired: '[FoxPilot] Local Beads sync failed: repository or --all-repositories is required',
       repositoryNotFound: '[FoxPilot] Local Beads sync failed: repository was not found',
       readFailed: '[FoxPilot] Local Beads sync failed: unable to read bd list output',
       invalidJson: '[FoxPilot] Local Beads sync failed: bd list output is not valid JSON',
@@ -696,7 +696,7 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
     },
     taskSyncBeads: {
       helpDescription: '選択したリポジトリの bd list 出力から Beads タスクを直接同期します。',
-      repositoryRequired: '[FoxPilot] ローカル Beads 同期に失敗しました: repository は必須です',
+      repositoryRequired: '[FoxPilot] ローカル Beads 同期に失敗しました: repository または --all-repositories のどちらかが必須です',
       repositoryNotFound: '[FoxPilot] ローカル Beads 同期に失敗しました: repository が見つかりません',
       readFailed: '[FoxPilot] ローカル Beads 同期に失敗しました: bd list 出力を読み取れません',
       invalidJson: '[FoxPilot] ローカル Beads 同期に失敗しました: bd list 出力の JSON 形式が不正です',

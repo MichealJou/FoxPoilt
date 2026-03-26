@@ -250,7 +250,7 @@ describe('task sync-beads CLI', () => {
     )
 
     expect(result.exitCode).toBe(1)
-    expect(result.stdout).toContain('[FoxPilot] 本地 Beads 同步失败: repository 不能为空')
+    expect(result.stdout).toContain('[FoxPilot] 本地 Beads 同步失败: repository 或 --all-repositories 必须提供其一')
   })
 
   it('支持帮助输出与 fp 简写入口', async () => {
@@ -263,6 +263,102 @@ describe('task sync-beads CLI', () => {
     expect(result.stdout).toContain('foxpilot task sync-beads')
     expect(result.stdout).toContain('fp task sync-beads')
     expect(result.stdout).toContain('--repository <repository-selector>')
+    expect(result.stdout).toContain('--all-repositories')
+  })
+
+  it('支持一次同步所有已初始化 beads 的仓库', async () => {
+    const { homeDir, projectRoot } = await createManagedProjectWithRepositories()
+    const rootRepository = projectRoot
+    const frontendRepository = path.join(projectRoot, 'frontend')
+
+    const result = await runCli(
+      ['task', 'sync-beads', '--all-repositories'],
+      {
+        cwd: projectRoot,
+        homeDir,
+        dependencies: {
+          hasLocalBeadsRepository: async (input: { repositoryRoot: string }) => {
+            return input.repositoryRoot === rootRepository || input.repositoryRoot === frontendRepository
+          },
+          runBdList: async (input: { repositoryRoot: string }) => {
+            if (input.repositoryRoot === rootRepository) {
+              return JSON.stringify([
+                {
+                  id: 'bd-root-1',
+                  title: '根仓库 beads 任务',
+                  status: 'open',
+                  priority: 1,
+                },
+              ])
+            }
+
+            return JSON.stringify([
+              {
+                id: 'bd-fe-301',
+                title: '前端 beads 任务',
+                status: 'blocked',
+                priority: 2,
+              },
+            ])
+          },
+        },
+      },
+    )
+
+    expect(result.exitCode).toBe(0)
+    expect(result.stdout).toContain('- mode: all-repositories')
+    expect(result.stdout).toContain('- scannedRepositories: 2')
+    expect(result.stdout).toContain('- syncedRepositories: 2')
+    expect(result.stdout).toContain('- skippedRepositories: 0')
+    expect(result.stdout).toContain('- created: 2')
+
+    const db = new Database(path.join(homeDir, '.foxpilot', 'foxpilot.db'))
+    const rows = db.prepare(`
+      SELECT t.external_id, t.status, r.path AS repository_path
+      FROM task t
+      JOIN task_target tt ON tt.task_id = t.id
+      JOIN repository r ON r.id = tt.repository_id
+      WHERE t.external_source = 'beads'
+      ORDER BY t.external_id ASC
+    `).all() as Array<{ external_id: string; status: string; repository_path: string }>
+    db.close()
+
+    expect(rows).toEqual([
+      { external_id: 'bd-fe-301', status: 'blocked', repository_path: 'frontend' },
+      { external_id: 'bd-root-1', status: 'todo', repository_path: '.' },
+    ])
+  })
+
+  it('在 all-repositories 模式下自动跳过没有初始化 beads 的仓库', async () => {
+    const { homeDir, projectRoot } = await createManagedProjectWithRepositories()
+    const frontendRepository = path.join(projectRoot, 'frontend')
+
+    const result = await runCli(
+      ['task', 'sync-beads', '--all-repositories'],
+      {
+        cwd: projectRoot,
+        homeDir,
+        dependencies: {
+          hasLocalBeadsRepository: async (input: { repositoryRoot: string }) => {
+            return input.repositoryRoot === frontendRepository
+          },
+          runBdList: async () => JSON.stringify([
+            {
+              id: 'bd-fe-401',
+              title: '只有前端启用 beads',
+              status: 'open',
+              priority: 1,
+            },
+          ]),
+        },
+      },
+    )
+
+    expect(result.exitCode).toBe(0)
+    expect(result.stdout).toContain('- scannedRepositories: 2')
+    expect(result.stdout).toContain('- syncedRepositories: 1')
+    expect(result.stdout).toContain('- skippedRepositories: 1')
+    expect(result.stdout).toContain('- created: 1')
   })
 
   it('在调用 bd 失败时返回稳定错误', async () => {

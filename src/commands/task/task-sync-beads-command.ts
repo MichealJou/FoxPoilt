@@ -16,7 +16,11 @@ import {
   resolveManagedProject,
   resolveRepositoryTarget,
 } from '@/project/resolve-project.js'
-import { runBdList, normalizeBdIssueList } from '@/sync/beads-bd-service.js'
+import {
+  hasLocalBeadsRepository,
+  normalizeBdIssueList,
+  runBdList,
+} from '@/sync/beads-bd-service.js'
 import {
   applyBeadsImportSnapshot,
   buildRepositoryId,
@@ -39,6 +43,7 @@ function getDependencies(
     bootstrapDatabase,
     createTaskStore,
     runBdList,
+    hasLocalBeadsRepository,
     ...overrides,
   }
 }
@@ -55,19 +60,67 @@ function buildHelpText(language: Parameters<typeof getMessages>[0]): string {
     'foxpilot task sync-beads',
     'fp task sync-beads',
     '--repository <repository-selector>',
+    '--all-repositories',
     '--close-missing',
     '--dry-run',
     '--path <project-root>',
   ].join('\n')
 }
 
+type SyncSingleRepositoryResult = {
+  repositoryPath: string
+  repositoryRoot: string
+  created: number
+  updated: number
+  skipped: number
+  closed: number
+  rejected: string[]
+}
+
+async function syncSingleRepository(input: {
+  projectRoot: string
+  projectId: string
+  repositoryPath: string
+  taskStore: ReturnType<typeof createTaskStore>
+  runBdList: TaskSyncBeadsDependencies['runBdList']
+  closeMissing: boolean
+  dryRun: boolean
+}): Promise<SyncSingleRepositoryResult> {
+  const repositoryRoot = path.resolve(input.projectRoot, input.repositoryPath)
+  const repositoryId = buildRepositoryId(input.projectRoot, input.repositoryPath)
+  const payload = JSON.parse(await input.runBdList({ repositoryRoot })) as unknown
+  const normalized = normalizeBdIssueList({
+    payload,
+    repositoryId,
+    repositoryPath: input.repositoryPath,
+  })
+  const importResult = applyBeadsImportSnapshot({
+    taskStore: input.taskStore,
+    projectId: input.projectId,
+    normalizedRecords: normalized.accepted,
+    declaredExternalIds: normalized.declaredExternalIds,
+    closeMissing: input.closeMissing,
+    dryRun: input.dryRun,
+    closeMissingRepositoryId: repositoryId,
+  })
+
+  return {
+    repositoryPath: input.repositoryPath,
+    repositoryRoot,
+    created: importResult.created,
+    updated: importResult.updated,
+    skipped: importResult.skipped,
+    closed: importResult.closed,
+    rejected: normalized.rejected,
+  }
+}
+
 /**
  * 从当前项目的某个仓库中直接读取 `bd list --json --all`，再同步到 FoxPilot。
  *
- * 当前刻意要求显式给出 `--repository`，原因是：
- * - 多仓库项目里自动猜测很容易选错；
- * - 单仓库同步的“缺失任务收口”必须明确作用域；
- * - 后续如果再引入远程同步模式，命令语义也更清楚。
+ * 当前支持两种模式：
+ * - 指定 `--repository`，同步单个仓库；
+ * - 指定 `--all-repositories`，批量同步项目内所有已初始化本地 Beads 的仓库。
  */
 export async function runTaskSyncBeadsCommand(
   args: TaskSyncBeadsArgs,
@@ -82,7 +135,7 @@ export async function runTaskSyncBeadsCommand(
     }
   }
 
-  if (!args.repository?.trim()) {
+  if (!args.allRepositories && !args.repository?.trim()) {
     return {
       exitCode: 1,
       stdout: messages.taskSyncBeads.repositoryRequired,
@@ -108,59 +161,6 @@ export async function runTaskSyncBeadsCommand(
     throw error
   }
 
-  let repositoryTarget
-  try {
-    repositoryTarget = resolveRepositoryTarget(managedProject.projectConfig, args.repository)
-  } catch (error) {
-    if (error instanceof RepositoryTargetNotFoundError) {
-      return {
-        exitCode: 1,
-        stdout: `${messages.taskSyncBeads.repositoryNotFound}\n- repository: ${error.repositorySelector}`,
-      }
-    }
-
-    throw error
-  }
-
-  if (!repositoryTarget) {
-    return {
-      exitCode: 1,
-      stdout: messages.taskSyncBeads.repositoryRequired,
-    }
-  }
-
-  const repositoryRoot = path.resolve(managedProject.projectRoot, repositoryTarget.path)
-  let payload
-  try {
-    payload = JSON.parse(await dependencies.runBdList({ repositoryRoot })) as unknown
-  } catch (error) {
-    if (error instanceof SyntaxError) {
-      return {
-        exitCode: 1,
-        stdout: `${messages.taskSyncBeads.invalidJson}\n- repositoryRoot: ${repositoryRoot}`,
-      }
-    }
-
-    return {
-      exitCode: 1,
-      stdout: `${messages.taskSyncBeads.readFailed}\n- repositoryRoot: ${repositoryRoot}`,
-    }
-  }
-
-  let normalized
-  try {
-    normalized = normalizeBdIssueList({
-      payload,
-      repositoryId: buildRepositoryId(managedProject.projectRoot, repositoryTarget.path),
-      repositoryPath: repositoryTarget.path,
-    })
-  } catch {
-    return {
-      exitCode: 1,
-      stdout: `${messages.taskSyncBeads.invalidPayload}\n- repositoryRoot: ${repositoryRoot}`,
-    }
-  }
-
   const dbPath = resolveGlobalDatabasePath(context.homeDir)
   let db
   try {
@@ -174,15 +174,139 @@ export async function runTaskSyncBeadsCommand(
 
   const projectId = `project:${managedProject.projectRoot}`
   const taskStore = dependencies.createTaskStore(db)
-  const importResult = applyBeadsImportSnapshot({
-    taskStore,
-    projectId,
-    normalizedRecords: normalized.accepted,
-    declaredExternalIds: normalized.declaredExternalIds,
-    closeMissing: args.closeMissing,
-    dryRun: args.dryRun,
-    closeMissingRepositoryId: buildRepositoryId(managedProject.projectRoot, repositoryTarget.path),
-  })
+
+  if (!args.allRepositories) {
+    let repositoryTarget
+    try {
+      repositoryTarget = resolveRepositoryTarget(managedProject.projectConfig, args.repository)
+    } catch (error) {
+      db.close()
+
+      if (error instanceof RepositoryTargetNotFoundError) {
+        return {
+          exitCode: 1,
+          stdout: `${messages.taskSyncBeads.repositoryNotFound}\n- repository: ${error.repositorySelector}`,
+        }
+      }
+
+      throw error
+    }
+
+    if (!repositoryTarget) {
+      db.close()
+      return {
+        exitCode: 1,
+        stdout: messages.taskSyncBeads.repositoryRequired,
+      }
+    }
+
+    try {
+      const result = await syncSingleRepository({
+        projectRoot: managedProject.projectRoot,
+        projectId,
+        repositoryPath: repositoryTarget.path,
+        taskStore,
+        runBdList: dependencies.runBdList,
+        closeMissing: args.closeMissing,
+        dryRun: args.dryRun,
+      })
+
+      db.close()
+
+      return {
+        exitCode: 0,
+        stdout: [
+          messages.taskSyncBeads.completed,
+          `- projectRoot: ${managedProject.projectRoot}`,
+          `- mode: single-repository`,
+          `- repository: ${result.repositoryPath}`,
+          `- repositoryRoot: ${result.repositoryRoot}`,
+          `- dryRun: ${args.dryRun ? 'true' : 'false'}`,
+          `- created: ${result.created}`,
+          `- updated: ${result.updated}`,
+          `- skipped: ${result.skipped}`,
+          `- closed: ${result.closed}`,
+          `- rejected: ${result.rejected.length}`,
+          ...(result.rejected.length > 0
+            ? ['', messages.taskSyncBeads.rejectedTitle, ...result.rejected.map((item) => `- ${item}`)]
+            : []),
+        ].join('\n'),
+      }
+    } catch (error) {
+      db.close()
+
+      if (error instanceof SyntaxError) {
+        return {
+          exitCode: 1,
+          stdout: `${messages.taskSyncBeads.invalidJson}\n- repositoryRoot: ${path.resolve(managedProject.projectRoot, repositoryTarget.path)}`,
+        }
+      }
+
+      if (error instanceof TypeError) {
+        return {
+          exitCode: 1,
+          stdout: `${messages.taskSyncBeads.invalidPayload}\n- repositoryRoot: ${path.resolve(managedProject.projectRoot, repositoryTarget.path)}`,
+        }
+      }
+
+      return {
+        exitCode: 1,
+        stdout: `${messages.taskSyncBeads.readFailed}\n- repositoryRoot: ${path.resolve(managedProject.projectRoot, repositoryTarget.path)}`,
+      }
+    }
+  }
+
+  const scannedRepositories = managedProject.projectConfig.repositories.length
+  let syncedRepositories = 0
+  let skippedRepositories = 0
+  let created = 0
+  let updated = 0
+  let skipped = 0
+  let closed = 0
+  const rejected: string[] = []
+  const repositoryDetails: string[] = []
+
+  for (const repository of managedProject.projectConfig.repositories) {
+    const repositoryRoot = path.resolve(managedProject.projectRoot, repository.path)
+    const hasLocalBeads = await dependencies.hasLocalBeadsRepository({ repositoryRoot })
+
+    if (!hasLocalBeads) {
+      skippedRepositories += 1
+      repositoryDetails.push(`- ${repository.path}: skipped(no-local-beads)`)
+      continue
+    }
+
+    try {
+      const result = await syncSingleRepository({
+        projectRoot: managedProject.projectRoot,
+        projectId,
+        repositoryPath: repository.path,
+        taskStore,
+        runBdList: dependencies.runBdList,
+        closeMissing: args.closeMissing,
+        dryRun: args.dryRun,
+      })
+
+      syncedRepositories += 1
+      created += result.created
+      updated += result.updated
+      skipped += result.skipped
+      closed += result.closed
+      rejected.push(...result.rejected.map((item) => `${repository.path}: ${item}`))
+      repositoryDetails.push(
+        `- ${repository.path}: created=${result.created} updated=${result.updated} skipped=${result.skipped} closed=${result.closed} rejected=${result.rejected.length}`,
+      )
+    } catch (error) {
+      rejected.push(
+        error instanceof SyntaxError
+          ? `${repository.path}: bd list 输出不是合法 JSON`
+          : error instanceof TypeError
+            ? `${repository.path}: bd list 输出必须是任务数组`
+            : `${repository.path}: 无法读取 bd list 输出`,
+      )
+      repositoryDetails.push(`- ${repository.path}: failed`)
+    }
+  }
 
   db.close()
 
@@ -191,16 +315,21 @@ export async function runTaskSyncBeadsCommand(
     stdout: [
       messages.taskSyncBeads.completed,
       `- projectRoot: ${managedProject.projectRoot}`,
-      `- repository: ${repositoryTarget.path}`,
-      `- repositoryRoot: ${repositoryRoot}`,
+      '- mode: all-repositories',
+      `- scannedRepositories: ${scannedRepositories}`,
+      `- syncedRepositories: ${syncedRepositories}`,
+      `- skippedRepositories: ${skippedRepositories}`,
       `- dryRun: ${args.dryRun ? 'true' : 'false'}`,
-      `- created: ${importResult.created}`,
-      `- updated: ${importResult.updated}`,
-      `- skipped: ${importResult.skipped}`,
-      `- closed: ${importResult.closed}`,
-      `- rejected: ${normalized.rejected.length}`,
-      ...(normalized.rejected.length > 0
-        ? ['', messages.taskSyncBeads.rejectedTitle, ...normalized.rejected.map((item) => `- ${item}`)]
+      `- created: ${created}`,
+      `- updated: ${updated}`,
+      `- skipped: ${skipped}`,
+      `- closed: ${closed}`,
+      `- rejected: ${rejected.length}`,
+      '',
+      '[FoxPilot] 仓库明细',
+      ...repositoryDetails,
+      ...(rejected.length > 0
+        ? ['', messages.taskSyncBeads.rejectedTitle, ...rejected.map((item) => `- ${item}`)]
         : []),
     ].join('\n'),
   }

@@ -56,6 +56,8 @@ export type CliArgs = {
   lang?: InterfaceLanguage
   /** 从外部快照导入任务时使用的文件路径。 */
   file?: string
+  /** 是否对当前项目的全部仓库执行聚合同步。 */
+  allRepositories: boolean
   /** 是否在导入后收口当前快照中已经缺失的外部任务。 */
   closeMissing: boolean
   /** 是否只预演导入结果而不写入数据库。 */
@@ -98,6 +100,7 @@ export function parseArgs(argv: string[]): CliArgs {
   let executor: 'codex' | 'beads' | 'none' | undefined
   let lang: InterfaceLanguage | undefined
   let file: string | undefined
+  let allRepositories = false
   let closeMissing = false
   let dryRun = false
   let status:
@@ -270,6 +273,11 @@ export function parseArgs(argv: string[]): CliArgs {
       continue
     }
 
+    if (value === '--all-repositories') {
+      allRepositories = true
+      continue
+    }
+
     if (value === '--close-missing') {
       closeMissing = true
       continue
@@ -303,6 +311,7 @@ export function parseArgs(argv: string[]): CliArgs {
     executor,
     lang,
     file,
+    allRepositories,
     closeMissing,
     dryRun,
   }

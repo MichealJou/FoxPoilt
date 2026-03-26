@@ -331,6 +331,7 @@ export async function main(
         help: args.help,
         path: args.path,
         repository: args.repository,
+        allRepositories: args.allRepositories,
         closeMissing: args.closeMissing,
         dryRun: args.dryRun,
       },

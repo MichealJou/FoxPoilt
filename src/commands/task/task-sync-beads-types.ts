@@ -7,7 +7,7 @@ import type { CliRuntimeContext } from '@/cli/runtime-context.js'
 import type { bootstrapDatabase } from '@/db/bootstrap.js'
 import type { createTaskStore } from '@/db/task-store.js'
 import type { resolveManagedProject } from '@/project/resolve-project.js'
-import type { runBdList } from '@/sync/beads-bd-service.js'
+import type { hasLocalBeadsRepository, runBdList } from '@/sync/beads-bd-service.js'
 
 /**
  * `task sync-beads` 的标准化参数。
@@ -26,6 +26,8 @@ export type TaskSyncBeadsArgs = {
   path?: string
   /** 需要同步的仓库选择器。 */
   repository?: string
+  /** 为 true 时，对当前项目内全部已初始化 Beads 的仓库执行聚合同步。 */
+  allRepositories: boolean
   /** 为 true 时，收口当前仓库里已从 Beads 消失的未完成任务。 */
   closeMissing: boolean
   /** 为 true 时，只预演同步结果，不真正写入数据库。 */
@@ -40,6 +42,7 @@ export type TaskSyncBeadsDependencies = {
   bootstrapDatabase: typeof bootstrapDatabase
   createTaskStore: typeof createTaskStore
   runBdList: typeof runBdList
+  hasLocalBeadsRepository: typeof hasLocalBeadsRepository
 }
 
 /**

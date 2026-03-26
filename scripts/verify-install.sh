@@ -158,5 +158,17 @@ echo "$dry_run_output" | grep -- '- created: 0' >/dev/null
   echo "$synced_show_output" | grep -- "externalId: $local_beads_id" >/dev/null
 )
 
+sync_all_output="$(
+  HOME="$home_dir" "$consumer_dir/node_modules/.bin/foxpilot" task sync-beads \
+    --path "$project_dir" \
+    --all-repositories \
+    --dry-run
+)"
+
+echo "$sync_all_output" | grep -- '- mode: all-repositories' >/dev/null
+echo "$sync_all_output" | grep -- '- scannedRepositories: 2' >/dev/null
+echo "$sync_all_output" | grep -- '- syncedRepositories: 1' >/dev/null
+echo "$sync_all_output" | grep -- '- skippedRepositories: 1' >/dev/null
+
 printf '[FoxPilot] verify:install passed\n'
 printf -- '- workspace: %s\n' "$workspace_root"
