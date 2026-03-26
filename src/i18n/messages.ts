@@ -67,6 +67,13 @@ export type MessageCatalog = {
     dbBootstrapFailed: string
     completed: string
   }
+  taskInitBeads: {
+    helpDescription: string
+    repositoryRequired: string
+    repositoryNotFound: string
+    projectNotInitialized: string
+    completed: string
+  }
   taskList: {
     helpDescription: string
     projectNotInitialized: string
@@ -280,6 +287,13 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       dbBootstrapFailed: '[FoxPilot] Beads 环境诊断失败: foxpilot.db 初始化失败',
       completed: '[FoxPilot] 已完成 Beads 环境诊断',
     },
+    taskInitBeads: {
+      helpDescription: '为当前项目的仓库初始化本地 Beads 环境。',
+      repositoryRequired: '[FoxPilot] 本地 Beads 初始化失败: repository 或 --all-repositories 必须提供其一',
+      repositoryNotFound: '[FoxPilot] 本地 Beads 初始化失败: repository 不存在',
+      projectNotInitialized: '[FoxPilot] 本地 Beads 初始化失败: 项目尚未初始化',
+      completed: '[FoxPilot] 已完成本地 Beads 初始化',
+    },
     taskList: {
       helpDescription: '列出当前项目下的任务，可按状态过滤。',
       projectNotInitialized: '[FoxPilot] 任务列表失败: 项目尚未初始化',
@@ -491,6 +505,13 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       dbBootstrapFailed: '[FoxPilot] Beads doctor failed: failed to initialize foxpilot.db',
       completed: '[FoxPilot] Beads environment diagnosis completed',
     },
+    taskInitBeads: {
+      helpDescription: 'Initialize the local Beads environment for repositories in the current project.',
+      repositoryRequired: '[FoxPilot] Local Beads initialization failed: repository or --all-repositories is required',
+      repositoryNotFound: '[FoxPilot] Local Beads initialization failed: repository was not found',
+      projectNotInitialized: '[FoxPilot] Local Beads initialization failed: project is not initialized',
+      completed: '[FoxPilot] Local Beads initialization completed',
+    },
     taskList: {
       helpDescription: 'List tasks for the current project.',
       projectNotInitialized: '[FoxPilot] Task list failed: Project is not initialized',
@@ -701,6 +722,13 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       projectNotInitialized: '[FoxPilot] Beads 環境診断に失敗しました: プロジェクトが未初期化です',
       dbBootstrapFailed: '[FoxPilot] Beads 環境診断に失敗しました: foxpilot.db の初期化に失敗しました',
       completed: '[FoxPilot] Beads 環境診断が完了しました',
+    },
+    taskInitBeads: {
+      helpDescription: '現在のプロジェクトのリポジトリに対してローカル Beads 環境を初期化します。',
+      repositoryRequired: '[FoxPilot] ローカル Beads 初期化に失敗しました: repository または --all-repositories のどちらかが必須です',
+      repositoryNotFound: '[FoxPilot] ローカル Beads 初期化に失敗しました: repository が見つかりません',
+      projectNotInitialized: '[FoxPilot] ローカル Beads 初期化に失敗しました: プロジェクトが未初期化です',
+      completed: '[FoxPilot] ローカル Beads 初期化が完了しました',
     },
     taskList: {
       helpDescription: '現在のプロジェクトのタスク一覧を表示します。',

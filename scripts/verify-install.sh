@@ -240,6 +240,24 @@ echo "$doctor_output" | grep -- '- readyRepositories: 1' >/dev/null
 echo "$doctor_output" | grep -- '- warningRepositories: 1' >/dev/null
 echo "$doctor_output" | grep -- '- errorRepositories: 0' >/dev/null
 
+init_beads_output="$(
+  HOME="$home_dir" "$consumer_dir/node_modules/.bin/foxpilot" task init-beads \
+    --path "$project_dir" \
+    --repository .
+)"
+
+echo "$init_beads_output" | grep -- '- mode: single-repository' >/dev/null
+echo "$init_beads_output" | grep -- '- initializedRepositories: 1' >/dev/null
+
+doctor_after_init_output="$(
+  HOME="$home_dir" "$consumer_dir/node_modules/.bin/foxpilot" task doctor-beads \
+    --path "$project_dir" \
+    --all-repositories
+)"
+
+echo "$doctor_after_init_output" | grep -- '- readyRepositories: 2' >/dev/null
+echo "$doctor_after_init_output" | grep -- '- warningRepositories: 0' >/dev/null
+
 push_all_output="$(
   HOME="$home_dir" "$consumer_dir/node_modules/.bin/foxpilot" task push-beads \
     --path "$project_dir" \
@@ -248,8 +266,8 @@ push_all_output="$(
 )"
 
 echo "$push_all_output" | grep -- '- mode: all-repositories' >/dev/null
-echo "$push_all_output" | grep -- '- pushedRepositories: 1' >/dev/null
-echo "$push_all_output" | grep -- '- skippedRepositories: 1' >/dev/null
+echo "$push_all_output" | grep -- '- pushedRepositories: 2' >/dev/null
+echo "$push_all_output" | grep -- '- skippedRepositories: 0' >/dev/null
 
 printf '[FoxPilot] verify:install passed\n'
 printf -- '- workspace: %s\n' "$workspace_root"

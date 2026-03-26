@@ -61,6 +61,21 @@ export async function runBdList(input: {
 }
 
 /**
+ * 在指定仓库内执行一次 `bd init`。
+ *
+ * 这条操作只负责初始化本地 `.beads` 结构，不做任何 FoxPilot 落库。
+ * 命令层会先自行判断仓库是否已初始化，避免重复执行。
+ */
+export async function runBdInit(input: {
+  repositoryRoot: string
+}): Promise<void> {
+  await execFileAsync('bd', ['init'], {
+    cwd: input.repositoryRoot,
+    maxBuffer: 10 * 1024 * 1024,
+  })
+}
+
+/**
  * 判断某个仓库是否已经初始化本地 Beads 数据。
  *
  * 当前先采用最稳的最小规则：只检查 `.beads` 目录是否存在。

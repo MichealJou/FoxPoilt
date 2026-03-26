@@ -14,6 +14,7 @@ import { runTaskCreateCommand } from '@/commands/task/task-create-command.js'
 import { runTaskBeadsSummaryCommand } from '@/commands/task/task-beads-summary-command.js'
 import { runTaskDoctorBeadsCommand } from '@/commands/task/task-doctor-beads-command.js'
 import { runTaskEditCommand } from '@/commands/task/task-edit-command.js'
+import { runTaskInitBeadsCommand } from '@/commands/task/task-init-beads-command.js'
 import { runTaskDiffBeadsCommand } from '@/commands/task/task-diff-beads-command.js'
 import { runTaskExportBeadsCommand } from '@/commands/task/task-export-beads-command.js'
 import { runTaskHistoryCommand } from '@/commands/task/task-history-command.js'
@@ -130,6 +131,28 @@ export async function main(
         path: args.path,
         repository: args.repository,
         allRepositories: args.allRepositories,
+      },
+      {
+        binName: context.binName ?? 'foxpilot',
+        cwd: context.cwd ?? process.cwd(),
+        homeDir,
+        stdin: [...(context.stdin ?? [])],
+        interfaceLanguage,
+        dependencies: context.dependencies,
+      },
+    )
+  }
+
+  if (args.command === 'task' && args.subcommand === 'init-beads') {
+    return runTaskInitBeadsCommand(
+      {
+        command: 'task',
+        subcommand: 'init-beads',
+        help: args.help,
+        path: args.path,
+        repository: args.repository,
+        allRepositories: args.allRepositories,
+        dryRun: args.dryRun,
       },
       {
         binName: context.binName ?? 'foxpilot',
