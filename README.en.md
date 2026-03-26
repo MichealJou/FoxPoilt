@@ -36,6 +36,9 @@ FoxPilot is a local multi-project task control tool for developer workspaces. It
   - Apply idempotent create, update, and skip behavior by external task ID
   - Support `--close-missing` to cancel unfinished imported tasks missing from the current snapshot
   - Support `--dry-run` to preview import results without writing to SQLite
+- `foxpilot task diff-beads`
+  - Preview create, update, skip, and close actions without writing to SQLite
+  - Reuse the same validation and idempotency rules as real import
 - `foxpilot task export-beads`
   - Export Beads sync tasks in the current project back to a local JSON snapshot
   - Produce a snapshot compatible with `import-beads`
@@ -147,6 +150,13 @@ foxpilot task import-beads --file ./examples/beads-snapshot.sample.json --close-
 foxpilot task import-beads --file ./examples/beads-snapshot.sample.json --dry-run --close-missing
 ```
 
+Preview a Beads snapshot diff:
+
+```bash
+foxpilot task diff-beads --file ./examples/beads-snapshot.sample.json
+foxpilot task diff-beads --file ./examples/beads-snapshot.sample.json --close-missing
+```
+
 Export a Beads snapshot:
 
 ```bash
@@ -195,4 +205,4 @@ foxpilot task update-status --external-id BEADS-1001 --status analyzing
 
 ## Status
 
-The repository is now in the CLI MVP implementation stage. Core initialization, manual task management, local Beads snapshot import and export, next-task selection, task metadata editing, scan suggestion tasks, executor switching, priority adjustment, task run history, and minimal transition-guard flows are available, and the next iterations will extend collaboration orchestration.
+The repository is now in the CLI MVP implementation stage. Core initialization, manual task management, local Beads snapshot import, diff preview, export, next-task selection, task metadata editing, scan suggestion tasks, executor switching, priority adjustment, task run history, and minimal transition-guard flows are available, and the next iterations will extend collaboration orchestration.

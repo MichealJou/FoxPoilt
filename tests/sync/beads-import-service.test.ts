@@ -74,6 +74,7 @@ describe('beads import service', () => {
         status: 'todo',
         priority: 'P1',
         repositoryId: 'repository:/workspace/foxpilot:frontend',
+        repositoryPath: 'frontend',
       },
     ])
   })
@@ -121,6 +122,7 @@ describe('beads import service', () => {
       status: 'todo',
       priority: 'P2',
       repositoryId: 'repository:/workspace/foxpilot:.',
+      repositoryPath: '.',
     })
 
     expect(action).toBe('create')
@@ -147,6 +149,7 @@ describe('beads import service', () => {
         status: 'executing',
         priority: 'P1',
         repositoryId: 'repository:/workspace/foxpilot:frontend',
+        repositoryPath: 'frontend',
       },
     )
 
@@ -174,6 +177,7 @@ describe('beads import service', () => {
         status: 'todo',
         priority: 'P2',
         repositoryId: 'repository:/workspace/foxpilot:frontend',
+        repositoryPath: 'frontend',
       },
     )
 

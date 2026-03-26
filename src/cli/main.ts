@@ -13,6 +13,7 @@ import type { CliResult, InitCommandContext } from '@/commands/init/init-types.j
 import { runTaskCreateCommand } from '@/commands/task/task-create-command.js'
 import { runTaskBeadsSummaryCommand } from '@/commands/task/task-beads-summary-command.js'
 import { runTaskEditCommand } from '@/commands/task/task-edit-command.js'
+import { runTaskDiffBeadsCommand } from '@/commands/task/task-diff-beads-command.js'
 import { runTaskExportBeadsCommand } from '@/commands/task/task-export-beads-command.js'
 import { runTaskHistoryCommand } from '@/commands/task/task-history-command.js'
 import { runTaskImportBeadsCommand } from '@/commands/task/task-import-beads-command.js'
@@ -309,6 +310,27 @@ export async function main(
         file: args.file,
         closeMissing: args.closeMissing,
         dryRun: args.dryRun,
+      },
+      {
+        binName: context.binName ?? 'foxpilot',
+        cwd: context.cwd ?? process.cwd(),
+        homeDir,
+        stdin: [...(context.stdin ?? [])],
+        interfaceLanguage,
+        dependencies: context.dependencies,
+      },
+    )
+  }
+
+  if (args.command === 'task' && args.subcommand === 'diff-beads') {
+    return runTaskDiffBeadsCommand(
+      {
+        command: 'task',
+        subcommand: 'diff-beads',
+        help: args.help,
+        path: args.path,
+        file: args.file,
+        closeMissing: args.closeMissing,
       },
       {
         binName: context.binName ?? 'foxpilot',

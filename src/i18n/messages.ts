@@ -125,6 +125,19 @@ export type MessageCatalog = {
     completed: string
     rejectedTitle: string
   }
+  taskDiffBeads: {
+    helpDescription: string
+    fileRequired: string
+    fileReadFailed: string
+    invalidJson: string
+    invalidPayload: string
+    projectNotInitialized: string
+    dbBootstrapFailed: string
+    title: string
+    detailsTitle: string
+    noChanges: string
+    rejectedTitle: string
+  }
   taskExportBeads: {
     helpDescription: string
     fileRequired: string
@@ -291,6 +304,19 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       completed: '[FoxPilot] 已完成 Beads 任务导入',
       rejectedTitle: '[FoxPilot] 以下记录已拒绝',
     },
+    taskDiffBeads: {
+      helpDescription: '预览本地 Beads 快照导入后会产生的差异。',
+      fileRequired: '[FoxPilot] Beads 差异预览失败: file 不能为空',
+      fileReadFailed: '[FoxPilot] Beads 差异预览失败: 无法读取导入文件',
+      invalidJson: '[FoxPilot] Beads 差异预览失败: JSON 格式错误',
+      invalidPayload: '[FoxPilot] Beads 差异预览失败: 导入文件必须是任务数组',
+      projectNotInitialized: '[FoxPilot] Beads 差异预览失败: 项目尚未初始化',
+      dbBootstrapFailed: '[FoxPilot] Beads 差异预览失败: foxpilot.db 初始化失败',
+      title: '[FoxPilot] Beads 快照差异预览',
+      detailsTitle: '[FoxPilot] 差异明细',
+      noChanges: '- 当前没有可展示的差异',
+      rejectedTitle: '[FoxPilot] 以下记录已拒绝',
+    },
     taskExportBeads: {
       helpDescription: '把当前项目中的 Beads 同步任务导出为本地 JSON 快照。',
       fileRequired: '[FoxPilot] Beads 导出失败: file 不能为空',
@@ -455,6 +481,19 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       completed: '[FoxPilot] Beads import completed',
       rejectedTitle: '[FoxPilot] Rejected records',
     },
+    taskDiffBeads: {
+      helpDescription: 'Preview the diff that a local Beads snapshot would produce.',
+      fileRequired: '[FoxPilot] Beads diff preview failed: file is required',
+      fileReadFailed: '[FoxPilot] Beads diff preview failed: unable to read snapshot file',
+      invalidJson: '[FoxPilot] Beads diff preview failed: invalid JSON format',
+      invalidPayload: '[FoxPilot] Beads diff preview failed: snapshot must be an array of tasks',
+      projectNotInitialized: '[FoxPilot] Beads diff preview failed: project is not initialized',
+      dbBootstrapFailed: '[FoxPilot] Beads diff preview failed: failed to initialize foxpilot.db',
+      title: '[FoxPilot] Beads snapshot diff preview',
+      detailsTitle: '[FoxPilot] Diff details',
+      noChanges: '- No visible diff right now',
+      rejectedTitle: '[FoxPilot] Rejected records',
+    },
     taskExportBeads: {
       helpDescription: 'Export Beads sync tasks in the current project to a local JSON snapshot.',
       fileRequired: '[FoxPilot] Beads export failed: file is required',
@@ -617,6 +656,19 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       projectNotInitialized: '[FoxPilot] Beads 取り込みに失敗しました: プロジェクトが未初期化です',
       dbBootstrapFailed: '[FoxPilot] Beads 取り込みに失敗しました: foxpilot.db の初期化に失敗しました',
       completed: '[FoxPilot] Beads タスクの取り込みが完了しました',
+      rejectedTitle: '[FoxPilot] 以下のレコードは拒否されました',
+    },
+    taskDiffBeads: {
+      helpDescription: 'ローカル Beads スナップショットを取り込んだ場合の差分を予覧します。',
+      fileRequired: '[FoxPilot] Beads 差分予覧に失敗しました: file は必須です',
+      fileReadFailed: '[FoxPilot] Beads 差分予覧に失敗しました: スナップショットファイルを読み込めません',
+      invalidJson: '[FoxPilot] Beads 差分予覧に失敗しました: JSON 形式が不正です',
+      invalidPayload: '[FoxPilot] Beads 差分予覧に失敗しました: スナップショットはタスク配列である必要があります',
+      projectNotInitialized: '[FoxPilot] Beads 差分予覧に失敗しました: プロジェクトが未初期化です',
+      dbBootstrapFailed: '[FoxPilot] Beads 差分予覧に失敗しました: foxpilot.db の初期化に失敗しました',
+      title: '[FoxPilot] Beads スナップショット差分予覧',
+      detailsTitle: '[FoxPilot] 差分詳細',
+      noChanges: '- 現在表示できる差分はありません',
       rejectedTitle: '[FoxPilot] 以下のレコードは拒否されました',
     },
     taskExportBeads: {

@@ -41,6 +41,7 @@
 - [x] 已把 Beads 导入逻辑抽到独立同步服务
 - [x] 已补齐 `--close-missing` 缺失任务收口能力
 - [x] 已补齐 `--dry-run` 导入预演能力
+- [x] 已补齐 `task diff-beads` 只读差异预览能力
 - [x] 已补齐 `task export-beads` 本地快照导出能力
 - [x] 已形成“导入 / 预演 / 收口 / 摘要 / 导出”的本地闭环
 - [ ] 待拿到真实 `Beads` API 契约后进入网络同步实现

@@ -8,6 +8,7 @@ import type {
   ExternalTaskSnapshotRow,
   TaskRow,
 } from '@/db/task-store.js'
+import type { createTaskStore } from '@/db/task-store.js'
 import type { ProjectConfig } from '@/project/project-config.js'
 import {
   RepositoryTargetNotFoundError,
@@ -41,6 +42,8 @@ export type NormalizedBeadsRecord = {
   priority: TaskRow['priority']
   /** 归一化后的本地仓库主键。 */
   repositoryId: string
+  /** 归一化后的仓库相对路径。 */
+  repositoryPath: string
 }
 
 /**
@@ -59,6 +62,39 @@ export type NormalizeBeadsSnapshotResult = {
  * 导入层对当前快照的决策结果。
  */
 export type BeadsImportAction = 'create' | 'update' | 'skip'
+
+/**
+ * 单条快照在本地任务域中的预览结果。
+ *
+ * 这份结构专门服务于 `task diff-beads`：
+ * - `create / update / skip` 来自合法快照记录；
+ * - `close` 来自 `--close-missing` 下的缺失收口候选；
+ * - `detail` 只保留人类读差异真正关心的信息。
+ */
+export type BeadsDiffEntry =
+  | {
+      action: 'create' | 'update' | 'skip'
+      externalTaskId: string
+      title: string
+      repositoryPath: string
+      detail: string
+    }
+  | {
+      action: 'close'
+      externalTaskId: string
+      detail: string
+    }
+
+/**
+ * 整批快照和当前任务域对比后的预览结果。
+ */
+export type BuildBeadsDiffPreviewResult = {
+  created: number
+  updated: number
+  skipped: number
+  closed: number
+  entries: BeadsDiffEntry[]
+}
 
 /**
  * 导出到本地快照时使用的 Beads 记录结构。
@@ -267,6 +303,7 @@ export function normalizeBeadsSnapshot(input: {
         status,
         priority,
         repositoryId: buildRepositoryId(input.projectRoot, repositoryTarget.path),
+        repositoryPath: repositoryTarget.path,
       })
     } catch (error) {
       if (error instanceof RepositoryTargetNotFoundError) {
@@ -317,6 +354,39 @@ export function decideBeadsImportAction(
 }
 
 /**
+ * 汇总“当前任务”和“下一版快照”之间到底差了哪些字段。
+ *
+ * 这里故意只返回字段名，不直接输出完整前后值，原因是：
+ * - 当前 CLI 先追求可扫读性，不把终端输出撑得太长；
+ * - 用户最先关心的是“会不会变、变哪几类字段”，不是逐字段 diff patch；
+ * - 后续若需要更细输出，可以在这个函数基础上继续展开。
+ */
+export function collectBeadsImportChangeKeys(
+  current: ExternalTaskSnapshotRow,
+  next: NormalizedBeadsRecord,
+): string[] {
+  const changes: string[] = []
+
+  if (current.title !== next.title) {
+    changes.push('title')
+  }
+
+  if (current.status !== next.status) {
+    changes.push('status')
+  }
+
+  if (current.priority !== next.priority) {
+    changes.push('priority')
+  }
+
+  if (current.repository_id !== next.repositoryId) {
+    changes.push('repository')
+  }
+
+  return changes
+}
+
+/**
  * 把本地任务投影转换为可直接写盘的 Beads 快照。
  *
  * 这里不直接在命令层拼对象，是为了把协议细节放到同步层统一维护：
@@ -354,5 +424,103 @@ export function buildBeadsExportSnapshot(
   return {
     exported,
     rejected,
+  }
+}
+
+/**
+ * 构造一份纯只读的 Beads 快照差异预览。
+ *
+ * 这层复用和真实导入一致的判断规则，保证：
+ * - `diff-beads` 看到的 create / update / skip；
+ * - 和 `import-beads --dry-run` 的统计口径一致；
+ * - 用户可以先看差异，再决定是否真的导入。
+ */
+export function buildBeadsDiffPreview(input: {
+  projectId: string
+  taskStore: ReturnType<typeof createTaskStore>
+  normalizedRecords: NormalizedBeadsRecord[]
+  declaredExternalIds: Set<string>
+  closeMissing: boolean
+}): BuildBeadsDiffPreviewResult {
+  const entries: BeadsDiffEntry[] = []
+  let created = 0
+  let updated = 0
+  let skipped = 0
+  let closed = 0
+
+  for (const record of input.normalizedRecords) {
+    const existingTask = input.taskStore.getTaskByExternalRef({
+      projectId: input.projectId,
+      externalSource: 'beads',
+      externalId: record.externalTaskId,
+    })
+    const action = decideBeadsImportAction(existingTask, record)
+
+    if (action === 'create') {
+      created += 1
+      entries.push({
+        action: 'create',
+        externalTaskId: record.externalTaskId,
+        title: record.title,
+        repositoryPath: record.repositoryPath,
+        detail: '将创建新的同步任务',
+      })
+      continue
+    }
+
+    if (action === 'skip') {
+      skipped += 1
+      entries.push({
+        action: 'skip',
+        externalTaskId: record.externalTaskId,
+        title: record.title,
+        repositoryPath: record.repositoryPath,
+        detail: '与当前同步任务一致',
+      })
+      continue
+    }
+
+    updated += 1
+    const changes = existingTask
+      ? collectBeadsImportChangeKeys(existingTask, record)
+      : []
+
+    entries.push({
+      action: 'update',
+      externalTaskId: record.externalTaskId,
+      title: record.title,
+      repositoryPath: record.repositoryPath,
+      detail: changes.length > 0
+        ? `差异: ${changes.join(',')}`
+        : '存在同步差异',
+    })
+  }
+
+  if (input.closeMissing) {
+    const openImportedTasks = input.taskStore.listOpenImportedTaskReferences({
+      projectId: input.projectId,
+      externalSource: 'beads',
+    })
+
+    for (const task of openImportedTasks) {
+      if (input.declaredExternalIds.has(task.external_id)) {
+        continue
+      }
+
+      closed += 1
+      entries.push({
+        action: 'close',
+        externalTaskId: task.external_id,
+        detail: '当前快照缺失，将收口为 cancelled',
+      })
+    }
+  }
+
+  return {
+    created,
+    updated,
+    skipped,
+    closed,
+    entries,
   }
 }

@@ -10,8 +10,9 @@ set -euo pipefail
 # 4. 已安装包内置的 Beads 样例快照可以被真实导入。
 # 5. 已安装包可以直接通过外部任务号读取导入任务。
 # 6. 已安装包支持把当前 Beads 同步任务重新导出为本地快照。
-# 7. 已安装包支持显式收口快照中已缺失的外部任务。
-# 8. 已安装包支持 dry-run 预演而不落库。
+# 7. 已安装包支持只读的差异预览。
+# 8. 已安装包支持显式收口快照中已缺失的外部任务。
+# 9. 已安装包支持 dry-run 预演而不落库。
 
 workspace_root="$(pwd)"
 tmp_root="$(mktemp -d)"
@@ -73,6 +74,16 @@ export_output="$(
 echo "$export_output" | grep -- '- exported: 3' >/dev/null
 grep '"externalTaskId": "BEADS-1001"' "$consumer_dir/exported-beads.json" >/dev/null
 grep '"repository": "frontend"' "$consumer_dir/exported-beads.json" >/dev/null
+
+diff_output="$(
+  HOME="$home_dir" ./node_modules/.bin/foxpilot task diff-beads \
+    --path "$project_dir" \
+    --file "$consumer_dir/exported-beads.json"
+)"
+
+echo "$diff_output" | grep -- '- created: 0' >/dev/null
+echo "$diff_output" | grep -- '- updated: 0' >/dev/null
+echo "$diff_output" | grep -- '- skipped: 3' >/dev/null
 
 show_output="$(
   HOME="$home_dir" ./node_modules/.bin/foxpilot task show \
