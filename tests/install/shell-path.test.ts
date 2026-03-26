@@ -69,4 +69,29 @@ describe('shell path helper', () => {
     expect(result.shellName).toBe('sh')
     expect(result.profilePath).toBe(path.join(homeDir, '.profile'))
   })
+
+  it('removes the managed foxpilot path block from shell profiles', async () => {
+    const { ensureUnixShellPath, removeUnixShellPath } = await import('@/install/shell-path.js')
+    const homeDir = await createTempDir('foxpilot-shell-home-')
+    const binDir = path.join(homeDir, '.foxpilot/bin')
+    tempDirs.push(homeDir)
+
+    await ensureUnixShellPath({
+      homeDir,
+      shellPath: '/bin/zsh',
+      binDir,
+    })
+
+    const result = await removeUnixShellPath({
+      homeDir,
+      binDir,
+    })
+
+    const profilePath = path.join(homeDir, '.zshrc')
+    const profileContent = await readFile(profilePath, 'utf8')
+
+    expect(result.updatedProfiles).toEqual([profilePath])
+    expect(profileContent).not.toContain('FoxPilot PATH')
+    expect(profileContent).not.toContain('export PATH="$HOME/.foxpilot/bin:$PATH"')
+  })
 })

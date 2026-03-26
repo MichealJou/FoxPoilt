@@ -7,6 +7,7 @@ import { rm, unlink } from 'node:fs/promises'
 import path from 'node:path'
 import { spawn } from 'node:child_process'
 
+import { removeUnixShellPath, removeWindowsPathEntry } from '@/install/shell-path.js'
 import type { InstallManifest } from '@/install/install-types.js'
 
 export type UninstallCommandResult = {
@@ -20,6 +21,10 @@ export type UninstallRunnerDependencies = {
   homeDir?: string
   runCommand?: (command: string, args: string[]) => Promise<UninstallCommandResult>
   removePath?: (targetPath: string, options?: { recursive?: boolean; force?: boolean }) => Promise<void>
+  removeUnixShellPath?: (args: { homeDir: string; binDir: string }) => Promise<{ updatedProfiles: string[] }>
+  removeWindowsPathEntry?: (
+    targetPath: string,
+  ) => Promise<void | boolean | { updated: boolean }>
 }
 
 async function runCommand(command: string, args: string[]): Promise<UninstallCommandResult> {
@@ -78,6 +83,48 @@ function getPathRemover(dependencies: UninstallRunnerDependencies = {}) {
   return dependencies.removePath ?? removePath
 }
 
+function getUnixShellPathRemover(dependencies: UninstallRunnerDependencies = {}) {
+  return dependencies.removeUnixShellPath ?? removeUnixShellPath
+}
+
+function getWindowsPathEntryRemover(dependencies: UninstallRunnerDependencies = {}) {
+  return dependencies.removeWindowsPathEntry ?? removeWindowsPathEntry
+}
+
+function resolveNpmBinDir(installRoot: string, platform: NodeJS.Platform): string | undefined {
+  const pathModule = platform === 'win32' ? path.win32 : path.posix
+  const packageDir = pathModule.dirname(installRoot)
+
+  if (pathModule.basename(packageDir) !== 'node_modules') {
+    return undefined
+  }
+
+  if (platform === 'win32') {
+    return pathModule.dirname(packageDir)
+  }
+
+  const maybeLib = pathModule.basename(pathModule.dirname(packageDir))
+
+  if (maybeLib !== 'lib') {
+    return undefined
+  }
+
+  const prefixDir = pathModule.dirname(pathModule.dirname(packageDir))
+  return pathModule.join(prefixDir, 'bin')
+}
+
+function resolveWindowsPathCleanupState(result: void | boolean | { updated: boolean }): boolean {
+  if (typeof result === 'boolean') {
+    return result
+  }
+
+  if (typeof result === 'object' && result && 'updated' in result) {
+    return Boolean(result.updated)
+  }
+
+  return true
+}
+
 /**
  * 执行 npm 渠道卸载。
  */
@@ -86,15 +133,39 @@ export async function runNpmUninstall(
   dependencies: UninstallRunnerDependencies = {},
 ): Promise<string> {
   const runner = getCommandRunner(dependencies)
+  const platform = dependencies.platform ?? process.platform
+  const homeDir = dependencies.homeDir ?? process.env.HOME ?? process.env.USERPROFILE ?? ''
   const packageName = manifest.updateTarget.npmPackage ?? manifest.packageName
   const args = ['uninstall', '-g', packageName]
   const result = await runner('npm', args)
-
-  return [
+  const npmBinDir = resolveNpmBinDir(manifest.installRoot, platform)
+  const lines = [
     'strategy: npm',
     `command: npm ${args.join(' ')}`,
     `exitCode: ${result.exitCode}`,
-  ].join('\n')
+  ]
+
+  if (platform === 'win32') {
+    const pathCleanupUserEntry = npmBinDir
+      ? resolveWindowsPathCleanupState(
+          await getWindowsPathEntryRemover(dependencies)(npmBinDir),
+        )
+      : false
+
+    lines.push(`pathCleanupUserEntry: ${pathCleanupUserEntry}`)
+    return lines.join('\n')
+  }
+
+  const cleanedProfiles =
+    homeDir && npmBinDir
+      ? await getUnixShellPathRemover(dependencies)({
+          homeDir,
+          binDir: npmBinDir,
+        })
+      : { updatedProfiles: [] }
+
+  lines.push(`pathCleanupProfiles: ${cleanedProfiles.updatedProfiles.length}`)
+  return lines.join('\n')
 }
 
 /**
@@ -130,13 +201,16 @@ export async function runReleaseUninstall(
 ): Promise<string> {
   const remover = getPathRemover(dependencies)
   const platform = dependencies.platform ?? process.platform
-  const homeDir = dependencies.homeDir ?? process.env.HOME ?? ''
+  const homeDir = dependencies.homeDir ?? process.env.HOME ?? process.env.USERPROFILE ?? ''
+  const shellPathRemover = getUnixShellPathRemover(dependencies)
+  const windowsPathRemover = getWindowsPathEntryRemover(dependencies)
+  const pathModule = platform === 'win32' ? path.win32 : path.posix
 
-  const binDir = path.join(homeDir, '.foxpilot', 'bin')
+  const binDir = pathModule.join(homeDir, '.foxpilot', 'bin')
   const commandPaths =
     platform === 'win32'
-      ? [path.join(binDir, 'foxpilot.cmd'), path.join(binDir, 'fp.cmd')]
-      : [path.join(binDir, 'foxpilot'), path.join(binDir, 'fp')]
+      ? [pathModule.join(binDir, 'foxpilot.cmd'), pathModule.join(binDir, 'fp.cmd')]
+      : [pathModule.join(binDir, 'foxpilot'), pathModule.join(binDir, 'fp')]
 
   for (const commandPath of commandPaths) {
     await remover(commandPath)
@@ -147,9 +221,28 @@ export async function runReleaseUninstall(
     force: true,
   })
 
-  return [
+  const lines = [
     'strategy: release',
     ...commandPaths.map((targetPath) => `removed: ${targetPath}`),
     `removed: ${manifest.installRoot}`,
-  ].join('\n')
+  ]
+
+  if (platform === 'win32') {
+    const pathCleanupUserEntry = resolveWindowsPathCleanupState(
+      await windowsPathRemover(binDir),
+    )
+    lines.push(`pathCleanupUserEntry: ${pathCleanupUserEntry}`)
+    return lines.join('\n')
+  }
+
+  const cleanedProfiles =
+    !homeDir
+      ? { updatedProfiles: [] }
+      : await shellPathRemover({
+          homeDir,
+          binDir,
+        })
+
+  lines.push(`pathCleanupProfiles: ${cleanedProfiles.updatedProfiles.length}`)
+  return lines.join('\n')
 }
