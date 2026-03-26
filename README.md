@@ -56,7 +56,7 @@ FoxPilot 目前适合下面几类场景：
 > 💻 适合大多数 macOS 用户。
 
 ```bash
-curl -fsSL https://github.com/MichealJou/FoxPoilt/releases/latest/download/foxpilot-install.sh | sh
+curl -fsSL https://github.com/MichealJou/FoxPoilt/releases/latest/download/install.sh | sh
 ```
 
 #### 方式 2：Homebrew 安装
@@ -80,7 +80,7 @@ npm install -g foxpilot --registry https://registry.npmjs.org
 > 🐧 适合大多数 Linux 用户。
 
 ```bash
-curl -fsSL https://github.com/MichealJou/FoxPoilt/releases/latest/download/foxpilot-install.sh | sh
+curl -fsSL https://github.com/MichealJou/FoxPoilt/releases/latest/download/install.sh | sh
 ```
 
 #### 方式 2：npm 全局安装
@@ -92,7 +92,7 @@ npm install -g foxpilot --registry https://registry.npmjs.org
 #### 方式 3：GitHub Release 安装脚本
 
 ```bash
-curl -fsSL https://github.com/MichealJou/FoxPoilt/releases/latest/download/foxpilot-install.sh | sh
+curl -fsSL https://github.com/MichealJou/FoxPoilt/releases/latest/download/install.sh | sh
 ```
 
 ### Windows
@@ -102,7 +102,7 @@ curl -fsSL https://github.com/MichealJou/FoxPoilt/releases/latest/download/foxpi
 > 🪟 适合 PowerShell 用户。
 
 ```powershell
-irm https://github.com/MichealJou/FoxPoilt/releases/latest/download/foxpilot-install.ps1 | iex
+irm https://github.com/MichealJou/FoxPoilt/releases/latest/download/install.ps1 | iex
 ```
 
 #### 方式 2：npm 全局安装

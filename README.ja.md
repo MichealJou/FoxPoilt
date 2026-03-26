@@ -56,7 +56,7 @@ FoxPilot は現在、次のような用途に向いています。
 > 💻 多くの macOS 利用者向けです。
 
 ```bash
-curl -fsSL https://github.com/MichealJou/FoxPoilt/releases/latest/download/foxpilot-install.sh | sh
+curl -fsSL https://github.com/MichealJou/FoxPoilt/releases/latest/download/install.sh | sh
 ```
 
 #### 方法 2: Homebrew
@@ -80,7 +80,7 @@ npm install -g foxpilot --registry https://registry.npmjs.org
 > 🐧 多くの Linux 利用者向けです。
 
 ```bash
-curl -fsSL https://github.com/MichealJou/FoxPoilt/releases/latest/download/foxpilot-install.sh | sh
+curl -fsSL https://github.com/MichealJou/FoxPoilt/releases/latest/download/install.sh | sh
 ```
 
 #### 方法 2: npm グローバルインストール
@@ -92,7 +92,7 @@ npm install -g foxpilot --registry https://registry.npmjs.org
 #### 方法 3: GitHub Release インストーラ
 
 ```bash
-curl -fsSL https://github.com/MichealJou/FoxPoilt/releases/latest/download/foxpilot-install.sh | sh
+curl -fsSL https://github.com/MichealJou/FoxPoilt/releases/latest/download/install.sh | sh
 ```
 
 ### Windows
@@ -102,7 +102,7 @@ curl -fsSL https://github.com/MichealJou/FoxPoilt/releases/latest/download/foxpi
 > 🪟 PowerShell 利用者向けです。
 
 ```powershell
-irm https://github.com/MichealJou/FoxPoilt/releases/latest/download/foxpilot-install.ps1 | iex
+irm https://github.com/MichealJou/FoxPoilt/releases/latest/download/install.ps1 | iex
 ```
 
 #### 方法 2: npm グローバルインストール

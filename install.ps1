@@ -2,7 +2,7 @@ param(
   [string]$ScriptUrl = $(if ($env:FOXPILOT_INSTALL_SCRIPT_URL) {
     $env:FOXPILOT_INSTALL_SCRIPT_URL
   } else {
-    "https://github.com/MichealJou/FoxPoilt/releases/latest/download/foxpilot-install.ps1"
+    "https://github.com/MichealJou/FoxPoilt/releases/latest/download/install.ps1"
   })
 )
 
