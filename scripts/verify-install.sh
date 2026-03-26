@@ -9,8 +9,9 @@ set -euo pipefail
 # 3. 非交互 `init` 能真实写出项目配置、全局配置和数据库；
 # 4. 已安装包内置的 Beads 样例快照可以被真实导入。
 # 5. 已安装包可以直接通过外部任务号读取导入任务。
-# 6. 已安装包支持显式收口快照中已缺失的外部任务。
-# 7. 已安装包支持 dry-run 预演而不落库。
+# 6. 已安装包支持把当前 Beads 同步任务重新导出为本地快照。
+# 7. 已安装包支持显式收口快照中已缺失的外部任务。
+# 8. 已安装包支持 dry-run 预演而不落库。
 
 workspace_root="$(pwd)"
 tmp_root="$(mktemp -d)"
@@ -62,6 +63,16 @@ summary_output="$(
 
 echo "$summary_output" | grep -- '- total: 3' >/dev/null
 echo "$summary_output" | grep -- '- repositories: 2' >/dev/null
+
+export_output="$(
+  HOME="$home_dir" ./node_modules/.bin/foxpilot task export-beads \
+    --path "$project_dir" \
+    --file "$consumer_dir/exported-beads.json"
+)"
+
+echo "$export_output" | grep -- '- exported: 3' >/dev/null
+grep '"externalTaskId": "BEADS-1001"' "$consumer_dir/exported-beads.json" >/dev/null
+grep '"repository": "frontend"' "$consumer_dir/exported-beads.json" >/dev/null
 
 show_output="$(
   HOME="$home_dir" ./node_modules/.bin/foxpilot task show \

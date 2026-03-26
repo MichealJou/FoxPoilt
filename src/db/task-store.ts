@@ -275,6 +275,24 @@ export type BeadsTaskSummaryRow = {
   done_count: number
 }
 
+/**
+ * 导出为 Beads 本地快照时使用的最小任务投影。
+ *
+ * 这一层只返回导出协议真正需要的字段，避免命令层再去碰完整任务行模型。
+ */
+export type ExportableBeadsTaskRow = {
+  /** 外部系统中的稳定任务号。 */
+  external_id: string
+  /** 当前任务标题。 */
+  title: string
+  /** 当前任务状态。 */
+  status: TaskRow['status']
+  /** 当前任务优先级。 */
+  priority: TaskRow['priority']
+  /** 任务绑定的仓库相对路径。 */
+  repository_path: string | null
+}
+
 function countRows(db: SqliteDatabase, tableName: 'task' | 'task_target' | 'task_run'): number {
   const row = db.prepare(`SELECT COUNT(*) AS count FROM ${tableName}`).get() as { count: number }
   return row.count
@@ -565,6 +583,30 @@ export function createTaskStore(db: SqliteDatabase) {
       AND external_id IS NOT NULL
       AND status NOT IN ('done', 'cancelled')
     ORDER BY external_id ASC
+  `)
+
+  const listExportableBeadsTasksStmt = db.prepare(`
+    SELECT
+      t.external_id,
+      t.title,
+      t.status,
+      t.priority,
+      (
+        SELECT r.path
+        FROM task_target tt
+        LEFT JOIN repository r ON r.id = tt.repository_id
+        WHERE tt.task_id = t.id
+          AND tt.target_type = 'repository'
+        ORDER BY tt.created_at ASC
+        LIMIT 1
+      ) AS repository_path
+    FROM task t
+    WHERE t.project_id = @project_id
+      AND t.source_type = 'beads_sync'
+      AND t.external_source = 'beads'
+      AND t.external_id IS NOT NULL
+      AND t.status != 'cancelled'
+    ORDER BY t.external_id ASC
   `)
 
   const getLatestOpenTaskRunStmt = db.prepare(`
@@ -912,6 +954,21 @@ export function createTaskStore(db: SqliteDatabase) {
         project_id: input.projectId,
         external_source: input.externalSource,
       }) as OpenImportedTaskReferenceRow[]
+    },
+    /**
+     * 列出当前项目里可导出为 Beads 本地快照的任务。
+     *
+     * 设计逻辑：
+     * 1. 只导出 `beads_sync` 且外部来源仍为 `beads` 的任务；
+     * 2. 已取消任务视为“当前快照中已消失”，因此不导出；
+     * 3. 仓库路径在查询层直接反查出来，避免命令层再拼仓库映射。
+     */
+    listExportableBeadsTasks(input: {
+      projectId: string
+    }): ExportableBeadsTaskRow[] {
+      return listExportableBeadsTasksStmt.all({
+        project_id: input.projectId,
+      }) as ExportableBeadsTaskRow[]
     },
     /**
      * 加载任务详情以及与仓库关联的目标信息。

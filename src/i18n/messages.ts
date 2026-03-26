@@ -125,6 +125,15 @@ export type MessageCatalog = {
     completed: string
     rejectedTitle: string
   }
+  taskExportBeads: {
+    helpDescription: string
+    fileRequired: string
+    projectNotInitialized: string
+    dbBootstrapFailed: string
+    writeFailed: string
+    completed: string
+    rejectedTitle: string
+  }
   taskUpdateStatus: {
       helpDescription: string
       idRequired: string
@@ -282,6 +291,15 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       completed: '[FoxPilot] 已完成 Beads 任务导入',
       rejectedTitle: '[FoxPilot] 以下记录已拒绝',
     },
+    taskExportBeads: {
+      helpDescription: '把当前项目中的 Beads 同步任务导出为本地 JSON 快照。',
+      fileRequired: '[FoxPilot] Beads 导出失败: file 不能为空',
+      projectNotInitialized: '[FoxPilot] Beads 导出失败: 项目尚未初始化',
+      dbBootstrapFailed: '[FoxPilot] Beads 导出失败: foxpilot.db 初始化失败',
+      writeFailed: '[FoxPilot] Beads 导出失败: 无法写入导出文件',
+      completed: '[FoxPilot] 已完成 Beads 任务导出',
+      rejectedTitle: '[FoxPilot] 以下记录未能导出',
+    },
     taskUpdateStatus: {
       helpDescription: '更新当前项目中某个任务的状态。',
       idRequired: '[FoxPilot] 任务状态更新失败: id 或 external-id 不能为空',
@@ -437,6 +455,15 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       completed: '[FoxPilot] Beads import completed',
       rejectedTitle: '[FoxPilot] Rejected records',
     },
+    taskExportBeads: {
+      helpDescription: 'Export Beads sync tasks in the current project to a local JSON snapshot.',
+      fileRequired: '[FoxPilot] Beads export failed: file is required',
+      projectNotInitialized: '[FoxPilot] Beads export failed: project is not initialized',
+      dbBootstrapFailed: '[FoxPilot] Beads export failed: failed to initialize foxpilot.db',
+      writeFailed: '[FoxPilot] Beads export failed: failed to write snapshot file',
+      completed: '[FoxPilot] Beads export completed',
+      rejectedTitle: '[FoxPilot] Records not exported',
+    },
     taskUpdateStatus: {
       helpDescription: 'Update the status of one task in the current project.',
       idRequired: '[FoxPilot] Task status update failed: id or external-id is required',
@@ -591,6 +618,15 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       dbBootstrapFailed: '[FoxPilot] Beads 取り込みに失敗しました: foxpilot.db の初期化に失敗しました',
       completed: '[FoxPilot] Beads タスクの取り込みが完了しました',
       rejectedTitle: '[FoxPilot] 以下のレコードは拒否されました',
+    },
+    taskExportBeads: {
+      helpDescription: '現在のプロジェクト内の Beads 同期タスクをローカル JSON スナップショットとして書き出します。',
+      fileRequired: '[FoxPilot] Beads 書き出しに失敗しました: file は必須です',
+      projectNotInitialized: '[FoxPilot] Beads 書き出しに失敗しました: プロジェクトが未初期化です',
+      dbBootstrapFailed: '[FoxPilot] Beads 書き出しに失敗しました: foxpilot.db の初期化に失敗しました',
+      writeFailed: '[FoxPilot] Beads 書き出しに失敗しました: スナップショットファイルを書き込めません',
+      completed: '[FoxPilot] Beads タスクの書き出しが完了しました',
+      rejectedTitle: '[FoxPilot] 書き出せなかったレコード',
     },
     taskUpdateStatus: {
       helpDescription: '現在のプロジェクト内のタスク状態を更新します。',

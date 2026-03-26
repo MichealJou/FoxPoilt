@@ -3,7 +3,11 @@
  * @author michaeljou
  */
 
-import type { ExternalTaskSnapshotRow, TaskRow } from '@/db/task-store.js'
+import type {
+  ExportableBeadsTaskRow,
+  ExternalTaskSnapshotRow,
+  TaskRow,
+} from '@/db/task-store.js'
 import type { ProjectConfig } from '@/project/project-config.js'
 import {
   RepositoryTargetNotFoundError,
@@ -55,6 +59,38 @@ export type NormalizeBeadsSnapshotResult = {
  * 导入层对当前快照的决策结果。
  */
 export type BeadsImportAction = 'create' | 'update' | 'skip'
+
+/**
+ * 导出到本地快照时使用的 Beads 记录结构。
+ *
+ * 这里故意复用导入命令已经接受的字段名，
+ * 让“导出 -> 再导入”不需要额外格式转换。
+ */
+export type BeadsSnapshotExportRecord = {
+  /** 外部系统中的稳定任务号。 */
+  externalTaskId: string
+  /** 当前任务标题。 */
+  title: string
+  /** 导出回外部快照协议后的状态。 */
+  status: 'ready' | 'doing' | 'blocked' | 'done'
+  /** 当前任务优先级。 */
+  priority: TaskRow['priority']
+  /** 任务绑定的仓库相对路径。 */
+  repository: string
+}
+
+/**
+ * 本地导出快照前的转换结果。
+ *
+ * 导出链路也采用“尽量导、逐条拒”的策略，原因是：
+ * - 本地库中可能存在被人工改坏的历史数据；
+ * - 合法记录仍然值得产出；
+ * - 用户需要看到哪些记录无法回写到标准快照协议。
+ */
+export type BuildBeadsExportSnapshotResult = {
+  exported: BeadsSnapshotExportRecord[]
+  rejected: string[]
+}
 
 /**
  * 从原始快照里提取所有“已经声明过”的外部任务号。
@@ -109,6 +145,38 @@ export function mapBeadsStatus(rawStatus: string): TaskRow['status'] | null {
       return 'blocked'
     case 'done':
       return 'done'
+    default:
+      return null
+  }
+}
+
+/**
+ * 把本地任务状态回映射成 Beads 快照可接受的状态集合。
+ *
+ * 设计逻辑：
+ * - `todo` 直接回写为 `ready`；
+ * - 所有“正在推进中的中间态”统一压缩回 `doing`，
+ *   因为当前快照协议没有更细的分析/确认阶段；
+ * - `blocked` / `done` 直接一一映射；
+ * - `cancelled` 不属于“当前仍存在于快照中”的状态，因此返回 `null`。
+ */
+export function mapTaskStatusToBeadsStatus(
+  taskStatus: TaskRow['status'],
+): BeadsSnapshotExportRecord['status'] | null {
+  switch (taskStatus) {
+    case 'todo':
+      return 'ready'
+    case 'analyzing':
+    case 'awaiting_plan_confirm':
+    case 'executing':
+    case 'awaiting_result_confirm':
+      return 'doing'
+    case 'blocked':
+      return 'blocked'
+    case 'done':
+      return 'done'
+    case 'cancelled':
+      return null
     default:
       return null
   }
@@ -246,4 +314,45 @@ export function decideBeadsImportAction(
   }
 
   return 'update'
+}
+
+/**
+ * 把本地任务投影转换为可直接写盘的 Beads 快照。
+ *
+ * 这里不直接在命令层拼对象，是为了把协议细节放到同步层统一维护：
+ * - 状态回映射规则集中在一处；
+ * - 仓库缺失、状态不可导出等异常原因集中生成；
+ * - 后续如果快照协议扩展字段，只需要改这里。
+ */
+export function buildBeadsExportSnapshot(
+  rows: ExportableBeadsTaskRow[],
+): BuildBeadsExportSnapshotResult {
+  const exported: BeadsSnapshotExportRecord[] = []
+  const rejected: string[] = []
+
+  for (const row of rows) {
+    if (!row.repository_path?.trim()) {
+      rejected.push(`externalTaskId=${row.external_id}: repository 缺失`)
+      continue
+    }
+
+    const status = mapTaskStatusToBeadsStatus(row.status)
+    if (!status) {
+      rejected.push(`externalTaskId=${row.external_id}: status 无法导出 (${row.status})`)
+      continue
+    }
+
+    exported.push({
+      externalTaskId: row.external_id,
+      title: row.title,
+      status,
+      priority: row.priority,
+      repository: row.repository_path,
+    })
+  }
+
+  return {
+    exported,
+    rejected,
+  }
 }
