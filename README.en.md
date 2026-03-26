@@ -83,6 +83,12 @@ FoxPilot is a local multi-project task control tool for developer workspaces. It
 
 Current public installation methods:
 
+- macOS / Linux
+  - One-line installer
+  - Command: `curl -fsSL https://raw.githubusercontent.com/MichealJou/FoxPoilt/main/install.sh | sh`
+- Windows
+  - One-line installer
+  - Command: `irm https://raw.githubusercontent.com/MichealJou/FoxPoilt/main/install.ps1 | iex`
 - All platforms
   - Global `npm` install
   - Command: `npm install -g foxpilot --registry https://registry.npmjs.org`
@@ -92,9 +98,6 @@ Current public installation methods:
 - macOS / Linux
   - `GitHub Release` installer
   - Command: `curl -fsSL https://raw.githubusercontent.com/MichealJou/FoxPoilt/main/scripts/install.sh | sh`
-- Windows
-  - `GitHub Release` installer
-  - Command: `irm https://raw.githubusercontent.com/MichealJou/FoxPoilt/main/scripts/install.ps1 | iex`
 
 Verify the installation:
 
@@ -107,6 +110,7 @@ fp version
 Notes:
 
 - `npm install -g` is a system-wide global install, not a project-local dependency install
+- The root `install.sh` / `install.ps1` scripts are the public one-line bootstrap entry points
 - `Homebrew` and `GitHub Release` are now publicly published
 - The current `GitHub Release` package still requires a local `Node.js` runtime
 
