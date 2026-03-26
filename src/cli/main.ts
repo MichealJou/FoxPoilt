@@ -10,15 +10,18 @@ import { parseArgs } from '@/cli/parse-args.js'
 import { runConfigSetLanguageCommand } from '@/commands/config/config-set-language-command.js'
 import { runInitCommand } from '@/commands/init/init-command.js'
 import type { CliResult, InitCommandContext } from '@/commands/init/init-types.js'
-import { runTaskCreateCommand } from '@/commands/task/task-create-command.js'
+import { runSystemInstallInfoCommand } from '@/commands/system/system-install-info-command.js'
+import { runSystemUpdateCommand } from '@/commands/system/system-update-command.js'
+import { runSystemVersionCommand } from '@/commands/system/system-version-command.js'
 import { runTaskBeadsSummaryCommand } from '@/commands/task/task-beads-summary-command.js'
+import { runTaskCreateCommand } from '@/commands/task/task-create-command.js'
+import { runTaskDiffBeadsCommand } from '@/commands/task/task-diff-beads-command.js'
 import { runTaskDoctorBeadsCommand } from '@/commands/task/task-doctor-beads-command.js'
 import { runTaskEditCommand } from '@/commands/task/task-edit-command.js'
-import { runTaskInitBeadsCommand } from '@/commands/task/task-init-beads-command.js'
-import { runTaskDiffBeadsCommand } from '@/commands/task/task-diff-beads-command.js'
 import { runTaskExportBeadsCommand } from '@/commands/task/task-export-beads-command.js'
 import { runTaskHistoryCommand } from '@/commands/task/task-history-command.js'
 import { runTaskImportBeadsCommand } from '@/commands/task/task-import-beads-command.js'
+import { runTaskInitBeadsCommand } from '@/commands/task/task-init-beads-command.js'
 import { runTaskListCommand } from '@/commands/task/task-list-command.js'
 import { runTaskNextCommand } from '@/commands/task/task-next-command.js'
 import { runTaskPushBeadsCommand } from '@/commands/task/task-push-beads-command.js'
@@ -56,6 +59,51 @@ export async function main(
    */
   const interfaceLanguage = context.interfaceLanguage ?? await resolveInterfaceLanguage({ homeDir })
   const messages = getMessages(interfaceLanguage)
+  /**
+   * 运行时公共上下文统一在入口层构造，避免每个路由分支重复拼接同一组字段。
+   *
+   * 这里新增 `executablePath`，是为了让“当前命令实例识别”成为运行时标准能力，
+   * 后续 `install-info`、`update` 和发布相关诊断都可以共用它。
+   */
+  const runtimeContext = {
+    binName: context.binName ?? 'foxpilot',
+    executablePath: context.executablePath ?? process.argv[1] ?? 'foxpilot',
+    cwd: context.cwd ?? process.cwd(),
+    homeDir,
+    stdin: [...(context.stdin ?? [])],
+    interfaceLanguage,
+    dependencies: context.dependencies,
+  }
+
+  if (args.command === 'version') {
+    return runSystemVersionCommand(
+      {
+        command: 'version',
+        help: args.help,
+      },
+      runtimeContext,
+    )
+  }
+
+  if (args.command === 'install-info') {
+    return runSystemInstallInfoCommand(
+      {
+        command: 'install-info',
+        help: args.help,
+      },
+      runtimeContext,
+    )
+  }
+
+  if (args.command === 'update') {
+    return runSystemUpdateCommand(
+      {
+        command: 'update',
+        help: args.help,
+      },
+      runtimeContext,
+    )
+  }
 
   if (args.command === 'init') {
     return runInitCommand(
@@ -69,11 +117,7 @@ export async function main(
         noScan: args.noScan,
       },
       {
-        binName: context.binName ?? 'foxpilot',
-        cwd: context.cwd ?? process.cwd(),
-        homeDir,
-        stdin: [...(context.stdin ?? [])],
-        interfaceLanguage,
+        ...runtimeContext,
         dependencies: context.dependencies as InitCommandContext['dependencies'],
       },
     )
@@ -92,14 +136,7 @@ export async function main(
         taskType: args.taskType ?? 'generic',
         repository: args.repository,
       },
-      {
-        binName: context.binName ?? 'foxpilot',
-        cwd: context.cwd ?? process.cwd(),
-        homeDir,
-        stdin: [...(context.stdin ?? [])],
-        interfaceLanguage,
-        dependencies: context.dependencies,
-      },
+      runtimeContext,
     )
   }
 
@@ -111,14 +148,7 @@ export async function main(
         help: args.help,
         path: args.path,
       },
-      {
-        binName: context.binName ?? 'foxpilot',
-        cwd: context.cwd ?? process.cwd(),
-        homeDir,
-        stdin: [...(context.stdin ?? [])],
-        interfaceLanguage,
-        dependencies: context.dependencies,
-      },
+      runtimeContext,
     )
   }
 
@@ -132,14 +162,7 @@ export async function main(
         repository: args.repository,
         allRepositories: args.allRepositories,
       },
-      {
-        binName: context.binName ?? 'foxpilot',
-        cwd: context.cwd ?? process.cwd(),
-        homeDir,
-        stdin: [...(context.stdin ?? [])],
-        interfaceLanguage,
-        dependencies: context.dependencies,
-      },
+      runtimeContext,
     )
   }
 
@@ -154,14 +177,7 @@ export async function main(
         allRepositories: args.allRepositories,
         dryRun: args.dryRun,
       },
-      {
-        binName: context.binName ?? 'foxpilot',
-        cwd: context.cwd ?? process.cwd(),
-        homeDir,
-        stdin: [...(context.stdin ?? [])],
-        interfaceLanguage,
-        dependencies: context.dependencies,
-      },
+      runtimeContext,
     )
   }
 
@@ -180,14 +196,7 @@ export async function main(
         clearDescription: args.clearDescription,
         taskType: args.taskType,
       },
-      {
-        binName: context.binName ?? 'foxpilot',
-        cwd: context.cwd ?? process.cwd(),
-        homeDir,
-        stdin: [...(context.stdin ?? [])],
-        interfaceLanguage,
-        dependencies: context.dependencies,
-      },
+      runtimeContext,
     )
   }
 
@@ -202,14 +211,7 @@ export async function main(
         source: args.source,
         executor: args.executor,
       },
-      {
-        binName: context.binName ?? 'foxpilot',
-        cwd: context.cwd ?? process.cwd(),
-        homeDir,
-        stdin: [...(context.stdin ?? [])],
-        interfaceLanguage,
-        dependencies: context.dependencies,
-      },
+      runtimeContext,
     )
   }
 
@@ -223,14 +225,7 @@ export async function main(
         source: args.source,
         executor: args.executor,
       },
-      {
-        binName: context.binName ?? 'foxpilot',
-        cwd: context.cwd ?? process.cwd(),
-        homeDir,
-        stdin: [...(context.stdin ?? [])],
-        interfaceLanguage,
-        dependencies: context.dependencies,
-      },
+      runtimeContext,
     )
   }
 
@@ -246,14 +241,7 @@ export async function main(
         externalSource: args.externalSource,
         status: args.status,
       },
-      {
-        binName: context.binName ?? 'foxpilot',
-        cwd: context.cwd ?? process.cwd(),
-        homeDir,
-        stdin: [...(context.stdin ?? [])],
-        interfaceLanguage,
-        dependencies: context.dependencies,
-      },
+      runtimeContext,
     )
   }
 
@@ -269,14 +257,7 @@ export async function main(
         externalSource: args.externalSource,
         executor: args.executor,
       },
-      {
-        binName: context.binName ?? 'foxpilot',
-        cwd: context.cwd ?? process.cwd(),
-        homeDir,
-        stdin: [...(context.stdin ?? [])],
-        interfaceLanguage,
-        dependencies: context.dependencies,
-      },
+      runtimeContext,
     )
   }
 
@@ -292,14 +273,7 @@ export async function main(
         externalSource: args.externalSource,
         priority: args.priority,
       },
-      {
-        binName: context.binName ?? 'foxpilot',
-        cwd: context.cwd ?? process.cwd(),
-        homeDir,
-        stdin: [...(context.stdin ?? [])],
-        interfaceLanguage,
-        dependencies: context.dependencies,
-      },
+      runtimeContext,
     )
   }
 
@@ -314,14 +288,7 @@ export async function main(
         externalId: args.externalId,
         externalSource: args.externalSource,
       },
-      {
-        binName: context.binName ?? 'foxpilot',
-        cwd: context.cwd ?? process.cwd(),
-        homeDir,
-        stdin: [...(context.stdin ?? [])],
-        interfaceLanguage,
-        dependencies: context.dependencies,
-      },
+      runtimeContext,
     )
   }
 
@@ -339,14 +306,7 @@ export async function main(
         externalSource: args.externalSource,
         dryRun: args.dryRun,
       },
-      {
-        binName: context.binName ?? 'foxpilot',
-        cwd: context.cwd ?? process.cwd(),
-        homeDir,
-        stdin: [...(context.stdin ?? [])],
-        interfaceLanguage,
-        dependencies: context.dependencies,
-      },
+      runtimeContext,
     )
   }
 
@@ -361,14 +321,7 @@ export async function main(
         externalId: args.externalId,
         externalSource: args.externalSource,
       },
-      {
-        binName: context.binName ?? 'foxpilot',
-        cwd: context.cwd ?? process.cwd(),
-        homeDir,
-        stdin: [...(context.stdin ?? [])],
-        interfaceLanguage,
-        dependencies: context.dependencies,
-      },
+      runtimeContext,
     )
   }
 
@@ -383,14 +336,7 @@ export async function main(
         closeMissing: args.closeMissing,
         dryRun: args.dryRun,
       },
-      {
-        binName: context.binName ?? 'foxpilot',
-        cwd: context.cwd ?? process.cwd(),
-        homeDir,
-        stdin: [...(context.stdin ?? [])],
-        interfaceLanguage,
-        dependencies: context.dependencies,
-      },
+      runtimeContext,
     )
   }
 
@@ -406,14 +352,7 @@ export async function main(
         closeMissing: args.closeMissing,
         dryRun: args.dryRun,
       },
-      {
-        binName: context.binName ?? 'foxpilot',
-        cwd: context.cwd ?? process.cwd(),
-        homeDir,
-        stdin: [...(context.stdin ?? [])],
-        interfaceLanguage,
-        dependencies: context.dependencies,
-      },
+      runtimeContext,
     )
   }
 
@@ -429,14 +368,7 @@ export async function main(
         allRepositories: args.allRepositories,
         closeMissing: args.closeMissing,
       },
-      {
-        binName: context.binName ?? 'foxpilot',
-        cwd: context.cwd ?? process.cwd(),
-        homeDir,
-        stdin: [...(context.stdin ?? [])],
-        interfaceLanguage,
-        dependencies: context.dependencies,
-      },
+      runtimeContext,
     )
   }
 
@@ -449,14 +381,7 @@ export async function main(
         path: args.path,
         file: args.file,
       },
-      {
-        binName: context.binName ?? 'foxpilot',
-        cwd: context.cwd ?? process.cwd(),
-        homeDir,
-        stdin: [...(context.stdin ?? [])],
-        interfaceLanguage,
-        dependencies: context.dependencies,
-      },
+      runtimeContext,
     )
   }
 
@@ -468,14 +393,7 @@ export async function main(
         help: args.help,
         path: args.path,
       },
-      {
-        binName: context.binName ?? 'foxpilot',
-        cwd: context.cwd ?? process.cwd(),
-        homeDir,
-        stdin: [...(context.stdin ?? [])],
-        interfaceLanguage,
-        dependencies: context.dependencies,
-      },
+      runtimeContext,
     )
   }
 
@@ -487,14 +405,7 @@ export async function main(
         help: args.help,
         lang: args.lang,
       },
-      {
-        binName: context.binName ?? 'foxpilot',
-        cwd: context.cwd ?? process.cwd(),
-        homeDir,
-        stdin: [...(context.stdin ?? [])],
-        interfaceLanguage,
-        dependencies: context.dependencies,
-      },
+      runtimeContext,
     )
   }
 

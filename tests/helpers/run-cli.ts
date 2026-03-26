@@ -4,6 +4,7 @@ type RunCliOptions = {
   binName?: 'foxpilot' | 'fp'
   cwd?: string
   homeDir?: string
+  executablePath?: string
   stdin?: string[]
   dependencies?: Record<string, unknown>
   failEnsureGlobalConfig?: boolean
@@ -61,6 +62,7 @@ export async function runCli(argv: string[], options: RunCliOptions = {}) {
     binName: options.binName ?? 'foxpilot',
     cwd: options.cwd ?? process.cwd(),
     homeDir: options.homeDir ?? os.homedir(),
+    executablePath: options.executablePath,
     stdin: [...(options.stdin ?? [])],
     dependencies,
   })

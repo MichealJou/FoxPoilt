@@ -29,6 +29,7 @@ export function resolveBinName(executablePath: string): 'foxpilot' | 'fp' {
 export async function runFromProcess(argv: string[]): Promise<void> {
   const result = await main(argv, {
     binName: resolveBinName(process.argv[1] ?? 'foxpilot'),
+    executablePath: process.argv[1] ?? 'foxpilot',
     cwd: process.cwd(),
     homeDir: os.homedir(),
     stdin: [],

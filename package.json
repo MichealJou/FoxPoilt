@@ -1,7 +1,7 @@
 {
   "name": "foxpilot",
   "version": "0.1.0",
-  "private": true,
+  "private": false,
   "type": "module",
   "bin": {
     "foxpilot": "dist/cli/run.js",
@@ -10,6 +10,7 @@
   "files": [
     "dist",
     "examples",
+    "scripts",
     "README.md",
     "README.zh-CN.md",
     "README.en.md",
@@ -20,12 +21,15 @@
   "scripts": {
     "build": "pnpm clean && tsc -p tsconfig.build.json && tsc-alias -p tsconfig.build.json",
     "clean": "rm -rf dist",
+    "postinstall": "node scripts/postinstall.js",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "prepare": "pnpm build",
     "cli": "tsx src/cli/run.ts",
-    "verify:install": "zsh ./scripts/verify-install.sh"
+    "verify:install": "zsh ./scripts/verify-install.sh",
+    "release:assets": "sh ./scripts/build-release-assets.sh",
+    "brew:formula": "node ./scripts/render-homebrew-formula.mjs"
   },
   "dependencies": {
     "better-sqlite3": "^11.8.1"

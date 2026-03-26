@@ -13,6 +13,12 @@ FoxPilot is a local multi-project task control tool for developer workspaces. It
 - `foxpilot config set-language`
   - Set the CLI interface language
   - Supported values: `zh-CN`, `en-US`, `ja-JP`
+- `foxpilot version`
+  - Show the current CLI version
+- `foxpilot install-info`
+  - Show the current install source and registered install entries
+- `foxpilot update`
+  - Update by following the current install source
 - `foxpilot task create`
   - Create a manual task
 - `foxpilot task list`
@@ -73,6 +79,45 @@ FoxPilot is a local multi-project task control tool for developer workspaces. It
 
 ## Quick Start
 
+### User Installation
+
+Currently available public install method:
+
+```bash
+npm install -g foxpilot --registry https://registry.npmjs.org
+```
+
+Verify the installation:
+
+```bash
+foxpilot version
+fp version
+```
+
+Platform-oriented installation entry points:
+
+- All platforms
+  - Global `npm` install
+  - Command: `npm install -g foxpilot --registry https://registry.npmjs.org`
+- macOS
+  - Recommended today: global `npm` install
+  - Planned `Homebrew` entry: `brew install michealjou/tap/foxpilot`
+- Linux
+  - Recommended today: global `npm` install
+  - Planned `GitHub Release` installer: `curl -fsSL https://raw.githubusercontent.com/MichealJou/FoxPoilt/main/scripts/install.sh | sh`
+- Windows
+  - Recommended today: global `npm` install
+  - Planned `GitHub Release` installer: `irm https://raw.githubusercontent.com/MichealJou/FoxPoilt/main/scripts/install.ps1 | iex`
+
+Notes:
+
+- `npm install -g` is a system-wide global install, not a project-local dependency install
+- The `Homebrew` and `GitHub Release` paths already have scripts and distribution support in the repository, but public rollout is still a separate publishing step
+
+### Developer Source Workflow
+
+If you are working inside this repository, use the developer workflow instead:
+
 ```bash
 pnpm install
 pnpm typecheck
@@ -82,7 +127,8 @@ pnpm verify:install
 
 Notes:
 
-- `pnpm install` now triggers `prepare` and generates `dist/`
+- `pnpm install` is only for local repository development, not the end-user install command
+- `pnpm install` triggers `prepare` and generates `dist/`
 - `pnpm verify:install` packs the current repository, installs it into a temporary directory, and runs a real `foxpilot init`
 
 Initialize the current project:
@@ -109,6 +155,14 @@ Set the interface language:
 ```bash
 foxpilot config set-language --lang en-US
 fp config set-language --lang ja-JP
+```
+
+Inspect version, install info, and update entry:
+
+```bash
+foxpilot version
+foxpilot install-info
+foxpilot update --help
 ```
 
 ## Command Examples

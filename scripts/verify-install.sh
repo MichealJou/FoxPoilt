@@ -34,10 +34,25 @@ pnpm pack --pack-destination "$pack_dir" >/dev/null
 package_file="$(find "$pack_dir" -maxdepth 1 -name '*.tgz' | head -n 1)"
 
 cd "$consumer_dir"
-pnpm add "$package_file" >/dev/null
+HOME="$home_dir" pnpm add "$package_file" >/dev/null
 
 ./node_modules/.bin/foxpilot init --help >/dev/null
 ./node_modules/.bin/fp init --help >/dev/null
+
+version_output="$(
+  ./node_modules/.bin/foxpilot version
+)"
+
+echo "$version_output" | grep -- 'version: 0.1.0' >/dev/null
+
+install_info_before_init="$(
+  HOME="$home_dir" ./node_modules/.bin/foxpilot install-info
+)"
+
+echo "$install_info_before_init" | grep -- 'installMethod: npm' >/dev/null
+echo "$install_info_before_init" | grep -- 'registeredInstalls: 1' >/dev/null
+
+./node_modules/.bin/foxpilot update --help >/dev/null
 
 HOME="$home_dir" ./node_modules/.bin/foxpilot init \
   --path "$project_dir" \

@@ -20,6 +20,8 @@ import type { InterfaceLanguage } from '@/i18n/interface-language.js'
 export type CliRuntimeContext<TDependencies = Record<string, unknown>> = {
   /** 当前执行的二进制名称，用于帮助输出和别名感知行为。 */
   binName: 'foxpilot' | 'fp'
+  /** 当前真实可执行入口路径，用于识别当前命令实例来源。 */
+  executablePath: string
   /** 用于解析相对用户输入的进程工作目录。 */
   cwd: string
   /** 用于解析全局配置和 SQLite 路径的主目录。 */
