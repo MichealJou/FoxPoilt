@@ -128,7 +128,7 @@ foxpilot task history --id task:example
 导入 Beads 快照：
 
 ```bash
-foxpilot task import-beads --file ./fixtures/beads-snapshot.json
+foxpilot task import-beads --file ./examples/beads-snapshot.sample.json
 ```
 
 生成扫描建议任务：

@@ -128,7 +128,7 @@ foxpilot task history --id task:example
 Import a Beads snapshot:
 
 ```bash
-foxpilot task import-beads --file ./fixtures/beads-snapshot.json
+foxpilot task import-beads --file ./examples/beads-snapshot.sample.json
 ```
 
 Generate scan suggestion tasks:

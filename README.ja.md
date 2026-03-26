@@ -128,7 +128,7 @@ foxpilot task history --id task:example
 Beads スナップショットを取り込み:
 
 ```bash
-foxpilot task import-beads --file ./fixtures/beads-snapshot.json
+foxpilot task import-beads --file ./examples/beads-snapshot.sample.json
 ```
 
 走査提案タスクを生成:

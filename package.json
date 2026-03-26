@@ -9,6 +9,7 @@
   },
   "files": [
     "dist",
+    "examples",
     "README.md",
     "README.zh-CN.md",
     "README.en.md",
