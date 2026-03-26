@@ -83,6 +83,13 @@
 - [x] 已完成 Homebrew formula 生成器：
   - `scripts/render-homebrew-formula.mjs`
   - `src/install/homebrew-formula.ts`
-- [ ] 待完成外部发布动作：
-  - GitHub Release 上传真实资产
-  - Homebrew tap 仓库落地与公式发布
+- [x] 已完成 GitHub Release 真实发布：
+  - Release：`v0.1.0`
+  - 资产：
+    - `foxpilot-darwin-arm64.tar.gz`
+    - `foxpilot-darwin-x64.tar.gz`
+    - `foxpilot-linux-x64.tar.gz`
+    - `foxpilot-win32-x64.zip`
+- [x] 已完成 Homebrew tap 仓库与公式发布：
+  - 仓库：`MichealJou/homebrew-tap`
+  - Formula：`Formula/foxpilot.rb`

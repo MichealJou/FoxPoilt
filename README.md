@@ -10,7 +10,15 @@ FoxPilot 是一个面向本地开发环境的多项目任务中控工具。
 npm install -g foxpilot --registry https://registry.npmjs.org
 ```
 
-按平台的安装说明与后续分发入口，请看对应语言 README。
+其他正式安装方式：
+
+```bash
+brew install MichealJou/tap/foxpilot
+curl -fsSL https://raw.githubusercontent.com/MichealJou/FoxPoilt/main/scripts/install.sh | sh
+irm https://raw.githubusercontent.com/MichealJou/FoxPoilt/main/scripts/install.ps1 | iex
+```
+
+按平台的完整安装说明，请看对应语言 README。
 
 当前仓库提供的主要能力：
 

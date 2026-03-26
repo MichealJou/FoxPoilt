@@ -81,38 +81,34 @@ FoxPilot is a local multi-project task control tool for developer workspaces. It
 
 ### User Installation
 
-Currently available public install method:
+Current public installation methods:
 
-```bash
-npm install -g foxpilot --registry https://registry.npmjs.org
-```
+- All platforms
+  - Global `npm` install
+  - Command: `npm install -g foxpilot --registry https://registry.npmjs.org`
+- macOS / Linux
+  - `Homebrew` install
+  - Command: `brew install MichealJou/tap/foxpilot`
+- macOS / Linux
+  - `GitHub Release` installer
+  - Command: `curl -fsSL https://raw.githubusercontent.com/MichealJou/FoxPoilt/main/scripts/install.sh | sh`
+- Windows
+  - `GitHub Release` installer
+  - Command: `irm https://raw.githubusercontent.com/MichealJou/FoxPoilt/main/scripts/install.ps1 | iex`
 
 Verify the installation:
 
 ```bash
 foxpilot version
+foxpilot install-info
 fp version
 ```
-
-Platform-oriented installation entry points:
-
-- All platforms
-  - Global `npm` install
-  - Command: `npm install -g foxpilot --registry https://registry.npmjs.org`
-- macOS
-  - Recommended today: global `npm` install
-  - Planned `Homebrew` entry: `brew install michealjou/tap/foxpilot`
-- Linux
-  - Recommended today: global `npm` install
-  - Planned `GitHub Release` installer: `curl -fsSL https://raw.githubusercontent.com/MichealJou/FoxPoilt/main/scripts/install.sh | sh`
-- Windows
-  - Recommended today: global `npm` install
-  - Planned `GitHub Release` installer: `irm https://raw.githubusercontent.com/MichealJou/FoxPoilt/main/scripts/install.ps1 | iex`
 
 Notes:
 
 - `npm install -g` is a system-wide global install, not a project-local dependency install
-- The `Homebrew` and `GitHub Release` paths already have scripts and distribution support in the repository, but public rollout is still a separate publishing step
+- `Homebrew` and `GitHub Release` are now publicly published
+- The current `GitHub Release` package still requires a local `Node.js` runtime
 
 ### Developer Source Workflow
 
