@@ -133,7 +133,7 @@ fp version
 | --- | --- | --- |
 | 项目初始化 | `foxpilot init` / `fp init` | 初始化当前项目，生成项目配置、全局配置和本地 SQLite |
 | 语言设置 | `foxpilot config set-language` | 设置 CLI 交互语言，支持中文、英文、日文 |
-| 版本与安装管理 | `foxpilot version` / `foxpilot install-info` / `foxpilot update` | 查看版本、安装来源，并按当前安装来源执行更新 |
+| 版本与安装管理 | `foxpilot version` / `foxpilot install-info` / `foxpilot update` / `foxpilot uninstall` | 查看版本、安装来源，执行更新，或按当前安装来源执行卸载 |
 | 手动任务创建 | `foxpilot task create` | 创建一条手动任务，并可指定优先级、类型、仓库 |
 | 任务总览与筛选 | `foxpilot task list` | 列出当前项目任务，支持按状态、来源、执行器过滤 |
 | 下一条任务建议 | `foxpilot task next` | 从当前项目中选出下一条最值得推进的任务 |
@@ -235,6 +235,9 @@ FoxPilot 当前支持的外部协作主线。
   - 查看当前安装来源、版本和安装实例
 - `foxpilot update`
   - 按当前安装来源执行更新
+- `foxpilot uninstall`
+  - 按当前安装来源执行卸载
+  - 支持 `--purge` 同时删除 `~/.foxpilot`
 
 ### 初始化与配置命令
 

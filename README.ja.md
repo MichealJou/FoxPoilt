@@ -133,7 +133,7 @@ fp version
 | --- | --- | --- |
 | プロジェクト初期化 | `foxpilot init` / `fp init` | 現在のプロジェクトを初期化し、プロジェクト設定、全局設定、SQLite を準備する |
 | 言語設定 | `foxpilot config set-language` | CLI の表示言語を中国語、英語、日本語に切り替える |
-| バージョンとインストール管理 | `foxpilot version` / `foxpilot install-info` / `foxpilot update` | バージョンと導入元を確認し、導入元に従って更新する |
+| バージョンとインストール管理 | `foxpilot version` / `foxpilot install-info` / `foxpilot update` / `foxpilot uninstall` | バージョンと導入元を確認し、導入元に従って更新または卸載する |
 | 手動タスク作成 | `foxpilot task create` | 優先度、種別、対象リポジトリ付きで手動タスクを登録する |
 | タスク一覧と絞り込み | `foxpilot task list` | 現在のプロジェクトタスクを一覧表示し、状態や実行者で絞り込む |
 | 次タスク提案 | `foxpilot task next` | 現在のプロジェクトで次に進めるべきタスクを 1 件選ぶ |
@@ -228,6 +228,7 @@ FoxPilot が現在サポートしている外部協調の主線。
 - `foxpilot version`
 - `foxpilot install-info`
 - `foxpilot update`
+- `foxpilot uninstall`
 
 ### 初期化と設定
 

@@ -37,6 +37,7 @@
 | `foxpilot version` | 查看当前 CLI 版本 |
 | `foxpilot install-info` | 查看当前安装来源、版本、路径和安装实例 |
 | `foxpilot update` | 沿用当前安装来源执行更新 |
+| `foxpilot uninstall` | 沿用当前安装来源执行卸载 |
 
 ### 初始化与配置命令
 
@@ -153,6 +154,40 @@ foxpilot update
 **补充说明**
 
 - 不同安装渠道的更新动作不同，但用户入口统一就是这条命令
+
+---
+
+### `foxpilot uninstall`
+
+**用途**
+
+- 沿用当前安装来源执行卸载
+
+**什么时候用**
+
+- 你不再需要当前机器上的 FoxPilot 命令实例
+- 你想先卸载再重新安装
+
+**常用参数**
+
+- `--purge`
+
+**常见组合**
+
+- `--purge`
+  - 在卸载命令实例的同时，额外删除 `~/.foxpilot` 用户级数据目录
+
+**示例**
+
+```bash
+foxpilot uninstall
+foxpilot uninstall --purge
+```
+
+**补充说明**
+
+- `uninstall` 会按当前安装来源分派到 `npm`、`brew` 或 `release` 卸载链路
+- `--purge` 会把用户级配置、数据库和安装记录一起删除
 
 ## ⚙️ 初始化与配置命令
 

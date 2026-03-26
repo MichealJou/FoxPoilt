@@ -85,3 +85,30 @@ export async function registerCurrentInstallation(input: {
     indexPath,
   }
 }
+
+/**
+ * 从用户级安装索引中移除当前安装实例。
+ *
+ * 卸载命令完成真实卸载动作后，需要主动清掉索引记录，
+ * 否则 `install-info` 还会继续显示一条已经失效的旧安装。
+ */
+export async function unregisterCurrentInstallation(input: {
+  homeDir: string
+  manifest: Pick<InstallManifest, 'installMethod' | 'platform' | 'arch' | 'installRoot'>
+}): Promise<{
+  indexPath: string
+  remainingCount: number
+}> {
+  const indexPath = resolveInstallIndexPath(input.homeDir, input.manifest.platform)
+  const existing = await readInstallIndex({ homeDir: input.homeDir })
+  const installId = createInstallId(input.manifest)
+  const nextIndex = existing.filter((entry) => entry.installId !== installId)
+
+  await mkdir(path.dirname(indexPath), { recursive: true })
+  await writeFile(indexPath, JSON.stringify(nextIndex, null, 2))
+
+  return {
+    indexPath,
+    remainingCount: nextIndex.length,
+  }
+}

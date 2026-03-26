@@ -62,6 +62,8 @@ export type CliArgs = {
   closeMissing: boolean
   /** 是否只预演导入结果而不写入数据库。 */
   dryRun: boolean
+  /** 是否在系统卸载时一并删除用户级数据目录。 */
+  purge: boolean
 }
 
 /**
@@ -103,6 +105,7 @@ export function parseArgs(argv: string[]): CliArgs {
   let allRepositories = false
   let closeMissing = false
   let dryRun = false
+  let purge = false
   let status:
     | 'todo'
     | 'analyzing'
@@ -285,6 +288,11 @@ export function parseArgs(argv: string[]): CliArgs {
 
     if (value === '--dry-run') {
       dryRun = true
+      continue
+    }
+
+    if (value === '--purge') {
+      purge = true
     }
   }
 
@@ -314,5 +322,6 @@ export function parseArgs(argv: string[]): CliArgs {
     allRepositories,
     closeMissing,
     dryRun,
+    purge,
   }
 }

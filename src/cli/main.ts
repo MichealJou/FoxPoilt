@@ -11,6 +11,7 @@ import { runConfigSetLanguageCommand } from '@/commands/config/config-set-langua
 import { runInitCommand } from '@/commands/init/init-command.js'
 import type { CliResult, InitCommandContext } from '@/commands/init/init-types.js'
 import { runSystemInstallInfoCommand } from '@/commands/system/system-install-info-command.js'
+import { runSystemUninstallCommand } from '@/commands/system/system-uninstall-command.js'
 import { runSystemUpdateCommand } from '@/commands/system/system-update-command.js'
 import { runSystemVersionCommand } from '@/commands/system/system-version-command.js'
 import { runTaskBeadsSummaryCommand } from '@/commands/task/task-beads-summary-command.js'
@@ -100,6 +101,17 @@ export async function main(
       {
         command: 'update',
         help: args.help,
+      },
+      runtimeContext,
+    )
+  }
+
+  if (args.command === 'uninstall') {
+    return runSystemUninstallCommand(
+      {
+        command: 'uninstall',
+        help: args.help,
+        purge: args.purge,
       },
       runtimeContext,
     )

@@ -133,7 +133,7 @@ Notes:
 | --- | --- | --- |
 | Project initialization | `foxpilot init` / `fp init` | Initialize the current project and create project config, global config, and local SQLite |
 | Language setting | `foxpilot config set-language` | Set CLI language to Chinese, English, or Japanese |
-| Version and install management | `foxpilot version` / `foxpilot install-info` / `foxpilot update` | Inspect version, install source, and update through the current install channel |
+| Version and install management | `foxpilot version` / `foxpilot install-info` / `foxpilot update` / `foxpilot uninstall` | Inspect version, install source, update through the current channel, or uninstall through the current source |
 | Manual task creation | `foxpilot task create` | Create a manual task with optional priority, type, and repository |
 | Task overview and filtering | `foxpilot task list` | List project tasks and filter by status, source, or executor |
 | Next-task suggestion | `foxpilot task next` | Pick the next most actionable task in the current project |
@@ -232,6 +232,7 @@ It is built around local snapshots and local `bd` commands, not remote orchestra
 - `foxpilot version`
 - `foxpilot install-info`
 - `foxpilot update`
+- `foxpilot uninstall`
 
 ### Init and config commands
 
