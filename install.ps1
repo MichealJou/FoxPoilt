@@ -2,12 +2,12 @@ param(
   [string]$ScriptUrl = $(if ($env:FOXPILOT_INSTALL_SCRIPT_URL) {
     $env:FOXPILOT_INSTALL_SCRIPT_URL
   } else {
-    "https://raw.githubusercontent.com/MichealJou/FoxPoilt/main/scripts/install.ps1"
+    "https://github.com/MichealJou/FoxPoilt/releases/latest/download/foxpilot-install.ps1"
   })
 )
 
 # FoxPilot 一键安装入口。
-# 这个根脚本只负责拉取仓库内真正的 PowerShell 安装脚本，再把剩余参数透传过去。
+# 这个根脚本只负责拉取 Release 中的正式 PowerShell 安装脚本，再把剩余参数透传过去。
 
 $tmpPath = Join-Path ([System.IO.Path]::GetTempPath()) ("foxpilot-bootstrap-" + [System.Guid]::NewGuid().ToString("N") + ".ps1")
 
