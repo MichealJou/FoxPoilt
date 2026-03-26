@@ -52,5 +52,13 @@ echo "$import_output" | grep -- '- created: 3' >/dev/null
 echo "$import_output" | grep -- '- updated: 0' >/dev/null
 echo "$import_output" | grep -- '- rejected: 0' >/dev/null
 
+summary_output="$(
+  HOME="$home_dir" ./node_modules/.bin/foxpilot task beads-summary \
+    --path "$project_dir"
+)"
+
+echo "$summary_output" | grep -- '- total: 3' >/dev/null
+echo "$summary_output" | grep -- '- repositories: 2' >/dev/null
+
 printf '[FoxPilot] verify:install passed\n'
 printf -- '- workspace: %s\n' "$workspace_root"
