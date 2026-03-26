@@ -6,7 +6,8 @@ set -euo pipefail
 # 它覆盖三类最核心场景：
 # 1. 安装后的 `foxpilot` 帮助页可执行；
 # 2. 安装后的 `fp` 简写命令可执行；
-# 3. 非交互 `init` 能真实写出项目配置、全局配置和数据库。
+# 3. 非交互 `init` 能真实写出项目配置、全局配置和数据库；
+# 4. 已安装包内置的 Beads 样例快照可以被真实导入。
 
 workspace_root="$(pwd)"
 tmp_root="$(mktemp -d)"
@@ -21,7 +22,7 @@ cleanup() {
 
 trap cleanup EXIT
 
-mkdir -p "$pack_dir" "$consumer_dir" "$project_dir" "$home_dir" "$project_dir/.git"
+mkdir -p "$pack_dir" "$consumer_dir" "$project_dir" "$home_dir" "$project_dir/.git" "$project_dir/frontend/.git"
 
 pnpm pack --pack-destination "$pack_dir" >/dev/null
 package_file="$(find "$pack_dir" -maxdepth 1 -name '*.tgz' | head -n 1)"
@@ -35,12 +36,21 @@ pnpm add "$package_file" >/dev/null
 HOME="$home_dir" ./node_modules/.bin/foxpilot init \
   --path "$project_dir" \
   --workspace-root "$tmp_root" \
-  --mode non-interactive \
-  --no-scan >/dev/null
+  --mode non-interactive >/dev/null
 
 test -f "$project_dir/.foxpilot/project.json"
 test -f "$home_dir/.foxpilot/foxpilot.config.json"
 test -f "$home_dir/.foxpilot/foxpilot.db"
+
+import_output="$(
+  HOME="$home_dir" ./node_modules/.bin/foxpilot task import-beads \
+    --path "$project_dir" \
+    --file "./node_modules/foxpilot/examples/beads-snapshot.sample.json"
+)"
+
+echo "$import_output" | grep -- '- created: 3' >/dev/null
+echo "$import_output" | grep -- '- updated: 0' >/dev/null
+echo "$import_output" | grep -- '- rejected: 0' >/dev/null
 
 printf '[FoxPilot] verify:install passed\n'
 printf -- '- workspace: %s\n' "$workspace_root"
