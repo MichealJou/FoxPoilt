@@ -241,6 +241,26 @@ export type ExternalTaskSnapshotRow = {
   repository_id: string | null
 }
 
+/**
+ * 当前项目内 `Beads` 同步任务的聚合摘要。
+ *
+ * 这一层服务于“协作总览”而不是单任务查看，因此只返回汇总计数。
+ */
+export type BeadsTaskSummaryRow = {
+  /** Beads 同步任务总数。 */
+  total: number
+  /** 关联到的唯一仓库数。 */
+  repository_count: number
+  /** 当前为 `todo` 的数量。 */
+  todo_count: number
+  /** 当前为 `executing` 的数量。 */
+  executing_count: number
+  /** 当前为 `blocked` 的数量。 */
+  blocked_count: number
+  /** 当前为 `done` 的数量。 */
+  done_count: number
+}
+
 function countRows(db: SqliteDatabase, tableName: 'task' | 'task_target' | 'task_run'): number {
   const row = db.prepare(`SELECT COUNT(*) AS count FROM ${tableName}`).get() as { count: number }
   return row.count
@@ -501,6 +521,22 @@ export function createTaskStore(db: SqliteDatabase) {
       AND tt.target_type = 'repository'
       AND tt.repository_id IS NOT NULL
     ORDER BY tt.repository_id ASC
+  `)
+
+  const getBeadsTaskSummaryStmt = db.prepare(`
+    SELECT
+      COUNT(*) AS total,
+      COUNT(DISTINCT tt.repository_id) AS repository_count,
+      COALESCE(SUM(CASE WHEN t.status = 'todo' THEN 1 ELSE 0 END), 0) AS todo_count,
+      COALESCE(SUM(CASE WHEN t.status = 'executing' THEN 1 ELSE 0 END), 0) AS executing_count,
+      COALESCE(SUM(CASE WHEN t.status = 'blocked' THEN 1 ELSE 0 END), 0) AS blocked_count,
+      COALESCE(SUM(CASE WHEN t.status = 'done' THEN 1 ELSE 0 END), 0) AS done_count
+    FROM task t
+    LEFT JOIN task_target tt
+      ON tt.task_id = t.id
+      AND tt.target_type = 'repository'
+    WHERE t.project_id = @project_id
+      AND t.source_type = 'beads_sync'
   `)
 
   const getLatestOpenTaskRunStmt = db.prepare(`
@@ -818,6 +854,19 @@ export function createTaskStore(db: SqliteDatabase) {
       return (listOpenScanSuggestionRepositoryIdsStmt.all({
         project_id: input.projectId,
       }) as OpenScanSuggestionRepositoryRow[]).map((row) => row.repository_id)
+    },
+    /**
+     * 读取当前项目的 Beads 同步任务聚合摘要。
+     *
+     * 这里返回的永远是一条聚合记录，即使当前没有任何 Beads 任务，
+     * 也会返回各项为 `0` 的稳定结构，避免命令层再处理空值分支。
+     */
+    getBeadsTaskSummary(input: {
+      projectId: string
+    }): BeadsTaskSummaryRow {
+      return getBeadsTaskSummaryStmt.get({
+        project_id: input.projectId,
+      }) as BeadsTaskSummaryRow
     },
     /**
      * 加载任务详情以及与仓库关联的目标信息。

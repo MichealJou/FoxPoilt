@@ -11,6 +11,7 @@ import { runConfigSetLanguageCommand } from '@/commands/config/config-set-langua
 import { runInitCommand } from '@/commands/init/init-command.js'
 import type { CliResult, InitCommandContext } from '@/commands/init/init-types.js'
 import { runTaskCreateCommand } from '@/commands/task/task-create-command.js'
+import { runTaskBeadsSummaryCommand } from '@/commands/task/task-beads-summary-command.js'
 import { runTaskEditCommand } from '@/commands/task/task-edit-command.js'
 import { runTaskHistoryCommand } from '@/commands/task/task-history-command.js'
 import { runTaskImportBeadsCommand } from '@/commands/task/task-import-beads-command.js'
@@ -84,6 +85,25 @@ export async function main(
         priority: args.priority ?? 'P2',
         taskType: args.taskType ?? 'generic',
         repository: args.repository,
+      },
+      {
+        binName: context.binName ?? 'foxpilot',
+        cwd: context.cwd ?? process.cwd(),
+        homeDir,
+        stdin: [...(context.stdin ?? [])],
+        interfaceLanguage,
+        dependencies: context.dependencies,
+      },
+    )
+  }
+
+  if (args.command === 'task' && args.subcommand === 'beads-summary') {
+    return runTaskBeadsSummaryCommand(
+      {
+        command: 'task',
+        subcommand: 'beads-summary',
+        help: args.help,
+        path: args.path,
       },
       {
         binName: context.binName ?? 'foxpilot',

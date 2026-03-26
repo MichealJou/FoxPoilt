@@ -52,6 +52,13 @@ export type MessageCatalog = {
     projectNotIndexed: string
     created: string
   }
+  taskBeadsSummary: {
+    helpDescription: string
+    projectNotInitialized: string
+    dbBootstrapFailed: string
+    empty: string
+    title: string
+  }
   taskList: {
     helpDescription: string
     projectNotInitialized: string
@@ -202,6 +209,13 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       projectNotIndexed: '[FoxPilot] 任务创建失败: 项目未接入全局索引',
       created: '[FoxPilot] 已创建任务',
     },
+    taskBeadsSummary: {
+      helpDescription: '查看当前项目内 Beads 同步任务的聚合摘要。',
+      projectNotInitialized: '[FoxPilot] Beads 摘要失败: 项目尚未初始化',
+      dbBootstrapFailed: '[FoxPilot] Beads 摘要失败: foxpilot.db 初始化失败',
+      empty: '[FoxPilot] 当前项目没有 Beads 同步任务',
+      title: '[FoxPilot] Beads 任务摘要',
+    },
     taskList: {
       helpDescription: '列出当前项目下的任务，可按状态过滤。',
       projectNotInitialized: '[FoxPilot] 任务列表失败: 项目尚未初始化',
@@ -350,6 +364,13 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       projectNotIndexed: '[FoxPilot] Task creation failed: project is not indexed globally',
       created: '[FoxPilot] Task created',
     },
+    taskBeadsSummary: {
+      helpDescription: 'Show an aggregated summary of imported Beads tasks in the current project.',
+      projectNotInitialized: '[FoxPilot] Beads summary failed: project is not initialized',
+      dbBootstrapFailed: '[FoxPilot] Beads summary failed: failed to initialize foxpilot.db',
+      empty: '[FoxPilot] No Beads sync tasks in the current project',
+      title: '[FoxPilot] Beads task summary',
+    },
     taskList: {
       helpDescription: 'List tasks for the current project.',
       projectNotInitialized: '[FoxPilot] Task list failed: Project is not initialized',
@@ -497,6 +518,13 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       repositoryNotFound: '[FoxPilot] タスク作成に失敗しました: リポジトリ対象が見つかりません',
       projectNotIndexed: '[FoxPilot] タスク作成に失敗しました: プロジェクトがグローバル索引に未登録です',
       created: '[FoxPilot] タスクを作成しました',
+    },
+    taskBeadsSummary: {
+      helpDescription: '現在のプロジェクト内の Beads 同期タスク集計を表示します。',
+      projectNotInitialized: '[FoxPilot] Beads 要約に失敗しました: プロジェクトが未初期化です',
+      dbBootstrapFailed: '[FoxPilot] Beads 要約に失敗しました: foxpilot.db の初期化に失敗しました',
+      empty: '[FoxPilot] 現在のプロジェクトには Beads 同期タスクがありません',
+      title: '[FoxPilot] Beads タスク要約',
     },
     taskList: {
       helpDescription: '現在のプロジェクトのタスク一覧を表示します。',
