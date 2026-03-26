@@ -143,6 +143,7 @@ export type MessageCatalog = {
     fileReadFailed: string
     invalidJson: string
     invalidPayload: string
+    repositoryNotFound: string
     projectNotInitialized: string
     dbBootstrapFailed: string
     title: string
@@ -330,10 +331,11 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
     },
     taskDiffBeads: {
       helpDescription: '预览本地 Beads 快照导入后会产生的差异。',
-      fileRequired: '[FoxPilot] Beads 差异预览失败: file 不能为空',
-      fileReadFailed: '[FoxPilot] Beads 差异预览失败: 无法读取导入文件',
-      invalidJson: '[FoxPilot] Beads 差异预览失败: JSON 格式错误',
-      invalidPayload: '[FoxPilot] Beads 差异预览失败: 导入文件必须是任务数组',
+      fileRequired: '[FoxPilot] Beads 差异预览失败: file、repository 或 --all-repositories 必须提供其一',
+      fileReadFailed: '[FoxPilot] Beads 差异预览失败: 无法读取预览来源',
+      invalidJson: '[FoxPilot] Beads 差异预览失败: 预览来源 JSON 格式错误',
+      invalidPayload: '[FoxPilot] Beads 差异预览失败: 预览来源必须是任务数组',
+      repositoryNotFound: '[FoxPilot] Beads 差异预览失败: repository 不存在',
       projectNotInitialized: '[FoxPilot] Beads 差异预览失败: 项目尚未初始化',
       dbBootstrapFailed: '[FoxPilot] Beads 差异预览失败: foxpilot.db 初始化失败',
       title: '[FoxPilot] Beads 快照差异预览',
@@ -519,10 +521,11 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
     },
     taskDiffBeads: {
       helpDescription: 'Preview the diff that a local Beads snapshot would produce.',
-      fileRequired: '[FoxPilot] Beads diff preview failed: file is required',
-      fileReadFailed: '[FoxPilot] Beads diff preview failed: unable to read snapshot file',
-      invalidJson: '[FoxPilot] Beads diff preview failed: invalid JSON format',
-      invalidPayload: '[FoxPilot] Beads diff preview failed: snapshot must be an array of tasks',
+      fileRequired: '[FoxPilot] Beads diff preview failed: file, repository, or --all-repositories is required',
+      fileReadFailed: '[FoxPilot] Beads diff preview failed: unable to read preview source',
+      invalidJson: '[FoxPilot] Beads diff preview failed: preview source has invalid JSON format',
+      invalidPayload: '[FoxPilot] Beads diff preview failed: preview source must be an array of tasks',
+      repositoryNotFound: '[FoxPilot] Beads diff preview failed: repository was not found',
       projectNotInitialized: '[FoxPilot] Beads diff preview failed: project is not initialized',
       dbBootstrapFailed: '[FoxPilot] Beads diff preview failed: failed to initialize foxpilot.db',
       title: '[FoxPilot] Beads snapshot diff preview',
@@ -708,10 +711,11 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
     },
     taskDiffBeads: {
       helpDescription: 'ローカル Beads スナップショットを取り込んだ場合の差分を予覧します。',
-      fileRequired: '[FoxPilot] Beads 差分予覧に失敗しました: file は必須です',
-      fileReadFailed: '[FoxPilot] Beads 差分予覧に失敗しました: スナップショットファイルを読み込めません',
-      invalidJson: '[FoxPilot] Beads 差分予覧に失敗しました: JSON 形式が不正です',
-      invalidPayload: '[FoxPilot] Beads 差分予覧に失敗しました: スナップショットはタスク配列である必要があります',
+      fileRequired: '[FoxPilot] Beads 差分予覧に失敗しました: file、repository、--all-repositories のいずれかが必須です',
+      fileReadFailed: '[FoxPilot] Beads 差分予覧に失敗しました: 予覧元を読み込めません',
+      invalidJson: '[FoxPilot] Beads 差分予覧に失敗しました: 予覧元の JSON 形式が不正です',
+      invalidPayload: '[FoxPilot] Beads 差分予覧に失敗しました: 予覧元はタスク配列である必要があります',
+      repositoryNotFound: '[FoxPilot] Beads 差分予覧に失敗しました: repository が見つかりません',
       projectNotInitialized: '[FoxPilot] Beads 差分予覧に失敗しました: プロジェクトが未初期化です',
       dbBootstrapFailed: '[FoxPilot] Beads 差分予覧に失敗しました: foxpilot.db の初期化に失敗しました',
       title: '[FoxPilot] Beads スナップショット差分予覧',

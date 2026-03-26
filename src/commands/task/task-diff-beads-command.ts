@@ -13,11 +13,19 @@ import { createTaskStore } from '@/db/task-store.js'
 import { getMessages } from '@/i18n/messages.js'
 import {
   ProjectNotInitializedError,
+  RepositoryTargetNotFoundError,
   resolveManagedProject,
+  resolveRepositoryTarget,
 } from '@/project/resolve-project.js'
+import {
+  hasLocalBeadsRepository,
+  normalizeBdIssueList,
+  runBdList,
+} from '@/sync/beads-bd-service.js'
 import {
   buildBeadsDiffPreview,
   collectDeclaredBeadsExternalTaskIds,
+  buildRepositoryId,
   normalizeBeadsSnapshot,
 } from '@/sync/beads-import-service.js'
 
@@ -38,6 +46,8 @@ function getDependencies(
     resolveManagedProject,
     bootstrapDatabase,
     createTaskStore,
+    runBdList,
+    hasLocalBeadsRepository,
     ...overrides,
   }
 }
@@ -54,9 +64,59 @@ function buildHelpText(language: Parameters<typeof getMessages>[0]): string {
     'foxpilot task diff-beads',
     'fp task diff-beads',
     '--file <json-file>',
+    '--repository <repository-selector>',
+    '--all-repositories',
     '--close-missing',
     '--path <project-root>',
   ].join('\n')
+}
+
+type SingleDiffPreviewResult = {
+  repositoryPath: string
+  repositoryRoot: string
+  preview: ReturnType<typeof buildBeadsDiffPreview>
+  rejected: string[]
+}
+
+function formatDiffEntry(entry: ReturnType<typeof buildBeadsDiffPreview>['entries'][number]): string {
+  if (entry.action === 'close') {
+    return `- [close] ${entry.externalTaskId} ${entry.detail}`
+  }
+
+  return `- [${entry.action}] ${entry.externalTaskId} ${entry.title} | repo=${entry.repositoryPath} | ${entry.detail}`
+}
+
+async function buildSingleRepositoryLivePreview(input: {
+  projectRoot: string
+  projectId: string
+  repositoryPath: string
+  taskStore: ReturnType<typeof createTaskStore>
+  runBdList: TaskDiffBeadsDependencies['runBdList']
+  closeMissing: boolean
+}): Promise<SingleDiffPreviewResult> {
+  const repositoryRoot = path.resolve(input.projectRoot, input.repositoryPath)
+  const payload = JSON.parse(await input.runBdList({ repositoryRoot })) as unknown
+  const repositoryId = buildRepositoryId(input.projectRoot, input.repositoryPath)
+  const normalized = normalizeBdIssueList({
+    payload,
+    repositoryId,
+    repositoryPath: input.repositoryPath,
+  })
+  const preview = buildBeadsDiffPreview({
+    projectId: input.projectId,
+    taskStore: input.taskStore,
+    normalizedRecords: normalized.accepted,
+    declaredExternalIds: normalized.declaredExternalIds,
+    closeMissing: input.closeMissing,
+    closeMissingRepositoryId: repositoryId,
+  })
+
+  return {
+    repositoryPath: input.repositoryPath,
+    repositoryRoot,
+    preview,
+    rejected: normalized.rejected,
+  }
 }
 
 /**
@@ -80,7 +140,7 @@ export async function runTaskDiffBeadsCommand(
     }
   }
 
-  if (!args.file?.trim()) {
+  if (!args.file?.trim() && !args.repository?.trim() && !args.allRepositories) {
     return {
       exitCode: 1,
       stdout: messages.taskDiffBeads.fileRequired,
@@ -106,31 +166,6 @@ export async function runTaskDiffBeadsCommand(
     throw error
   }
 
-  const filePath = path.resolve(context.cwd, args.file)
-  let payload
-  try {
-    payload = await dependencies.readJsonFile<unknown>(filePath)
-  } catch (error) {
-    if (error instanceof SyntaxError) {
-      return {
-        exitCode: 1,
-        stdout: `${messages.taskDiffBeads.invalidJson}\n- ${filePath}`,
-      }
-    }
-
-    return {
-      exitCode: 1,
-      stdout: `${messages.taskDiffBeads.fileReadFailed}\n- ${filePath}`,
-    }
-  }
-
-  if (!Array.isArray(payload)) {
-    return {
-      exitCode: 1,
-      stdout: `${messages.taskDiffBeads.invalidPayload}\n- ${filePath}`,
-    }
-  }
-
   const dbPath = resolveGlobalDatabasePath(context.homeDir)
   let db
   try {
@@ -144,48 +179,232 @@ export async function runTaskDiffBeadsCommand(
 
   const taskStore = dependencies.createTaskStore(db)
   const projectId = `project:${managedProject.projectRoot}`
-  const declaredExternalIds = collectDeclaredBeadsExternalTaskIds(payload)
-  const normalized = normalizeBeadsSnapshot({
-    records: payload,
-    projectRoot: managedProject.projectRoot,
-    projectConfig: managedProject.projectConfig,
-  })
-  const preview = buildBeadsDiffPreview({
-    projectId,
-    taskStore,
-    normalizedRecords: normalized.accepted,
-    declaredExternalIds,
-    closeMissing: args.closeMissing,
-  })
-  db.close()
 
-  const detailLines = preview.entries.length === 0
-    ? [messages.taskDiffBeads.noChanges]
-    : preview.entries.map((entry) => {
-        if (entry.action === 'close') {
-          return `- [close] ${entry.externalTaskId} ${entry.detail}`
+  if (args.file?.trim()) {
+    const filePath = path.resolve(context.cwd, args.file)
+    let payload
+    try {
+      payload = await dependencies.readJsonFile<unknown>(filePath)
+    } catch (error) {
+      db.close()
+
+      if (error instanceof SyntaxError) {
+        return {
+          exitCode: 1,
+          stdout: `${messages.taskDiffBeads.invalidJson}\n- ${filePath}`,
         }
+      }
 
-        return `- [${entry.action}] ${entry.externalTaskId} ${entry.title} | repo=${entry.repositoryPath} | ${entry.detail}`
+      return {
+        exitCode: 1,
+        stdout: `${messages.taskDiffBeads.fileReadFailed}\n- ${filePath}`,
+      }
+    }
+
+    if (!Array.isArray(payload)) {
+      db.close()
+      return {
+        exitCode: 1,
+        stdout: `${messages.taskDiffBeads.invalidPayload}\n- ${filePath}`,
+      }
+    }
+
+    const declaredExternalIds = collectDeclaredBeadsExternalTaskIds(payload)
+    const normalized = normalizeBeadsSnapshot({
+      records: payload,
+      projectRoot: managedProject.projectRoot,
+      projectConfig: managedProject.projectConfig,
+    })
+    const preview = buildBeadsDiffPreview({
+      projectId,
+      taskStore,
+      normalizedRecords: normalized.accepted,
+      declaredExternalIds,
+      closeMissing: args.closeMissing,
+    })
+    db.close()
+
+    const detailLines = preview.entries.length === 0
+      ? [messages.taskDiffBeads.noChanges]
+      : preview.entries.map(formatDiffEntry)
+
+    return {
+      exitCode: 0,
+      stdout: [
+        messages.taskDiffBeads.title,
+        `- projectRoot: ${managedProject.projectRoot}`,
+        '- mode: file',
+        `- file: ${filePath}`,
+        `- closeMissing: ${args.closeMissing ? 'true' : 'false'}`,
+        `- created: ${preview.created}`,
+        `- updated: ${preview.updated}`,
+        `- skipped: ${preview.skipped}`,
+        `- closed: ${preview.closed}`,
+        `- rejected: ${normalized.rejected.length}`,
+        '',
+        messages.taskDiffBeads.detailsTitle,
+        ...detailLines,
+        ...(normalized.rejected.length > 0
+          ? ['', messages.taskDiffBeads.rejectedTitle, ...normalized.rejected.map((item) => `- ${item}`)]
+          : []),
+      ].join('\n'),
+    }
+  }
+
+  if (args.repository?.trim()) {
+    let repositoryTarget
+    try {
+      repositoryTarget = resolveRepositoryTarget(managedProject.projectConfig, args.repository)
+    } catch (error) {
+      db.close()
+
+      if (error instanceof RepositoryTargetNotFoundError) {
+        return {
+          exitCode: 1,
+          stdout: `${messages.taskDiffBeads.repositoryNotFound}\n- repository: ${error.repositorySelector}`,
+        }
+      }
+
+      throw error
+    }
+
+    if (!repositoryTarget) {
+      db.close()
+      return {
+        exitCode: 1,
+        stdout: messages.taskDiffBeads.fileRequired,
+      }
+    }
+
+    try {
+      const result = await buildSingleRepositoryLivePreview({
+        projectRoot: managedProject.projectRoot,
+        projectId,
+        repositoryPath: repositoryTarget.path,
+        taskStore,
+        runBdList: dependencies.runBdList,
+        closeMissing: args.closeMissing,
       })
+      db.close()
+
+      const detailLines = result.preview.entries.length === 0
+        ? [messages.taskDiffBeads.noChanges]
+        : result.preview.entries.map(formatDiffEntry)
+
+      return {
+        exitCode: 0,
+        stdout: [
+          messages.taskDiffBeads.title,
+          `- projectRoot: ${managedProject.projectRoot}`,
+          '- mode: single-repository',
+          `- repository: ${result.repositoryPath}`,
+          `- repositoryRoot: ${result.repositoryRoot}`,
+          `- closeMissing: ${args.closeMissing ? 'true' : 'false'}`,
+          `- created: ${result.preview.created}`,
+          `- updated: ${result.preview.updated}`,
+          `- skipped: ${result.preview.skipped}`,
+          `- closed: ${result.preview.closed}`,
+          `- rejected: ${result.rejected.length}`,
+          '',
+          messages.taskDiffBeads.detailsTitle,
+          ...detailLines,
+          ...(result.rejected.length > 0
+            ? ['', messages.taskDiffBeads.rejectedTitle, ...result.rejected.map((item) => `- ${item}`)]
+            : []),
+        ].join('\n'),
+      }
+    } catch (error) {
+      db.close()
+
+      if (error instanceof SyntaxError) {
+        return {
+          exitCode: 1,
+          stdout: `${messages.taskDiffBeads.invalidJson}\n- repositoryRoot: ${path.resolve(managedProject.projectRoot, repositoryTarget.path)}`,
+        }
+      }
+
+      if (error instanceof TypeError) {
+        return {
+          exitCode: 1,
+          stdout: `${messages.taskDiffBeads.invalidPayload}\n- repositoryRoot: ${path.resolve(managedProject.projectRoot, repositoryTarget.path)}`,
+        }
+      }
+
+      return {
+        exitCode: 1,
+        stdout: `${messages.taskDiffBeads.fileReadFailed}\n- repositoryRoot: ${path.resolve(managedProject.projectRoot, repositoryTarget.path)}`,
+      }
+    }
+  }
+
+  const scannedRepositories = managedProject.projectConfig.repositories.length
+  let previewedRepositories = 0
+  let skippedRepositories = 0
+  let created = 0
+  let updated = 0
+  let skipped = 0
+  let closed = 0
+  const rejected: string[] = []
+  const details: string[] = []
+
+  for (const repository of managedProject.projectConfig.repositories) {
+    const repositoryRoot = path.resolve(managedProject.projectRoot, repository.path)
+    const hasLocalBeads = await dependencies.hasLocalBeadsRepository({ repositoryRoot })
+
+    if (!hasLocalBeads) {
+      skippedRepositories += 1
+      continue
+    }
+
+    try {
+      const result = await buildSingleRepositoryLivePreview({
+        projectRoot: managedProject.projectRoot,
+        projectId,
+        repositoryPath: repository.path,
+        taskStore,
+        runBdList: dependencies.runBdList,
+        closeMissing: args.closeMissing,
+      })
+      previewedRepositories += 1
+      created += result.preview.created
+      updated += result.preview.updated
+      skipped += result.preview.skipped
+      closed += result.preview.closed
+      details.push(...result.preview.entries.map(formatDiffEntry))
+      rejected.push(...result.rejected.map((item) => `${repository.path}: ${item}`))
+    } catch (error) {
+      rejected.push(
+        error instanceof SyntaxError
+          ? `${repository.path}: bd list 输出不是合法 JSON`
+          : error instanceof TypeError
+            ? `${repository.path}: bd list 输出必须是任务数组`
+            : `${repository.path}: 无法读取 bd list 输出`,
+      )
+    }
+  }
+
+  db.close()
 
   return {
     exitCode: 0,
     stdout: [
       messages.taskDiffBeads.title,
       `- projectRoot: ${managedProject.projectRoot}`,
-      `- file: ${filePath}`,
+      '- mode: all-repositories',
+      `- scannedRepositories: ${scannedRepositories}`,
+      `- previewedRepositories: ${previewedRepositories}`,
+      `- skippedRepositories: ${skippedRepositories}`,
       `- closeMissing: ${args.closeMissing ? 'true' : 'false'}`,
-      `- created: ${preview.created}`,
-      `- updated: ${preview.updated}`,
-      `- skipped: ${preview.skipped}`,
-      `- closed: ${preview.closed}`,
-      `- rejected: ${normalized.rejected.length}`,
+      `- created: ${created}`,
+      `- updated: ${updated}`,
+      `- skipped: ${skipped}`,
+      `- closed: ${closed}`,
+      `- rejected: ${rejected.length}`,
       '',
       messages.taskDiffBeads.detailsTitle,
-      ...detailLines,
-      ...(normalized.rejected.length > 0
-        ? ['', messages.taskDiffBeads.rejectedTitle, ...normalized.rejected.map((item) => `- ${item}`)]
+      ...(details.length > 0 ? details : [messages.taskDiffBeads.noChanges]),
+      ...(rejected.length > 0
+        ? ['', messages.taskDiffBeads.rejectedTitle, ...rejected.map((item) => `- ${item}`)]
         : []),
     ].join('\n'),
   }

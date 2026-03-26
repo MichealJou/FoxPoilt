@@ -606,6 +606,7 @@ export function buildBeadsDiffPreview(input: {
   normalizedRecords: NormalizedBeadsRecord[]
   declaredExternalIds: Set<string>
   closeMissing: boolean
+  closeMissingRepositoryId?: string
 }): BuildBeadsDiffPreviewResult {
   const entries: BeadsDiffEntry[] = []
   let created = 0
@@ -665,6 +666,7 @@ export function buildBeadsDiffPreview(input: {
     const openImportedTasks = input.taskStore.listOpenImportedTaskReferences({
       projectId: input.projectId,
       externalSource: 'beads',
+      repositoryId: input.closeMissingRepositoryId,
     })
 
     for (const task of openImportedTasks) {

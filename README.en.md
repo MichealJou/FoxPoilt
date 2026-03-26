@@ -38,6 +38,7 @@ FoxPilot is a local multi-project task control tool for developer workspaces. It
   - Support `--dry-run` to preview import results without writing to SQLite
 - `foxpilot task diff-beads`
   - Preview create, update, skip, and close actions without writing to SQLite
+  - Support `--file`, `--repository`, and `--all-repositories`
   - Reuse the same validation and idempotency rules as real import
 - `foxpilot task sync-beads`
   - Sync local Beads tasks directly from `bd list --json --all` in a selected repository
@@ -158,6 +159,8 @@ Preview a Beads snapshot diff:
 ```bash
 foxpilot task diff-beads --file ./examples/beads-snapshot.sample.json
 foxpilot task diff-beads --file ./examples/beads-snapshot.sample.json --close-missing
+foxpilot task diff-beads --repository frontend
+foxpilot task diff-beads --all-repositories
 ```
 
 Sync directly from a local `bd` repository:

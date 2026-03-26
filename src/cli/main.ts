@@ -354,6 +354,8 @@ export async function main(
         help: args.help,
         path: args.path,
         file: args.file,
+        repository: args.repository,
+        allRepositories: args.allRepositories,
         closeMissing: args.closeMissing,
       },
       {

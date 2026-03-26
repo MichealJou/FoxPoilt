@@ -10,6 +10,8 @@
 
 - 命令名固定为 `task diff-beads`
 - 支持 `--file`
+- 支持 `--repository`
+- 支持 `--all-repositories`
 - 支持 `--close-missing`
 - 不真正写库
 
@@ -17,21 +19,24 @@
 
 - 帮助输出
 - 成功预览 create / update / skip
+- 本地仓库 live diff
+- 全仓库 live diff
 - `--close-missing` 预览
 - 非法记录拒绝
-- 缺少 `--file`
+- 缺少预览来源
 - SQLite bootstrap 失败
 
 ### Task 3: 抽可复用的预览决策层
 
 - 复用现有快照标准化逻辑
+- 复用 bd 输出标准化逻辑
 - 复用现有 create / update / skip 判定
 - 补一层纯只读预览结果构造
 
 ### Task 4: 实现命令编排
 
 - 解析受管项目
-- 读取快照文件
+- 读取快照文件或本地 bd 输出
 - 查询当前项目已导入任务
 - 输出统计与差异明细
 

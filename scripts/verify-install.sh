@@ -170,5 +170,15 @@ echo "$sync_all_output" | grep -- '- scannedRepositories: 2' >/dev/null
 echo "$sync_all_output" | grep -- '- syncedRepositories: 1' >/dev/null
 echo "$sync_all_output" | grep -- '- skippedRepositories: 1' >/dev/null
 
+live_diff_output="$(
+  HOME="$home_dir" "$consumer_dir/node_modules/.bin/foxpilot" task diff-beads \
+    --path "$project_dir" \
+    --all-repositories
+)"
+
+echo "$live_diff_output" | grep -- '- mode: all-repositories' >/dev/null
+echo "$live_diff_output" | grep -- '- previewedRepositories: 1' >/dev/null
+echo "$live_diff_output" | grep -- '- skippedRepositories: 1' >/dev/null
+
 printf '[FoxPilot] verify:install passed\n'
 printf -- '- workspace: %s\n' "$workspace_root"

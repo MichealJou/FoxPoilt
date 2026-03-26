@@ -209,10 +209,12 @@ describe('task diff-beads CLI', () => {
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('foxpilot task diff-beads')
     expect(result.stdout).toContain('fp task diff-beads')
+    expect(result.stdout).toContain('--repository <repository-selector>')
+    expect(result.stdout).toContain('--all-repositories')
     expect(result.stdout).toContain('--close-missing')
   })
 
-  it('returns a clear error when file is missing', async () => {
+  it('returns a clear error when no preview source is provided', async () => {
     const { homeDir, projectRoot } = await createManagedProjectWithRepositories()
 
     const result = await runCli(
@@ -221,7 +223,92 @@ describe('task diff-beads CLI', () => {
     )
 
     expect(result.exitCode).toBe(1)
-    expect(result.stdout).toContain('file 不能为空')
+    expect(result.stdout).toContain('file、repository 或 --all-repositories 必须提供其一')
+  })
+
+  it('supports live diff from a single local bd repository', async () => {
+    const { homeDir, projectRoot } = await createManagedProjectWithRepositories()
+
+    const initialSnapshotPath = await writeSnapshotFile(projectRoot, 'beads-live-seed.json', [
+      {
+        externalTaskId: 'BD-FE-1',
+        title: '旧标题',
+        status: 'ready',
+        priority: 'P2',
+        repository: 'frontend',
+      },
+    ])
+
+    expect((await runCli(
+      ['task', 'import-beads', '--file', initialSnapshotPath],
+      { cwd: projectRoot, homeDir },
+    )).exitCode).toBe(0)
+
+    const result = await runCli(
+      ['task', 'diff-beads', '--repository', 'frontend'],
+      {
+        cwd: projectRoot,
+        homeDir,
+        dependencies: {
+          runBdList: async () => JSON.stringify([
+            {
+              id: 'BD-FE-1',
+              title: '新标题',
+              status: 'in_progress',
+              priority: 1,
+            },
+            {
+              id: 'BD-FE-2',
+              title: '新增前端任务',
+              status: 'open',
+              priority: 2,
+            },
+          ]),
+        },
+      },
+    )
+
+    expect(result.exitCode).toBe(0)
+    expect(result.stdout).toContain('- mode: single-repository')
+    expect(result.stdout).toContain('- repository: frontend')
+    expect(result.stdout).toContain('- created: 1')
+    expect(result.stdout).toContain('- updated: 1')
+    expect(result.stdout).toContain('[create] BD-FE-2')
+    expect(result.stdout).toContain('[update] BD-FE-1')
+  })
+
+  it('supports live diff across all repositories and skips repos without local beads', async () => {
+    const { homeDir, projectRoot } = await createManagedProjectWithRepositories()
+    const frontendRepository = path.join(projectRoot, 'frontend')
+
+    const result = await runCli(
+      ['task', 'diff-beads', '--all-repositories'],
+      {
+        cwd: projectRoot,
+        homeDir,
+        dependencies: {
+          hasLocalBeadsRepository: async (input: { repositoryRoot: string }) => {
+            return input.repositoryRoot === frontendRepository
+          },
+          runBdList: async () => JSON.stringify([
+            {
+              id: 'BD-FE-3',
+              title: '跨仓库预览',
+              status: 'blocked',
+              priority: 2,
+            },
+          ]),
+        },
+      },
+    )
+
+    expect(result.exitCode).toBe(0)
+    expect(result.stdout).toContain('- mode: all-repositories')
+    expect(result.stdout).toContain('- scannedRepositories: 2')
+    expect(result.stdout).toContain('- previewedRepositories: 1')
+    expect(result.stdout).toContain('- skippedRepositories: 1')
+    expect(result.stdout).toContain('- created: 1')
+    expect(result.stdout).toContain('[create] BD-FE-3')
   })
 
   it('returns exit code 4 when sqlite bootstrap fails', async () => {
