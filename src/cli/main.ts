@@ -21,6 +21,7 @@ import { runTaskListCommand } from '@/commands/task/task-list-command.js'
 import { runTaskNextCommand } from '@/commands/task/task-next-command.js'
 import { runTaskShowCommand } from '@/commands/task/task-show-command.js'
 import { runTaskSuggestScanCommand } from '@/commands/task/task-suggest-scan-command.js'
+import { runTaskSyncBeadsCommand } from '@/commands/task/task-sync-beads-command.js'
 import { runTaskUpdateExecutorCommand } from '@/commands/task/task-update-executor-command.js'
 import { runTaskUpdatePriorityCommand } from '@/commands/task/task-update-priority-command.js'
 import { runTaskUpdateStatusCommand } from '@/commands/task/task-update-status-command.js'
@@ -308,6 +309,28 @@ export async function main(
         help: args.help,
         path: args.path,
         file: args.file,
+        closeMissing: args.closeMissing,
+        dryRun: args.dryRun,
+      },
+      {
+        binName: context.binName ?? 'foxpilot',
+        cwd: context.cwd ?? process.cwd(),
+        homeDir,
+        stdin: [...(context.stdin ?? [])],
+        interfaceLanguage,
+        dependencies: context.dependencies,
+      },
+    )
+  }
+
+  if (args.command === 'task' && args.subcommand === 'sync-beads') {
+    return runTaskSyncBeadsCommand(
+      {
+        command: 'task',
+        subcommand: 'sync-beads',
+        help: args.help,
+        path: args.path,
+        repository: args.repository,
         closeMissing: args.closeMissing,
         dryRun: args.dryRun,
       },

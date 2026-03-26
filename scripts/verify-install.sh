@@ -134,5 +134,29 @@ dry_run_output="$(
 echo "$dry_run_output" | grep -- '- dryRun: true' >/dev/null
 echo "$dry_run_output" | grep -- '- created: 0' >/dev/null
 
+(
+  cd "$project_dir/frontend"
+  bd init >/dev/null
+  local_beads_id="$(bd create --title '同步本地前端 beads 任务' --description '验证安装后直接读取 bd 输出' --type task --priority 1 --silent)"
+
+  sync_output="$(
+    HOME="$home_dir" "$consumer_dir/node_modules/.bin/foxpilot" task sync-beads \
+      --path "$project_dir" \
+      --repository frontend
+  )"
+
+  echo "$sync_output" | grep -- '- repository: frontend' >/dev/null
+  echo "$sync_output" | grep -- '- created: 1' >/dev/null
+
+  synced_show_output="$(
+    HOME="$home_dir" "$consumer_dir/node_modules/.bin/foxpilot" task show \
+      --path "$project_dir" \
+      --external-id "$local_beads_id"
+  )"
+
+  echo "$synced_show_output" | grep -- 'externalSource: beads' >/dev/null
+  echo "$synced_show_output" | grep -- "externalId: $local_beads_id" >/dev/null
+)
+
 printf '[FoxPilot] verify:install passed\n'
 printf -- '- workspace: %s\n' "$workspace_root"

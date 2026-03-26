@@ -5,6 +5,7 @@ type RunCliOptions = {
   cwd?: string
   homeDir?: string
   stdin?: string[]
+  dependencies?: Record<string, unknown>
   failEnsureGlobalConfig?: boolean
   failBootstrap?: boolean
   failUpsert?: boolean
@@ -18,7 +19,13 @@ export async function runCli(argv: string[], options: RunCliOptions = {}) {
   const catalogStoreModule = await import('@/db/catalog-store.js')
   const projectConfigModule = await import('@/project/project-config.js')
 
-  const dependencies: Record<string, unknown> = {}
+  const dependencies: Record<string, unknown> = {
+    ensureGlobalConfig: globalConfigModule.ensureGlobalConfig,
+    bootstrapDatabase: bootstrapModule.bootstrapDatabase,
+    createCatalogStore: catalogStoreModule.createCatalogStore,
+    writeProjectConfig: projectConfigModule.writeProjectConfig,
+    ...(options.dependencies ?? {}),
+  }
 
   if (options.failEnsureGlobalConfig) {
     dependencies.ensureGlobalConfig = async () => {
@@ -48,13 +55,6 @@ export async function runCli(argv: string[], options: RunCliOptions = {}) {
     dependencies.writeProjectConfig = async () => {
       throw new Error('Injected writeProjectConfig failure')
     }
-  }
-
-  if (Object.keys(dependencies).length === 0) {
-    dependencies.ensureGlobalConfig = globalConfigModule.ensureGlobalConfig
-    dependencies.bootstrapDatabase = bootstrapModule.bootstrapDatabase
-    dependencies.createCatalogStore = catalogStoreModule.createCatalogStore
-    dependencies.writeProjectConfig = projectConfigModule.writeProjectConfig
   }
 
   return main(argv, {

@@ -172,6 +172,8 @@ export type OpenImportedTaskReferenceRow = {
   external_source: NonNullable<TaskRow['external_source']>
   /** 外部系统稳定任务号。 */
   external_id: string
+  /** 当前任务绑定的仓库主键；若无仓库目标则为空。 */
+  repository_id: string | null
 }
 
 /**
@@ -573,16 +575,34 @@ export function createTaskStore(db: SqliteDatabase) {
 
   const listOpenImportedTaskReferencesStmt = db.prepare(`
     SELECT
-      id,
-      external_source,
-      external_id
-    FROM task
-    WHERE project_id = @project_id
-      AND source_type = 'beads_sync'
-      AND external_source = @external_source
-      AND external_id IS NOT NULL
-      AND status NOT IN ('done', 'cancelled')
-    ORDER BY external_id ASC
+      t.id,
+      t.external_source,
+      t.external_id,
+      (
+        SELECT tt.repository_id
+        FROM task_target tt
+        WHERE tt.task_id = t.id
+          AND tt.target_type = 'repository'
+        ORDER BY tt.created_at ASC
+        LIMIT 1
+      ) AS repository_id
+    FROM task t
+    WHERE t.project_id = @project_id
+      AND t.source_type = 'beads_sync'
+      AND t.external_source = @external_source
+      AND t.external_id IS NOT NULL
+      AND t.status NOT IN ('done', 'cancelled')
+      AND (
+        @repository_id IS NULL
+        OR EXISTS (
+          SELECT 1
+          FROM task_target tt
+          WHERE tt.task_id = t.id
+            AND tt.target_type = 'repository'
+            AND tt.repository_id = @repository_id
+        )
+      )
+    ORDER BY t.external_id ASC
   `)
 
   const listExportableBeadsTasksStmt = db.prepare(`
@@ -944,15 +964,18 @@ export function createTaskStore(db: SqliteDatabase) {
      * 这条查询专门服务于同步收口：
      * - 只看 `beads_sync` 来源；
      * - 已完成或已取消的记录不会被重复收口；
+     * - 允许按仓库主键进一步收窄，避免单仓库同步时误收口其他仓库任务；
      * - 只返回关闭任务所需的最小字段。
      */
     listOpenImportedTaskReferences(input: {
       projectId: string
       externalSource: NonNullable<TaskRow['external_source']>
+      repositoryId?: string
     }): OpenImportedTaskReferenceRow[] {
       return listOpenImportedTaskReferencesStmt.all({
         project_id: input.projectId,
         external_source: input.externalSource,
+        repository_id: input.repositoryId ?? null,
       }) as OpenImportedTaskReferenceRow[]
     },
     /**

@@ -3,10 +3,13 @@
  * @author michaeljou
  */
 
+import { randomUUID } from 'node:crypto'
+
 import type {
   ExportableBeadsTaskRow,
   ExternalTaskSnapshotRow,
   TaskRow,
+  TaskTargetRow,
 } from '@/db/task-store.js'
 import type { createTaskStore } from '@/db/task-store.js'
 import type { ProjectConfig } from '@/project/project-config.js'
@@ -94,6 +97,19 @@ export type BuildBeadsDiffPreviewResult = {
   skipped: number
   closed: number
   entries: BeadsDiffEntry[]
+}
+
+/**
+ * 真正落库或 dry-run 后的导入结果摘要。
+ *
+ * 这份结果故意不关心“输入来自 JSON 文件还是 bd CLI”，
+ * 只表达统一的同步结果统计。
+ */
+export type ApplyBeadsImportSnapshotResult = {
+  created: number
+  updated: number
+  skipped: number
+  closed: number
 }
 
 /**
@@ -384,6 +400,155 @@ export function collectBeadsImportChangeKeys(
   }
 
   return changes
+}
+
+/**
+ * 把一批已经标准化好的外部记录应用到本地任务表。
+ *
+ * 这层统一承载创建、更新、跳过、收口四种动作，原因是：
+ * - JSON 文件导入和 bd CLI 同步本质上都是“外部快照落库”；
+ * - 如果两条命令各自维护一套创建/更新逻辑，后续很容易漂移；
+ * - `closeMissingRepositoryId` 让单仓库同步可以只收口当前仓库，不误伤其他仓库。
+ */
+export function applyBeadsImportSnapshot(input: {
+  taskStore: ReturnType<typeof createTaskStore>
+  projectId: string
+  normalizedRecords: NormalizedBeadsRecord[]
+  declaredExternalIds: Set<string>
+  closeMissing: boolean
+  dryRun: boolean
+  closeMissingRepositoryId?: string
+}): ApplyBeadsImportSnapshotResult {
+  let created = 0
+  let updated = 0
+  let skipped = 0
+  let closed = 0
+
+  for (const record of input.normalizedRecords) {
+    const now = new Date().toISOString()
+    const repositoryTarget: TaskTargetRow = {
+      id: `task_target:${randomUUID()}`,
+      task_id: '',
+      repository_id: record.repositoryId,
+      target_type: 'repository',
+      target_value: null,
+      created_at: now,
+    }
+    const existingTask = input.taskStore.getTaskByExternalRef({
+      projectId: input.projectId,
+      externalSource: 'beads',
+      externalId: record.externalTaskId,
+    })
+    const action = decideBeadsImportAction(existingTask, record)
+
+    if (action === 'create') {
+      if (input.dryRun) {
+        created += 1
+        continue
+      }
+
+      const taskId = `task:${randomUUID()}`
+      input.taskStore.createTask({
+        task: {
+          id: taskId,
+          project_id: input.projectId,
+          title: record.title,
+          description: null,
+          source_type: 'beads_sync',
+          status: record.status,
+          priority: record.priority,
+          task_type: 'generic',
+          execution_mode: 'manual',
+          requires_plan_confirm: 1,
+          current_executor: 'beads',
+          external_source: 'beads',
+          external_id: record.externalTaskId,
+          created_at: now,
+          updated_at: now,
+        },
+        targets: [
+          {
+            ...repositoryTarget,
+            task_id: taskId,
+          },
+        ],
+      })
+
+      created += 1
+      continue
+    }
+
+    if (action === 'skip') {
+      skipped += 1
+      continue
+    }
+
+    if (input.dryRun) {
+      updated += 1
+      continue
+    }
+
+    input.taskStore.syncImportedTaskSnapshot({
+      projectId: input.projectId,
+      taskId: existingTask!.id,
+      task: {
+        title: record.title,
+        source_type: 'beads_sync',
+        status: record.status,
+        priority: record.priority,
+        task_type: 'generic',
+        execution_mode: 'manual',
+        requires_plan_confirm: 1,
+        current_executor: 'beads',
+        external_source: 'beads',
+        external_id: record.externalTaskId,
+      },
+      repositoryTarget: {
+        ...repositoryTarget,
+        task_id: existingTask!.id,
+      },
+      updatedAt: now,
+    })
+    updated += 1
+  }
+
+  if (input.closeMissing) {
+    const now = new Date().toISOString()
+    const openImportedTasks = input.taskStore.listOpenImportedTaskReferences({
+      projectId: input.projectId,
+      externalSource: 'beads',
+      repositoryId: input.closeMissingRepositoryId,
+    })
+
+    for (const task of openImportedTasks) {
+      if (input.declaredExternalIds.has(task.external_id)) {
+        continue
+      }
+
+      if (input.dryRun) {
+        closed += 1
+        continue
+      }
+
+      const wasClosed = input.taskStore.updateTaskStatus({
+        projectId: input.projectId,
+        taskId: task.id,
+        status: 'cancelled',
+        updatedAt: now,
+      })
+
+      if (wasClosed) {
+        closed += 1
+      }
+    }
+  }
+
+  return {
+    created,
+    updated,
+    skipped,
+    closed,
+  }
 }
 
 /**

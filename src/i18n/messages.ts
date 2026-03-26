@@ -125,6 +125,18 @@ export type MessageCatalog = {
     completed: string
     rejectedTitle: string
   }
+  taskSyncBeads: {
+    helpDescription: string
+    repositoryRequired: string
+    repositoryNotFound: string
+    readFailed: string
+    invalidJson: string
+    invalidPayload: string
+    projectNotInitialized: string
+    dbBootstrapFailed: string
+    completed: string
+    rejectedTitle: string
+  }
   taskDiffBeads: {
     helpDescription: string
     fileRequired: string
@@ -304,6 +316,18 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       completed: '[FoxPilot] 已完成 Beads 任务导入',
       rejectedTitle: '[FoxPilot] 以下记录已拒绝',
     },
+    taskSyncBeads: {
+      helpDescription: '直接从指定仓库的 bd list 输出同步本地 Beads 任务。',
+      repositoryRequired: '[FoxPilot] 本地 Beads 同步失败: repository 不能为空',
+      repositoryNotFound: '[FoxPilot] 本地 Beads 同步失败: repository 不存在',
+      readFailed: '[FoxPilot] 本地 Beads 同步失败: 无法读取 bd list 输出',
+      invalidJson: '[FoxPilot] 本地 Beads 同步失败: bd list 输出不是合法 JSON',
+      invalidPayload: '[FoxPilot] 本地 Beads 同步失败: bd list 输出必须是任务数组',
+      projectNotInitialized: '[FoxPilot] 本地 Beads 同步失败: 项目尚未初始化',
+      dbBootstrapFailed: '[FoxPilot] 本地 Beads 同步失败: foxpilot.db 初始化失败',
+      completed: '[FoxPilot] 已完成本地 Beads 同步',
+      rejectedTitle: '[FoxPilot] 以下记录已拒绝',
+    },
     taskDiffBeads: {
       helpDescription: '预览本地 Beads 快照导入后会产生的差异。',
       fileRequired: '[FoxPilot] Beads 差异预览失败: file 不能为空',
@@ -481,6 +505,18 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       completed: '[FoxPilot] Beads import completed',
       rejectedTitle: '[FoxPilot] Rejected records',
     },
+    taskSyncBeads: {
+      helpDescription: 'Sync Beads tasks directly from bd list output in a selected repository.',
+      repositoryRequired: '[FoxPilot] Local Beads sync failed: repository is required',
+      repositoryNotFound: '[FoxPilot] Local Beads sync failed: repository was not found',
+      readFailed: '[FoxPilot] Local Beads sync failed: unable to read bd list output',
+      invalidJson: '[FoxPilot] Local Beads sync failed: bd list output is not valid JSON',
+      invalidPayload: '[FoxPilot] Local Beads sync failed: bd list output must be an array of tasks',
+      projectNotInitialized: '[FoxPilot] Local Beads sync failed: project is not initialized',
+      dbBootstrapFailed: '[FoxPilot] Local Beads sync failed: failed to initialize foxpilot.db',
+      completed: '[FoxPilot] Local Beads sync completed',
+      rejectedTitle: '[FoxPilot] Rejected records',
+    },
     taskDiffBeads: {
       helpDescription: 'Preview the diff that a local Beads snapshot would produce.',
       fileRequired: '[FoxPilot] Beads diff preview failed: file is required',
@@ -656,6 +692,18 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       projectNotInitialized: '[FoxPilot] Beads 取り込みに失敗しました: プロジェクトが未初期化です',
       dbBootstrapFailed: '[FoxPilot] Beads 取り込みに失敗しました: foxpilot.db の初期化に失敗しました',
       completed: '[FoxPilot] Beads タスクの取り込みが完了しました',
+      rejectedTitle: '[FoxPilot] 以下のレコードは拒否されました',
+    },
+    taskSyncBeads: {
+      helpDescription: '選択したリポジトリの bd list 出力から Beads タスクを直接同期します。',
+      repositoryRequired: '[FoxPilot] ローカル Beads 同期に失敗しました: repository は必須です',
+      repositoryNotFound: '[FoxPilot] ローカル Beads 同期に失敗しました: repository が見つかりません',
+      readFailed: '[FoxPilot] ローカル Beads 同期に失敗しました: bd list 出力を読み取れません',
+      invalidJson: '[FoxPilot] ローカル Beads 同期に失敗しました: bd list 出力の JSON 形式が不正です',
+      invalidPayload: '[FoxPilot] ローカル Beads 同期に失敗しました: bd list 出力はタスク配列である必要があります',
+      projectNotInitialized: '[FoxPilot] ローカル Beads 同期に失敗しました: プロジェクトが未初期化です',
+      dbBootstrapFailed: '[FoxPilot] ローカル Beads 同期に失敗しました: foxpilot.db の初期化に失敗しました',
+      completed: '[FoxPilot] ローカル Beads 同期が完了しました',
       rejectedTitle: '[FoxPilot] 以下のレコードは拒否されました',
     },
     taskDiffBeads: {

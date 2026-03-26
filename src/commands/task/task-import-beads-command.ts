@@ -3,22 +3,21 @@
  * @author michaeljou
  */
 
-import { randomUUID } from 'node:crypto'
 import path from 'node:path'
 
 import type { CliResult } from '@/commands/init/init-types.js'
 import { readJsonFile } from '@/core/json-file.js'
 import { resolveGlobalDatabasePath } from '@/core/paths.js'
 import { bootstrapDatabase } from '@/db/bootstrap.js'
-import { createTaskStore, type TaskTargetRow } from '@/db/task-store.js'
+import { createTaskStore } from '@/db/task-store.js'
 import { getMessages } from '@/i18n/messages.js'
 import {
   ProjectNotInitializedError,
   resolveManagedProject,
 } from '@/project/resolve-project.js'
 import {
+  applyBeadsImportSnapshot,
   collectDeclaredBeadsExternalTaskIds,
-  decideBeadsImportAction,
   normalizeBeadsSnapshot,
 } from '@/sync/beads-import-service.js'
 
@@ -157,130 +156,14 @@ export async function runTaskImportBeadsCommand(
     projectRoot: managedProject.projectRoot,
     projectConfig: managedProject.projectConfig,
   })
-  let created = 0
-  let updated = 0
-  let skipped = 0
-  let closed = 0
-
-  for (const record of normalized.accepted) {
-    const now = new Date().toISOString()
-    const repositoryTarget: TaskTargetRow = {
-      id: `task_target:${randomUUID()}`,
-      task_id: '',
-      repository_id: record.repositoryId,
-      target_type: 'repository',
-      target_value: null,
-      created_at: now,
-    }
-    const existingTask = taskStore.getTaskByExternalRef({
-      projectId,
-      externalSource: 'beads',
-      externalId: record.externalTaskId,
-    })
-
-    const action = decideBeadsImportAction(existingTask, record)
-
-    if (action === 'create') {
-      if (args.dryRun) {
-        created += 1
-        continue
-      }
-
-      const taskId = `task:${randomUUID()}`
-
-      taskStore.createTask({
-        task: {
-          id: taskId,
-          project_id: projectId,
-          title: record.title,
-          description: null,
-          source_type: 'beads_sync',
-          status: record.status,
-          priority: record.priority,
-          task_type: 'generic',
-          execution_mode: 'manual',
-          requires_plan_confirm: 1,
-          current_executor: 'beads',
-          external_source: 'beads',
-          external_id: record.externalTaskId,
-          created_at: now,
-          updated_at: now,
-        },
-        targets: [
-          {
-            ...repositoryTarget,
-            task_id: taskId,
-          },
-        ],
-      })
-
-      created += 1
-      continue
-    }
-
-    if (action === 'skip') {
-      skipped += 1
-      continue
-    }
-
-    if (args.dryRun) {
-      updated += 1
-      continue
-    }
-
-    taskStore.syncImportedTaskSnapshot({
-      projectId,
-      taskId: existingTask!.id,
-      task: {
-        title: record.title,
-        source_type: 'beads_sync',
-        status: record.status,
-        priority: record.priority,
-        task_type: 'generic',
-        execution_mode: 'manual',
-        requires_plan_confirm: 1,
-        current_executor: 'beads',
-        external_source: 'beads',
-        external_id: record.externalTaskId,
-      },
-      repositoryTarget: {
-        ...repositoryTarget,
-        task_id: existingTask!.id,
-      },
-      updatedAt: now,
-    })
-    updated += 1
-  }
-
-  if (args.closeMissing) {
-    const now = new Date().toISOString()
-    const openImportedTasks = taskStore.listOpenImportedTaskReferences({
-      projectId,
-      externalSource: 'beads',
-    })
-
-    for (const task of openImportedTasks) {
-      if (declaredExternalIds.has(task.external_id)) {
-        continue
-      }
-
-      if (args.dryRun) {
-        closed += 1
-        continue
-      }
-
-      const wasClosed = taskStore.updateTaskStatus({
-        projectId,
-        taskId: task.id,
-        status: 'cancelled',
-        updatedAt: now,
-      })
-
-      if (wasClosed) {
-        closed += 1
-      }
-    }
-  }
+  const importResult = applyBeadsImportSnapshot({
+    taskStore,
+    projectId,
+    normalizedRecords: normalized.accepted,
+    declaredExternalIds,
+    closeMissing: args.closeMissing,
+    dryRun: args.dryRun,
+  })
 
   db.close()
 
@@ -291,10 +174,10 @@ export async function runTaskImportBeadsCommand(
       `- projectRoot: ${managedProject.projectRoot}`,
       `- file: ${filePath}`,
       `- dryRun: ${args.dryRun ? 'true' : 'false'}`,
-      `- created: ${created}`,
-      `- updated: ${updated}`,
-      `- skipped: ${skipped}`,
-      `- closed: ${closed}`,
+      `- created: ${importResult.created}`,
+      `- updated: ${importResult.updated}`,
+      `- skipped: ${importResult.skipped}`,
+      `- closed: ${importResult.closed}`,
       `- rejected: ${normalized.rejected.length}`,
       ...(normalized.rejected.length > 0
         ? ['', messages.taskImportBeads.rejectedTitle, ...normalized.rejected.map((item) => `- ${item}`)]
