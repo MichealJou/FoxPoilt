@@ -4,6 +4,7 @@ import path from 'node:path'
 import Database from 'better-sqlite3'
 import { afterEach, describe, expect, it } from 'vitest'
 
+import { createManagedProjectWithImportedBeadsTask } from '@tests/helpers/imported-beads-task.js'
 import { runCli } from '@tests/helpers/run-cli.js'
 import { createTempDir, removeTempDir } from '@tests/helpers/tmp-dir.js'
 
@@ -175,5 +176,34 @@ describe('task edit CLI', () => {
 
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('任务元数据未变化')
+  })
+
+  it('supports editing imported tasks by external task id', async () => {
+    const { homeDir, projectRoot, taskId, externalId } = await createManagedProjectWithImportedBeadsTask({
+      tempDirs,
+      externalTaskId: 'BEADS-901',
+      title: '原始外部标题',
+      priority: 'P2',
+    })
+
+    const result = await runCli(
+      ['task', 'edit', '--external-id', externalId, '--title', '更新后的外部标题', '--task-type', 'backend'],
+      { cwd: projectRoot, homeDir },
+    )
+
+    expect(result.exitCode).toBe(0)
+    expect(result.stdout).toContain('更新后的外部标题')
+    expect(result.stdout).toContain('taskType: backend')
+
+    const db = new Database(path.join(homeDir, '.foxpilot', 'foxpilot.db'))
+    const row = db.prepare('SELECT title, task_type FROM task WHERE id = ?').get(taskId) as {
+      title: string
+      task_type: string
+    }
+    expect(row).toEqual({
+      title: '更新后的外部标题',
+      task_type: 'backend',
+    })
+    db.close()
   })
 })

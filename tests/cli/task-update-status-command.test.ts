@@ -4,6 +4,7 @@ import path from 'node:path'
 import Database from 'better-sqlite3'
 import { afterEach, describe, expect, it } from 'vitest'
 
+import { createManagedProjectWithImportedBeadsTask } from '@tests/helpers/imported-beads-task.js'
 import { runCli } from '@tests/helpers/run-cli.js'
 import { createTempDir, removeTempDir } from '@tests/helpers/tmp-dir.js'
 
@@ -268,6 +269,28 @@ describe('task update-status CLI', () => {
       count: number
     }
     expect(taskRunCountRow.count).toBe(1)
+    db.close()
+  })
+
+  it('supports updating imported tasks by external task id', async () => {
+    const { homeDir, projectRoot, taskId, externalId } = await createManagedProjectWithImportedBeadsTask({
+      tempDirs,
+      externalTaskId: 'BEADS-1001',
+      title: '外部号推进状态',
+    })
+
+    const result = await runCli(
+      ['task', 'update-status', '--external-id', externalId, '--status', 'analyzing'],
+      { cwd: projectRoot, homeDir },
+    )
+
+    expect(result.exitCode).toBe(0)
+    expect(result.stdout).toContain('from: todo')
+    expect(result.stdout).toContain('to: analyzing')
+
+    const db = new Database(path.join(homeDir, '.foxpilot', 'foxpilot.db'))
+    const row = db.prepare('SELECT status FROM task WHERE id = ?').get(taskId) as { status: string }
+    expect(row.status).toBe('analyzing')
     db.close()
   })
 })

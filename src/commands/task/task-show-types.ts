@@ -4,6 +4,7 @@
  */
 
 import type { CliRuntimeContext } from '@/cli/runtime-context.js'
+import type { TaskReferenceArgs } from '@/commands/task/task-reference.js'
 import type { bootstrapDatabase } from '@/db/bootstrap.js'
 import type { createTaskStore } from '@/db/task-store.js'
 import type { resolveManagedProject } from '@/project/resolve-project.js'
@@ -14,7 +15,7 @@ import type { resolveManagedProject } from '@/project/resolve-project.js'
  * 详情查询的输入要求比列表更严格：必须给出任务 ID，
  * 但仍允许通过 `path` 指定项目根，以便从任意目录查看目标项目中的任务详情。
  */
-export type TaskShowArgs = {
+export type TaskShowArgs = TaskReferenceArgs & {
   /** 顶层命令标识。 */
   command: 'task'
   /** 二级命令标识，固定为 `show`。 */
@@ -23,8 +24,6 @@ export type TaskShowArgs = {
   help: boolean
   /** 可选项目根目录覆盖值。 */
   path?: string
-  /** 任务唯一标识，用于精确加载任务详情。 */
-  id?: string
 }
 
 /**

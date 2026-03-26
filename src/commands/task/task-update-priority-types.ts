@@ -4,6 +4,7 @@
  */
 
 import type { CliRuntimeContext } from '@/cli/runtime-context.js'
+import type { TaskReferenceArgs } from '@/commands/task/task-reference.js'
 import type { bootstrapDatabase } from '@/db/bootstrap.js'
 import type { createTaskStore } from '@/db/task-store.js'
 import type { resolveManagedProject } from '@/project/resolve-project.js'
@@ -16,12 +17,11 @@ export type TaskPriority = 'P0' | 'P1' | 'P2' | 'P3'
 /**
  * `task update-priority` 的标准化参数。
  */
-export type TaskUpdatePriorityArgs = {
+export type TaskUpdatePriorityArgs = TaskReferenceArgs & {
   command: 'task'
   subcommand: 'update-priority'
   help: boolean
   path?: string
-  id?: string
   priority?: TaskPriority
 }
 

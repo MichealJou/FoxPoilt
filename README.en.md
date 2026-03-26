@@ -24,10 +24,13 @@ FoxPilot is a local multi-project task control tool for developer workspaces. It
 - `foxpilot task edit`
   - Edit the title, description, and task type of a task
   - Support explicitly clearing the description
+  - Support locating one task by `--id` or `--external-id`
 - `foxpilot task show`
   - Inspect task detail and targets
+  - Support reading imported tasks directly by external task ID
 - `foxpilot task history`
   - Inspect task run history
+  - Support viewing imported task history by `--external-id`
 - `foxpilot task import-beads`
   - Import Beads tasks from a local JSON snapshot
   - Apply idempotent create, update, and skip behavior by external task ID
@@ -113,18 +116,21 @@ Edit task metadata:
 ```bash
 foxpilot task edit --id task:example --title "Refine task note" --task-type docs
 foxpilot task edit --id task:example --clear-description
+foxpilot task edit --external-id BEADS-1001 --title "Fix imported task title"
 ```
 
 Show task detail:
 
 ```bash
 foxpilot task show --id task:example
+foxpilot task show --external-id BEADS-1001
 ```
 
 Show task history:
 
 ```bash
 foxpilot task history --id task:example
+foxpilot task history --external-id BEADS-1001
 ```
 
 Import a Beads snapshot:
@@ -149,18 +155,21 @@ Update task executor:
 
 ```bash
 foxpilot task update-executor --id task:example --executor beads
+foxpilot task update-executor --external-id BEADS-1002 --executor codex
 ```
 
 Update task priority:
 
 ```bash
 foxpilot task update-priority --id task:example --priority P0
+foxpilot task update-priority --external-id BEADS-1002 --priority P0
 ```
 
 Update task status:
 
 ```bash
 foxpilot task update-status --id task:example --status executing
+foxpilot task update-status --external-id BEADS-1001 --status analyzing
 ```
 
 ## Documentation

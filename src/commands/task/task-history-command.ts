@@ -8,6 +8,7 @@ import { bootstrapDatabase } from '@/db/bootstrap.js'
 import { createTaskStore } from '@/db/task-store.js'
 import { resolveGlobalDatabasePath } from '@/core/paths.js'
 import { getMessages } from '@/i18n/messages.js'
+import { resolveTaskReference } from '@/commands/task/task-reference.js'
 import { ProjectNotInitializedError, resolveManagedProject } from '@/project/resolve-project.js'
 
 import type {
@@ -46,6 +47,8 @@ function buildHelpText(language: Parameters<typeof getMessages>[0]): string {
     'foxpilot task history',
     'fp task history',
     '--id <task-id>',
+    '--external-id <external-task-id>',
+    '--external-source beads',
     '--path <project-root>',
   ].join('\n')
 }
@@ -69,14 +72,6 @@ export async function runTaskHistoryCommand(
     }
   }
 
-  if (!args.id?.trim()) {
-    return {
-      exitCode: 1,
-      stdout: messages.taskHistory.idRequired,
-    }
-  }
-
-  const taskId = args.id.trim()
   const dependencies = getDependencies(context.dependencies)
 
   let managedProject
@@ -108,20 +103,42 @@ export async function runTaskHistoryCommand(
   }
   const taskStore = dependencies.createTaskStore(db)
   const projectId = `project:${managedProject.projectRoot}`
+  const taskReference = resolveTaskReference({
+    args,
+    projectId,
+    taskStore,
+    messages: {
+      idRequired: messages.taskHistory.idRequired,
+      taskNotFound: messages.taskHistory.taskNotFound,
+    },
+  })
+
+  if (!taskReference.ok) {
+    db.close()
+    return {
+      exitCode: 1,
+      stdout: taskReference.stdout,
+    }
+  }
+
   const task = taskStore.getTaskById({
     projectId,
-    taskId,
+    taskId: taskReference.value.taskId,
   })
 
   if (!task) {
     db.close()
     return {
       exitCode: 1,
-      stdout: `${messages.taskHistory.taskNotFound}\n- taskId: ${taskId}`,
+      stdout: [
+        messages.taskHistory.taskNotFound,
+        `- taskId: ${taskReference.value.taskId}`,
+        ...taskReference.value.referenceLines,
+      ].join('\n'),
     }
   }
 
-  const runs = taskStore.listTaskRuns({ taskId })
+  const runs = taskStore.listTaskRuns({ taskId: taskReference.value.taskId })
   db.close()
 
   const runLines =
@@ -141,6 +158,7 @@ export async function runTaskHistoryCommand(
       messages.taskHistory.title,
       `- projectRoot: ${managedProject.projectRoot}`,
       `- taskId: ${task.id}`,
+      ...taskReference.value.referenceLines,
       `- title: ${task.title}`,
       '',
       ...runLines,

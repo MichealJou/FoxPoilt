@@ -4,6 +4,7 @@ import path from 'node:path'
 import Database from 'better-sqlite3'
 import { afterEach, describe, expect, it } from 'vitest'
 
+import { createManagedProjectWithImportedBeadsTask } from '@tests/helpers/imported-beads-task.js'
 import { runCli } from '@tests/helpers/run-cli.js'
 import { createTempDir, removeTempDir } from '@tests/helpers/tmp-dir.js'
 
@@ -83,6 +84,30 @@ describe('task history CLI', () => {
     )
 
     expect(result.exitCode).toBe(0)
+    expect(result.stdout).toContain('analysis')
+    expect(result.stdout).toContain('running')
+  })
+
+  it('supports locating imported tasks by external task id', async () => {
+    const { homeDir, projectRoot, externalId } = await createManagedProjectWithImportedBeadsTask({
+      tempDirs,
+      externalTaskId: 'BEADS-801',
+      title: '外部号查历史',
+    })
+
+    const updateResult = await runCli(
+      ['task', 'update-status', '--external-id', externalId, '--status', 'analyzing'],
+      { cwd: projectRoot, homeDir },
+    )
+    expect(updateResult.exitCode).toBe(0)
+
+    const result = await runCli(
+      ['task', 'history', '--external-id', externalId],
+      { cwd: projectRoot, homeDir },
+    )
+
+    expect(result.exitCode).toBe(0)
+    expect(result.stdout).toContain('外部号查历史')
     expect(result.stdout).toContain('analysis')
     expect(result.stdout).toContain('running')
   })

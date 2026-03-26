@@ -46,6 +46,10 @@ export type CliArgs = {
   source?: 'manual' | 'beads_sync' | 'scan_suggestion'
   /** 详情和状态更新命令使用的可选任务标识。 */
   id?: string
+  /** 外部系统中的稳定任务号，用于直接操作导入任务。 */
+  externalId?: string
+  /** 外部任务来源键；当前由命令层决定默认值。 */
+  externalSource?: 'beads'
   /** 任务当前责任执行器。 */
   executor?: 'codex' | 'beads' | 'none'
   /** 配置命令使用的可选交互语言。 */
@@ -85,6 +89,8 @@ export function parseArgs(argv: string[]): CliArgs {
   let taskType: 'generic' | 'frontend' | 'backend' | 'cross_repo' | 'docs' | 'init' | undefined
   let repository: string | undefined
   let id: string | undefined
+  let externalId: string | undefined
+  let externalSource: 'beads' | undefined
   let executor: 'codex' | 'beads' | 'none' | undefined
   let lang: InterfaceLanguage | undefined
   let file: string | undefined
@@ -192,6 +198,21 @@ export function parseArgs(argv: string[]): CliArgs {
       continue
     }
 
+    if (value === '--external-id') {
+      externalId = rest[index + 1]
+      index += 1
+      continue
+    }
+
+    if (value === '--external-source') {
+      const nextValue = rest[index + 1]
+      if (nextValue === 'beads') {
+        externalSource = nextValue
+      }
+      index += 1
+      continue
+    }
+
     if (value === '--executor') {
       const nextValue = rest[index + 1]
       if (nextValue === 'codex' || nextValue === 'beads' || nextValue === 'none') {
@@ -261,6 +282,8 @@ export function parseArgs(argv: string[]): CliArgs {
     status,
     source,
     id,
+    externalId,
+    externalSource,
     executor,
     lang,
     file,

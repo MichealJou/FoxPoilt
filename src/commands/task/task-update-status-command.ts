@@ -10,6 +10,7 @@ import { bootstrapDatabase } from '@/db/bootstrap.js'
 import { createTaskStore, type TaskRunRow } from '@/db/task-store.js'
 import { resolveGlobalDatabasePath } from '@/core/paths.js'
 import { getMessages } from '@/i18n/messages.js'
+import { resolveTaskReference } from '@/commands/task/task-reference.js'
 import { ProjectNotInitializedError, resolveManagedProject } from '@/project/resolve-project.js'
 
 import type {
@@ -53,6 +54,8 @@ function buildHelpText(language: Parameters<typeof getMessages>[0]): string {
     'foxpilot task update-status',
     'fp task update-status',
     '--id <task-id>',
+    '--external-id <external-task-id>',
+    '--external-source beads',
     '--status todo|analyzing|awaiting_plan_confirm|executing|awaiting_result_confirm|done|blocked|cancelled',
     '--path <project-root>',
   ].join('\n')
@@ -215,13 +218,6 @@ export async function runTaskUpdateStatusCommand(
     }
   }
 
-  if (!args.id?.trim()) {
-    return {
-      exitCode: 1,
-      stdout: messages.taskUpdateStatus.idRequired,
-    }
-  }
-
   if (!args.status) {
     return {
       exitCode: 1,
@@ -229,7 +225,6 @@ export async function runTaskUpdateStatusCommand(
     }
   }
 
-  const taskId = args.id.trim()
   const nextStatus = args.status
 
   const dependencies = getDependencies(context.dependencies)
@@ -262,6 +257,24 @@ export async function runTaskUpdateStatusCommand(
   }
   const taskStore = dependencies.createTaskStore(db)
   const projectId = `project:${managedProject.projectRoot}`
+  const taskReference = resolveTaskReference({
+    args,
+    projectId,
+    taskStore,
+    messages: {
+      idRequired: messages.taskUpdateStatus.idRequired,
+      taskNotFound: messages.taskUpdateStatus.taskNotFound,
+    },
+  })
+
+  if (!taskReference.ok) {
+    db.close()
+    return {
+      exitCode: 1,
+      stdout: taskReference.stdout,
+    }
+  }
+
   /**
    * 先查再写，而不是直接执行 update，有两个目的：
    * 1. 输出里要展示 from -> to，必须先拿到旧状态；
@@ -269,14 +282,18 @@ export async function runTaskUpdateStatusCommand(
    */
   const existingTask = taskStore.getTaskById({
     projectId,
-    taskId,
+    taskId: taskReference.value.taskId,
   })
 
   if (!existingTask) {
     db.close()
     return {
       exitCode: 1,
-      stdout: `${messages.taskUpdateStatus.taskNotFound}\n- taskId: ${taskId}`,
+      stdout: [
+        messages.taskUpdateStatus.taskNotFound,
+        `- taskId: ${taskReference.value.taskId}`,
+        ...taskReference.value.referenceLines,
+      ].join('\n'),
     }
   }
 
@@ -286,7 +303,8 @@ export async function runTaskUpdateStatusCommand(
       exitCode: 1,
       stdout: [
         messages.taskUpdateStatus.invalidTransition,
-        `- taskId: ${taskId}`,
+        `- taskId: ${taskReference.value.taskId}`,
+        ...taskReference.value.referenceLines,
         `- from: ${existingTask.status}`,
         `- to: ${nextStatus}`,
       ].join('\n'),
@@ -300,7 +318,8 @@ export async function runTaskUpdateStatusCommand(
       stdout: [
         messages.taskUpdateStatus.unchanged,
         `- projectRoot: ${managedProject.projectRoot}`,
-        `- taskId: ${taskId}`,
+        `- taskId: ${taskReference.value.taskId}`,
+        ...taskReference.value.referenceLines,
         `- status: ${nextStatus}`,
       ].join('\n'),
     }
@@ -313,7 +332,7 @@ export async function runTaskUpdateStatusCommand(
   const updated = db.transaction(() => {
     const statusUpdated = taskStore.updateTaskStatus({
       projectId,
-      taskId,
+      taskId: taskReference.value.taskId,
       status: nextStatus,
       updatedAt,
     })
@@ -322,7 +341,7 @@ export async function runTaskUpdateStatusCommand(
       return false
     }
 
-    syncTaskRunHistory(taskStore, taskId, nextStatus, updatedAt)
+    syncTaskRunHistory(taskStore, taskReference.value.taskId, nextStatus, updatedAt)
     return true
   })()
 
@@ -331,7 +350,11 @@ export async function runTaskUpdateStatusCommand(
   if (!updated) {
     return {
       exitCode: 1,
-      stdout: `${messages.taskUpdateStatus.taskNotFound}\n- taskId: ${taskId}`,
+      stdout: [
+        messages.taskUpdateStatus.taskNotFound,
+        `- taskId: ${taskReference.value.taskId}`,
+        ...taskReference.value.referenceLines,
+      ].join('\n'),
     }
   }
 
@@ -340,7 +363,8 @@ export async function runTaskUpdateStatusCommand(
     stdout: [
       messages.taskUpdateStatus.updated,
       `- projectRoot: ${managedProject.projectRoot}`,
-      `- taskId: ${taskId}`,
+      `- taskId: ${taskReference.value.taskId}`,
+      ...taskReference.value.referenceLines,
       `- from: ${existingTask.status}`,
       `- to: ${nextStatus}`,
     ].join('\n'),

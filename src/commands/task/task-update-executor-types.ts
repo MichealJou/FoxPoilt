@@ -4,6 +4,7 @@
  */
 
 import type { CliRuntimeContext } from '@/cli/runtime-context.js'
+import type { TaskReferenceArgs } from '@/commands/task/task-reference.js'
 import type { bootstrapDatabase } from '@/db/bootstrap.js'
 import type { createTaskStore } from '@/db/task-store.js'
 import type { resolveManagedProject } from '@/project/resolve-project.js'
@@ -16,12 +17,11 @@ export type TaskExecutor = 'codex' | 'beads' | 'none'
 /**
  * `task update-executor` 的标准化参数。
  */
-export type TaskUpdateExecutorArgs = {
+export type TaskUpdateExecutorArgs = TaskReferenceArgs & {
   command: 'task'
   subcommand: 'update-executor'
   help: boolean
   path?: string
-  id?: string
   executor?: TaskExecutor
 }
 

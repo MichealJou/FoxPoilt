@@ -4,6 +4,7 @@
  */
 
 import type { CliRuntimeContext } from '@/cli/runtime-context.js'
+import type { TaskReferenceArgs } from '@/commands/task/task-reference.js'
 import type { bootstrapDatabase } from '@/db/bootstrap.js'
 import type { createTaskStore } from '@/db/task-store.js'
 import type { resolveManagedProject } from '@/project/resolve-project.js'
@@ -14,7 +15,7 @@ import type { resolveManagedProject } from '@/project/resolve-project.js'
  * 该命令与 `task show` 一样都要求任务 ID，但职责只聚焦在历史序列本身，
  * 不再输出任务目标和当前态摘要。
  */
-export type TaskHistoryArgs = {
+export type TaskHistoryArgs = TaskReferenceArgs & {
   /** 顶层命令标识。 */
   command: 'task'
   /** 二级命令标识，固定为 `history`。 */
@@ -23,8 +24,6 @@ export type TaskHistoryArgs = {
   help: boolean
   /** 可选项目根目录覆盖值。 */
   path?: string
-  /** 任务唯一标识，用于加载对应的历史序列。 */
-  id?: string
 }
 
 /**

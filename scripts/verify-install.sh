@@ -8,6 +8,7 @@ set -euo pipefail
 # 2. 安装后的 `fp` 简写命令可执行；
 # 3. 非交互 `init` 能真实写出项目配置、全局配置和数据库；
 # 4. 已安装包内置的 Beads 样例快照可以被真实导入。
+# 5. 已安装包可以直接通过外部任务号读取导入任务。
 
 workspace_root="$(pwd)"
 tmp_root="$(mktemp -d)"
@@ -59,6 +60,16 @@ summary_output="$(
 
 echo "$summary_output" | grep -- '- total: 3' >/dev/null
 echo "$summary_output" | grep -- '- repositories: 2' >/dev/null
+
+show_output="$(
+  HOME="$home_dir" ./node_modules/.bin/foxpilot task show \
+    --path "$project_dir" \
+    --external-id "BEADS-1001"
+)"
+
+echo "$show_output" | grep -- 'externalSource: beads' >/dev/null
+echo "$show_output" | grep -- 'externalId: BEADS-1001' >/dev/null
+echo "$show_output" | grep -- '补齐登录态回归检查' >/dev/null
 
 printf '[FoxPilot] verify:install passed\n'
 printf -- '- workspace: %s\n' "$workspace_root"

@@ -124,6 +124,8 @@ export async function main(
         help: args.help,
         path: args.path,
         id: args.id,
+        externalId: args.externalId,
+        externalSource: args.externalSource,
         title: args.title,
         description: args.description,
         clearDescription: args.clearDescription,
@@ -191,6 +193,8 @@ export async function main(
         help: args.help,
         path: args.path,
         id: args.id,
+        externalId: args.externalId,
+        externalSource: args.externalSource,
         status: args.status,
       },
       {
@@ -212,6 +216,8 @@ export async function main(
         help: args.help,
         path: args.path,
         id: args.id,
+        externalId: args.externalId,
+        externalSource: args.externalSource,
         executor: args.executor,
       },
       {
@@ -233,6 +239,8 @@ export async function main(
         help: args.help,
         path: args.path,
         id: args.id,
+        externalId: args.externalId,
+        externalSource: args.externalSource,
         priority: args.priority,
       },
       {
@@ -254,6 +262,8 @@ export async function main(
         help: args.help,
         path: args.path,
         id: args.id,
+        externalId: args.externalId,
+        externalSource: args.externalSource,
       },
       {
         binName: context.binName ?? 'foxpilot',
@@ -274,6 +284,8 @@ export async function main(
         help: args.help,
         path: args.path,
         id: args.id,
+        externalId: args.externalId,
+        externalSource: args.externalSource,
       },
       {
         binName: context.binName ?? 'foxpilot',

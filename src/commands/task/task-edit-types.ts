@@ -4,6 +4,7 @@
  */
 
 import type { CliRuntimeContext } from '@/cli/runtime-context.js'
+import type { TaskReferenceArgs } from '@/commands/task/task-reference.js'
 import type { bootstrapDatabase } from '@/db/bootstrap.js'
 import type { createTaskStore } from '@/db/task-store.js'
 import type { resolveManagedProject } from '@/project/resolve-project.js'
@@ -22,12 +23,11 @@ export type EditableTaskType =
 /**
  * `task edit` 的标准化参数。
  */
-export type TaskEditArgs = {
+export type TaskEditArgs = TaskReferenceArgs & {
   command: 'task'
   subcommand: 'edit'
   help: boolean
   path?: string
-  id?: string
   title?: string
   description?: string
   clearDescription: boolean

@@ -4,6 +4,7 @@
  */
 
 import type { CliRuntimeContext } from '@/cli/runtime-context.js'
+import type { TaskReferenceArgs } from '@/commands/task/task-reference.js'
 import type { bootstrapDatabase } from '@/db/bootstrap.js'
 import type { createTaskStore } from '@/db/task-store.js'
 import type { resolveManagedProject } from '@/project/resolve-project.js'
@@ -30,7 +31,7 @@ export type TaskUpdateStatus =
  * 该命令需要同时给出任务 ID 和目标状态。
  * 如果任一字段缺失，命令应在命令层快速失败，而不是把空值继续传入 store。
  */
-export type TaskUpdateStatusArgs = {
+export type TaskUpdateStatusArgs = TaskReferenceArgs & {
   /** 顶层命令标识。 */
   command: 'task'
   /** 二级命令标识，固定为 `update-status`。 */
@@ -39,8 +40,6 @@ export type TaskUpdateStatusArgs = {
   help: boolean
   /** 可选项目根目录覆盖值。 */
   path?: string
-  /** 需要被更新的任务 ID。 */
-  id?: string
   /** 目标状态；解析器只允许合法枚举进入命令层。 */
   status?: TaskUpdateStatus
 }

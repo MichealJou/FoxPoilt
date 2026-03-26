@@ -8,6 +8,7 @@ import { resolveGlobalDatabasePath } from '@/core/paths.js'
 import { bootstrapDatabase } from '@/db/bootstrap.js'
 import { createTaskStore } from '@/db/task-store.js'
 import { getMessages } from '@/i18n/messages.js'
+import { resolveTaskReference } from '@/commands/task/task-reference.js'
 import { ProjectNotInitializedError, resolveManagedProject } from '@/project/resolve-project.js'
 
 import type {
@@ -42,6 +43,8 @@ function buildHelpText(language: Parameters<typeof getMessages>[0]): string {
     'foxpilot task edit',
     'fp task edit',
     '--id <task-id>',
+    '--external-id <external-task-id>',
+    '--external-source beads',
     '--title <title>',
     '--description <description>',
     '--clear-description',
@@ -71,13 +74,6 @@ export async function runTaskEditCommand(
     return {
       exitCode: 0,
       stdout: buildHelpText(context.interfaceLanguage),
-    }
-  }
-
-  if (!args.id?.trim()) {
-    return {
-      exitCode: 1,
-      stdout: messages.taskEdit.idRequired,
     }
   }
 
@@ -113,7 +109,6 @@ export async function runTaskEditCommand(
     }
   }
 
-  const taskId = args.id.trim()
   const dependencies = getDependencies(context.dependencies)
 
   let managedProject
@@ -146,16 +141,38 @@ export async function runTaskEditCommand(
 
   const taskStore = dependencies.createTaskStore(db)
   const projectId = `project:${managedProject.projectRoot}`
+  const taskReference = resolveTaskReference({
+    args,
+    projectId,
+    taskStore,
+    messages: {
+      idRequired: messages.taskEdit.idRequired,
+      taskNotFound: messages.taskEdit.taskNotFound,
+    },
+  })
+
+  if (!taskReference.ok) {
+    db.close()
+    return {
+      exitCode: 1,
+      stdout: taskReference.stdout,
+    }
+  }
+
   const detail = taskStore.getTaskDetail({
     projectId,
-    taskId,
+    taskId: taskReference.value.taskId,
   })
 
   if (!detail) {
     db.close()
     return {
       exitCode: 1,
-      stdout: `${messages.taskEdit.taskNotFound}\n- taskId: ${taskId}`,
+      stdout: [
+        messages.taskEdit.taskNotFound,
+        `- taskId: ${taskReference.value.taskId}`,
+        ...taskReference.value.referenceLines,
+      ].join('\n'),
     }
   }
 
@@ -178,14 +195,15 @@ export async function runTaskEditCommand(
       stdout: [
         messages.taskEdit.unchanged,
         `- projectRoot: ${managedProject.projectRoot}`,
-        `- taskId: ${taskId}`,
+        `- taskId: ${taskReference.value.taskId}`,
+        ...taskReference.value.referenceLines,
       ].join('\n'),
     }
   }
 
   const updated = taskStore.updateTaskMetadata({
     projectId,
-    taskId,
+    taskId: taskReference.value.taskId,
     title: nextTitle,
     description: nextDescription,
     taskType: nextTaskType,
@@ -197,7 +215,11 @@ export async function runTaskEditCommand(
   if (!updated) {
     return {
       exitCode: 1,
-      stdout: `${messages.taskEdit.taskNotFound}\n- taskId: ${taskId}`,
+      stdout: [
+        messages.taskEdit.taskNotFound,
+        `- taskId: ${taskReference.value.taskId}`,
+        ...taskReference.value.referenceLines,
+      ].join('\n'),
     }
   }
 
@@ -206,7 +228,8 @@ export async function runTaskEditCommand(
     stdout: [
       messages.taskEdit.updated,
       `- projectRoot: ${managedProject.projectRoot}`,
-      `- taskId: ${taskId}`,
+      `- taskId: ${taskReference.value.taskId}`,
+      ...taskReference.value.referenceLines,
       `- title: ${nextTitle}`,
       `- description: ${nextDescription ?? '(cleared)'}`,
       `- taskType: ${nextTaskType}`,

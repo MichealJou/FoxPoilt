@@ -232,7 +232,7 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
     },
     taskEdit: {
       helpDescription: '编辑当前项目中某个任务的标题、描述或任务类型。',
-      idRequired: '[FoxPilot] 任务编辑失败: id 不能为空',
+      idRequired: '[FoxPilot] 任务编辑失败: id 或 external-id 不能为空',
       titleRequired: '[FoxPilot] 任务编辑失败: title 不能为空',
       descriptionRequired: '[FoxPilot] 任务编辑失败: description 不能为空',
       noChangesSpecified: '[FoxPilot] 任务编辑失败: 至少指定一个可编辑字段',
@@ -245,7 +245,7 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
     },
     taskShow: {
       helpDescription: '查看单个任务的详情和目标列表。',
-      idRequired: '[FoxPilot] 任务详情失败: id 不能为空',
+      idRequired: '[FoxPilot] 任务详情失败: id 或 external-id 不能为空',
       projectNotInitialized: '[FoxPilot] 任务详情失败: 项目尚未初始化',
       dbBootstrapFailed: '[FoxPilot] 任务详情失败: foxpilot.db 初始化失败',
       taskNotFound: '[FoxPilot] 任务详情失败: 未找到任务',
@@ -257,7 +257,7 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
     },
     taskHistory: {
       helpDescription: '查看单个任务的完整运行历史。',
-      idRequired: '[FoxPilot] 任务历史失败: id 不能为空',
+      idRequired: '[FoxPilot] 任务历史失败: id 或 external-id 不能为空',
       projectNotInitialized: '[FoxPilot] 任务历史失败: 项目尚未初始化',
       dbBootstrapFailed: '[FoxPilot] 任务历史失败: foxpilot.db 初始化失败',
       taskNotFound: '[FoxPilot] 任务历史失败: 未找到任务',
@@ -284,7 +284,7 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
     },
     taskUpdateStatus: {
       helpDescription: '更新当前项目中某个任务的状态。',
-      idRequired: '[FoxPilot] 任务状态更新失败: id 不能为空',
+      idRequired: '[FoxPilot] 任务状态更新失败: id 或 external-id 不能为空',
       statusRequired: '[FoxPilot] 任务状态更新失败: status 非法或缺失',
       projectNotInitialized: '[FoxPilot] 任务状态更新失败: 项目尚未初始化',
       dbBootstrapFailed: '[FoxPilot] 任务状态更新失败: foxpilot.db 初始化失败',
@@ -295,7 +295,7 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
     },
     taskUpdateExecutor: {
       helpDescription: '更新当前项目中某个任务的责任执行器。',
-      idRequired: '[FoxPilot] 任务执行器更新失败: id 不能为空',
+      idRequired: '[FoxPilot] 任务执行器更新失败: id 或 external-id 不能为空',
       executorRequired: '[FoxPilot] 任务执行器更新失败: executor 非法或缺失',
       projectNotInitialized: '[FoxPilot] 任务执行器更新失败: 项目尚未初始化',
       dbBootstrapFailed: '[FoxPilot] 任务执行器更新失败: foxpilot.db 初始化失败',
@@ -305,7 +305,7 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
     },
     taskUpdatePriority: {
       helpDescription: '更新当前项目中某个任务的优先级。',
-      idRequired: '[FoxPilot] 任务优先级更新失败: id 不能为空',
+      idRequired: '[FoxPilot] 任务优先级更新失败: id 或 external-id 不能为空',
       priorityRequired: '[FoxPilot] 任务优先级更新失败: priority 非法或缺失',
       projectNotInitialized: '[FoxPilot] 任务优先级更新失败: 项目尚未初始化',
       dbBootstrapFailed: '[FoxPilot] 任务优先级更新失败: foxpilot.db 初始化失败',
@@ -387,7 +387,7 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
     },
     taskEdit: {
       helpDescription: 'Edit the title, description, or task type of one task in the current project.',
-      idRequired: '[FoxPilot] Task edit failed: id is required',
+      idRequired: '[FoxPilot] Task edit failed: id or external-id is required',
       titleRequired: '[FoxPilot] Task edit failed: title is required',
       descriptionRequired: '[FoxPilot] Task edit failed: description is required',
       noChangesSpecified: '[FoxPilot] Task edit failed: at least one editable field is required',
@@ -400,7 +400,7 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
     },
     taskShow: {
       helpDescription: 'Show detail and targets for a single task.',
-      idRequired: '[FoxPilot] Task detail failed: id is required',
+      idRequired: '[FoxPilot] Task detail failed: id or external-id is required',
       projectNotInitialized: '[FoxPilot] Task detail failed: project is not initialized',
       dbBootstrapFailed: '[FoxPilot] Task detail failed: failed to initialize foxpilot.db',
       taskNotFound: '[FoxPilot] Task detail failed: task was not found',
@@ -412,7 +412,7 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
     },
     taskHistory: {
       helpDescription: 'Show full run history for a single task.',
-      idRequired: '[FoxPilot] Task history failed: id is required',
+      idRequired: '[FoxPilot] Task history failed: id or external-id is required',
       projectNotInitialized: '[FoxPilot] Task history failed: project is not initialized',
       dbBootstrapFailed: '[FoxPilot] Task history failed: failed to initialize foxpilot.db',
       taskNotFound: '[FoxPilot] Task history failed: task was not found',
@@ -439,7 +439,7 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
     },
     taskUpdateStatus: {
       helpDescription: 'Update the status of one task in the current project.',
-      idRequired: '[FoxPilot] Task status update failed: id is required',
+      idRequired: '[FoxPilot] Task status update failed: id or external-id is required',
       statusRequired: '[FoxPilot] Task status update failed: status is invalid or missing',
       projectNotInitialized: '[FoxPilot] Task status update failed: project is not initialized',
       dbBootstrapFailed: '[FoxPilot] Task status update failed: failed to initialize foxpilot.db',
@@ -450,7 +450,7 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
     },
     taskUpdateExecutor: {
       helpDescription: 'Update the responsible executor of one task in the current project.',
-      idRequired: '[FoxPilot] Task executor update failed: id is required',
+      idRequired: '[FoxPilot] Task executor update failed: id or external-id is required',
       executorRequired: '[FoxPilot] Task executor update failed: executor is invalid or missing',
       projectNotInitialized: '[FoxPilot] Task executor update failed: project is not initialized',
       dbBootstrapFailed: '[FoxPilot] Task executor update failed: failed to initialize foxpilot.db',
@@ -460,7 +460,7 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
     },
     taskUpdatePriority: {
       helpDescription: 'Update the priority of one task in the current project.',
-      idRequired: '[FoxPilot] Task priority update failed: id is required',
+      idRequired: '[FoxPilot] Task priority update failed: id or external-id is required',
       priorityRequired: '[FoxPilot] Task priority update failed: priority is invalid or missing',
       projectNotInitialized: '[FoxPilot] Task priority update failed: project is not initialized',
       dbBootstrapFailed: '[FoxPilot] Task priority update failed: failed to initialize foxpilot.db',
@@ -542,7 +542,7 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
     },
     taskEdit: {
       helpDescription: '現在のプロジェクト内のタスクのタイトル・説明・種別を編集します。',
-      idRequired: '[FoxPilot] タスク編集に失敗しました: id は必須です',
+      idRequired: '[FoxPilot] タスク編集に失敗しました: id または external-id は必須です',
       titleRequired: '[FoxPilot] タスク編集に失敗しました: title は必須です',
       descriptionRequired: '[FoxPilot] タスク編集に失敗しました: description は必須です',
       noChangesSpecified: '[FoxPilot] タスク編集に失敗しました: 少なくとも 1 つの編集対象が必要です',
@@ -555,7 +555,7 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
     },
     taskShow: {
       helpDescription: '単一タスクの詳細と対象一覧を表示します。',
-      idRequired: '[FoxPilot] タスク詳細に失敗しました: id は必須です',
+      idRequired: '[FoxPilot] タスク詳細に失敗しました: id または external-id は必須です',
       projectNotInitialized: '[FoxPilot] タスク詳細に失敗しました: プロジェクトが未初期化です',
       dbBootstrapFailed: '[FoxPilot] タスク詳細に失敗しました: foxpilot.db の初期化に失敗しました',
       taskNotFound: '[FoxPilot] タスク詳細に失敗しました: タスクが見つかりません',
@@ -567,7 +567,7 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
     },
     taskHistory: {
       helpDescription: '単一タスクの完全な実行履歴を表示します。',
-      idRequired: '[FoxPilot] タスク履歴に失敗しました: id は必須です',
+      idRequired: '[FoxPilot] タスク履歴に失敗しました: id または external-id は必須です',
       projectNotInitialized: '[FoxPilot] タスク履歴に失敗しました: プロジェクトが未初期化です',
       dbBootstrapFailed: '[FoxPilot] タスク履歴に失敗しました: foxpilot.db の初期化に失敗しました',
       taskNotFound: '[FoxPilot] タスク履歴に失敗しました: タスクが見つかりません',
@@ -594,7 +594,7 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
     },
     taskUpdateStatus: {
       helpDescription: '現在のプロジェクト内のタスク状態を更新します。',
-      idRequired: '[FoxPilot] タスク状態更新に失敗しました: id は必須です',
+      idRequired: '[FoxPilot] タスク状態更新に失敗しました: id または external-id は必須です',
       statusRequired: '[FoxPilot] タスク状態更新に失敗しました: status が不正または不足しています',
       projectNotInitialized: '[FoxPilot] タスク状態更新に失敗しました: プロジェクトが未初期化です',
       dbBootstrapFailed: '[FoxPilot] タスク状態更新に失敗しました: foxpilot.db の初期化に失敗しました',
@@ -605,7 +605,7 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
     },
     taskUpdateExecutor: {
       helpDescription: '現在のプロジェクト内のタスク責任実行者を更新します。',
-      idRequired: '[FoxPilot] タスク実行者更新に失敗しました: id は必須です',
+      idRequired: '[FoxPilot] タスク実行者更新に失敗しました: id または external-id は必須です',
       executorRequired: '[FoxPilot] タスク実行者更新に失敗しました: executor が不正または不足しています',
       projectNotInitialized: '[FoxPilot] タスク実行者更新に失敗しました: プロジェクトが未初期化です',
       dbBootstrapFailed: '[FoxPilot] タスク実行者更新に失敗しました: foxpilot.db の初期化に失敗しました',
@@ -615,7 +615,7 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
     },
     taskUpdatePriority: {
       helpDescription: '現在のプロジェクト内のタスク優先度を更新します。',
-      idRequired: '[FoxPilot] タスク優先度更新に失敗しました: id は必須です',
+      idRequired: '[FoxPilot] タスク優先度更新に失敗しました: id または external-id は必須です',
       priorityRequired: '[FoxPilot] タスク優先度更新に失敗しました: priority が不正または不足しています',
       projectNotInitialized: '[FoxPilot] タスク優先度更新に失敗しました: プロジェクトが未初期化です',
       dbBootstrapFailed: '[FoxPilot] タスク優先度更新に失敗しました: foxpilot.db の初期化に失敗しました',

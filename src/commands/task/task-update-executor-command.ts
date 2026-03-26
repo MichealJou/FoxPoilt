@@ -8,6 +8,7 @@ import { bootstrapDatabase } from '@/db/bootstrap.js'
 import { createTaskStore } from '@/db/task-store.js'
 import { resolveGlobalDatabasePath } from '@/core/paths.js'
 import { getMessages } from '@/i18n/messages.js'
+import { resolveTaskReference } from '@/commands/task/task-reference.js'
 import { ProjectNotInitializedError, resolveManagedProject } from '@/project/resolve-project.js'
 
 import type {
@@ -42,6 +43,8 @@ function buildHelpText(language: Parameters<typeof getMessages>[0]): string {
     'foxpilot task update-executor',
     'fp task update-executor',
     '--id <task-id>',
+    '--external-id <external-task-id>',
+    '--external-source beads',
     '--executor codex|beads|none',
     '--path <project-root>',
   ].join('\n')
@@ -65,13 +68,6 @@ export async function runTaskUpdateExecutorCommand(
     }
   }
 
-  if (!args.id?.trim()) {
-    return {
-      exitCode: 1,
-      stdout: messages.taskUpdateExecutor.idRequired,
-    }
-  }
-
   if (!args.executor) {
     return {
       exitCode: 1,
@@ -79,7 +75,6 @@ export async function runTaskUpdateExecutorCommand(
     }
   }
 
-  const taskId = args.id.trim()
   const nextExecutor = args.executor
   const dependencies = getDependencies(context.dependencies)
 
@@ -113,16 +108,38 @@ export async function runTaskUpdateExecutorCommand(
 
   const taskStore = dependencies.createTaskStore(db)
   const projectId = `project:${managedProject.projectRoot}`
+  const taskReference = resolveTaskReference({
+    args,
+    projectId,
+    taskStore,
+    messages: {
+      idRequired: messages.taskUpdateExecutor.idRequired,
+      taskNotFound: messages.taskUpdateExecutor.taskNotFound,
+    },
+  })
+
+  if (!taskReference.ok) {
+    db.close()
+    return {
+      exitCode: 1,
+      stdout: taskReference.stdout,
+    }
+  }
+
   const existingTask = taskStore.getTaskById({
     projectId,
-    taskId,
+    taskId: taskReference.value.taskId,
   })
 
   if (!existingTask) {
     db.close()
     return {
       exitCode: 1,
-      stdout: `${messages.taskUpdateExecutor.taskNotFound}\n- taskId: ${taskId}`,
+      stdout: [
+        messages.taskUpdateExecutor.taskNotFound,
+        `- taskId: ${taskReference.value.taskId}`,
+        ...taskReference.value.referenceLines,
+      ].join('\n'),
     }
   }
 
@@ -133,7 +150,8 @@ export async function runTaskUpdateExecutorCommand(
       stdout: [
         messages.taskUpdateExecutor.unchanged,
         `- projectRoot: ${managedProject.projectRoot}`,
-        `- taskId: ${taskId}`,
+        `- taskId: ${taskReference.value.taskId}`,
+        ...taskReference.value.referenceLines,
         `- executor: ${nextExecutor}`,
       ].join('\n'),
     }
@@ -141,7 +159,7 @@ export async function runTaskUpdateExecutorCommand(
 
   const updated = taskStore.updateTaskExecutor({
     projectId,
-    taskId,
+    taskId: taskReference.value.taskId,
     executor: nextExecutor,
     updatedAt: new Date().toISOString(),
   })
@@ -151,7 +169,11 @@ export async function runTaskUpdateExecutorCommand(
   if (!updated) {
     return {
       exitCode: 1,
-      stdout: `${messages.taskUpdateExecutor.taskNotFound}\n- taskId: ${taskId}`,
+      stdout: [
+        messages.taskUpdateExecutor.taskNotFound,
+        `- taskId: ${taskReference.value.taskId}`,
+        ...taskReference.value.referenceLines,
+      ].join('\n'),
     }
   }
 
@@ -160,7 +182,8 @@ export async function runTaskUpdateExecutorCommand(
     stdout: [
       messages.taskUpdateExecutor.updated,
       `- projectRoot: ${managedProject.projectRoot}`,
-      `- taskId: ${taskId}`,
+      `- taskId: ${taskReference.value.taskId}`,
+      ...taskReference.value.referenceLines,
       `- from: ${existingTask.current_executor}`,
       `- to: ${nextExecutor}`,
     ].join('\n'),

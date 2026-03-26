@@ -4,6 +4,7 @@ import path from 'node:path'
 import Database from 'better-sqlite3'
 import { afterEach, describe, expect, it } from 'vitest'
 
+import { createManagedProjectWithImportedBeadsTask } from '@tests/helpers/imported-beads-task.js'
 import { runCli } from '@tests/helpers/run-cli.js'
 import { createTempDir, removeTempDir } from '@tests/helpers/tmp-dir.js'
 
@@ -143,6 +144,31 @@ describe('task update-priority CLI', () => {
       priority: string
     }
     expect(row.priority).toBe('P2')
+    db.close()
+  })
+
+  it('supports updating imported tasks by external task id', async () => {
+    const { homeDir, projectRoot, taskId, externalId } = await createManagedProjectWithImportedBeadsTask({
+      tempDirs,
+      externalTaskId: 'BEADS-1201',
+      title: '外部号提优先级',
+      priority: 'P2',
+    })
+
+    const result = await runCli(
+      ['task', 'update-priority', '--external-id', externalId, '--priority', 'P0'],
+      { cwd: projectRoot, homeDir },
+    )
+
+    expect(result.exitCode).toBe(0)
+    expect(result.stdout).toContain('from: P2')
+    expect(result.stdout).toContain('to: P0')
+
+    const db = new Database(path.join(homeDir, '.foxpilot', 'foxpilot.db'))
+    const row = db.prepare('SELECT priority FROM task WHERE id = ?').get(taskId) as {
+      priority: string
+    }
+    expect(row.priority).toBe('P0')
     db.close()
   })
 })

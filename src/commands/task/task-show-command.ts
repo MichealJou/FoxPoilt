@@ -8,6 +8,7 @@ import { bootstrapDatabase } from '@/db/bootstrap.js'
 import { createTaskStore } from '@/db/task-store.js'
 import { resolveGlobalDatabasePath } from '@/core/paths.js'
 import { getMessages } from '@/i18n/messages.js'
+import { resolveTaskReference } from '@/commands/task/task-reference.js'
 import { ProjectNotInitializedError, resolveManagedProject } from '@/project/resolve-project.js'
 
 import type { TaskShowArgs, TaskShowContext, TaskShowDependencies } from '@/commands/task/task-show-types.js'
@@ -44,6 +45,8 @@ function buildHelpText(language: Parameters<typeof getMessages>[0]): string {
     'foxpilot task show',
     'fp task show',
     '--id <task-id>',
+    '--external-id <external-task-id>',
+    '--external-source beads',
     '--path <project-root>',
   ].join('\n')
 }
@@ -66,13 +69,6 @@ export async function runTaskShowCommand(
     return {
       exitCode: 0,
       stdout: buildHelpText(context.interfaceLanguage),
-    }
-  }
-
-  if (!args.id?.trim()) {
-    return {
-      exitCode: 1,
-      stdout: messages.taskShow.idRequired,
     }
   }
 
@@ -106,16 +102,39 @@ export async function runTaskShowCommand(
     }
   }
   const taskStore = dependencies.createTaskStore(db)
+  const projectId = `project:${managedProject.projectRoot}`
+  const taskReference = resolveTaskReference({
+    args,
+    projectId,
+    taskStore,
+    messages: {
+      idRequired: messages.taskShow.idRequired,
+      taskNotFound: messages.taskShow.taskNotFound,
+    },
+  })
+
+  if (!taskReference.ok) {
+    db.close()
+    return {
+      exitCode: 1,
+      stdout: taskReference.stdout,
+    }
+  }
+
   const detail = taskStore.getTaskDetail({
-    projectId: `project:${managedProject.projectRoot}`,
-    taskId: args.id.trim(),
+    projectId,
+    taskId: taskReference.value.taskId,
   })
 
   if (!detail) {
     db.close()
     return {
       exitCode: 1,
-      stdout: `${messages.taskShow.taskNotFound}\n- taskId: ${args.id.trim()}`,
+      stdout: [
+        messages.taskShow.taskNotFound,
+        `- taskId: ${taskReference.value.taskId}`,
+        ...taskReference.value.referenceLines,
+      ].join('\n'),
     }
   }
 
@@ -134,7 +153,7 @@ export async function runTaskShowCommand(
         })
 
   const taskRunLines = taskStore.listTaskRuns({
-    taskId: args.id.trim(),
+    taskId: taskReference.value.taskId,
   })
   const runLines =
     taskRunLines.length === 0
@@ -155,6 +174,7 @@ export async function runTaskShowCommand(
       messages.taskShow.title,
       `- projectRoot: ${managedProject.projectRoot}`,
       `- taskId: ${detail.task.id}`,
+      ...taskReference.value.referenceLines,
       `- title: ${detail.task.title}`,
       `- status: ${detail.task.status}`,
       `- priority: ${detail.task.priority}`,

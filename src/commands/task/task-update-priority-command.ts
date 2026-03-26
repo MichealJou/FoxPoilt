@@ -8,6 +8,7 @@ import { resolveGlobalDatabasePath } from '@/core/paths.js'
 import { bootstrapDatabase } from '@/db/bootstrap.js'
 import { createTaskStore } from '@/db/task-store.js'
 import { getMessages } from '@/i18n/messages.js'
+import { resolveTaskReference } from '@/commands/task/task-reference.js'
 import { ProjectNotInitializedError, resolveManagedProject } from '@/project/resolve-project.js'
 
 import type {
@@ -42,6 +43,8 @@ function buildHelpText(language: Parameters<typeof getMessages>[0]): string {
     'foxpilot task update-priority',
     'fp task update-priority',
     '--id <task-id>',
+    '--external-id <external-task-id>',
+    '--external-source beads',
     '--priority P0|P1|P2|P3',
     '--path <project-root>',
   ].join('\n')
@@ -68,13 +71,6 @@ export async function runTaskUpdatePriorityCommand(
     }
   }
 
-  if (!args.id?.trim()) {
-    return {
-      exitCode: 1,
-      stdout: messages.taskUpdatePriority.idRequired,
-    }
-  }
-
   if (!args.priority) {
     return {
       exitCode: 1,
@@ -82,7 +78,6 @@ export async function runTaskUpdatePriorityCommand(
     }
   }
 
-  const taskId = args.id.trim()
   const nextPriority = args.priority
   const dependencies = getDependencies(context.dependencies)
 
@@ -116,16 +111,38 @@ export async function runTaskUpdatePriorityCommand(
 
   const taskStore = dependencies.createTaskStore(db)
   const projectId = `project:${managedProject.projectRoot}`
+  const taskReference = resolveTaskReference({
+    args,
+    projectId,
+    taskStore,
+    messages: {
+      idRequired: messages.taskUpdatePriority.idRequired,
+      taskNotFound: messages.taskUpdatePriority.taskNotFound,
+    },
+  })
+
+  if (!taskReference.ok) {
+    db.close()
+    return {
+      exitCode: 1,
+      stdout: taskReference.stdout,
+    }
+  }
+
   const existingTask = taskStore.getTaskById({
     projectId,
-    taskId,
+    taskId: taskReference.value.taskId,
   })
 
   if (!existingTask) {
     db.close()
     return {
       exitCode: 1,
-      stdout: `${messages.taskUpdatePriority.taskNotFound}\n- taskId: ${taskId}`,
+      stdout: [
+        messages.taskUpdatePriority.taskNotFound,
+        `- taskId: ${taskReference.value.taskId}`,
+        ...taskReference.value.referenceLines,
+      ].join('\n'),
     }
   }
 
@@ -136,7 +153,8 @@ export async function runTaskUpdatePriorityCommand(
       stdout: [
         messages.taskUpdatePriority.unchanged,
         `- projectRoot: ${managedProject.projectRoot}`,
-        `- taskId: ${taskId}`,
+        `- taskId: ${taskReference.value.taskId}`,
+        ...taskReference.value.referenceLines,
         `- priority: ${nextPriority}`,
       ].join('\n'),
     }
@@ -144,7 +162,7 @@ export async function runTaskUpdatePriorityCommand(
 
   const updated = taskStore.updateTaskPriority({
     projectId,
-    taskId,
+    taskId: taskReference.value.taskId,
     priority: nextPriority,
     updatedAt: new Date().toISOString(),
   })
@@ -154,7 +172,11 @@ export async function runTaskUpdatePriorityCommand(
   if (!updated) {
     return {
       exitCode: 1,
-      stdout: `${messages.taskUpdatePriority.taskNotFound}\n- taskId: ${taskId}`,
+      stdout: [
+        messages.taskUpdatePriority.taskNotFound,
+        `- taskId: ${taskReference.value.taskId}`,
+        ...taskReference.value.referenceLines,
+      ].join('\n'),
     }
   }
 
@@ -163,7 +185,8 @@ export async function runTaskUpdatePriorityCommand(
     stdout: [
       messages.taskUpdatePriority.updated,
       `- projectRoot: ${managedProject.projectRoot}`,
-      `- taskId: ${taskId}`,
+      `- taskId: ${taskReference.value.taskId}`,
+      ...taskReference.value.referenceLines,
       `- from: ${existingTask.priority}`,
       `- to: ${nextPriority}`,
     ].join('\n'),

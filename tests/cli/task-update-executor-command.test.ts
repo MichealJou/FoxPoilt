@@ -4,6 +4,7 @@ import path from 'node:path'
 import Database from 'better-sqlite3'
 import { afterEach, describe, expect, it } from 'vitest'
 
+import { createManagedProjectWithImportedBeadsTask } from '@tests/helpers/imported-beads-task.js'
 import { runCli } from '@tests/helpers/run-cli.js'
 import { createTempDir, removeTempDir } from '@tests/helpers/tmp-dir.js'
 
@@ -137,6 +138,30 @@ describe('task update-executor CLI', () => {
 
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('任务执行器未变化')
+
+    const db = new Database(path.join(homeDir, '.foxpilot', 'foxpilot.db'))
+    const row = db.prepare('SELECT current_executor FROM task WHERE id = ?').get(taskId) as {
+      current_executor: string
+    }
+    expect(row.current_executor).toBe('codex')
+    db.close()
+  })
+
+  it('supports updating imported tasks by external task id', async () => {
+    const { homeDir, projectRoot, taskId, externalId } = await createManagedProjectWithImportedBeadsTask({
+      tempDirs,
+      externalTaskId: 'BEADS-1101',
+      title: '外部号切执行器',
+    })
+
+    const result = await runCli(
+      ['task', 'update-executor', '--external-id', externalId, '--executor', 'codex'],
+      { cwd: projectRoot, homeDir },
+    )
+
+    expect(result.exitCode).toBe(0)
+    expect(result.stdout).toContain('from: beads')
+    expect(result.stdout).toContain('to: codex')
 
     const db = new Database(path.join(homeDir, '.foxpilot', 'foxpilot.db'))
     const row = db.prepare('SELECT current_executor FROM task WHERE id = ?').get(taskId) as {
