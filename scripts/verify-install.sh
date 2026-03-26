@@ -224,6 +224,22 @@ echo "$live_diff_output" | grep -- '- mode: all-repositories' >/dev/null
 echo "$live_diff_output" | grep -- '- previewedRepositories: 1' >/dev/null
 echo "$live_diff_output" | grep -- '- skippedRepositories: 1' >/dev/null
 
+set +e
+doctor_output="$(
+  HOME="$home_dir" "$consumer_dir/node_modules/.bin/foxpilot" task doctor-beads \
+    --path "$project_dir" \
+    --all-repositories
+)"
+doctor_exit="$?"
+set -e
+
+test "$doctor_exit" -eq 1
+echo "$doctor_output" | grep -- '- mode: all-repositories' >/dev/null
+echo "$doctor_output" | grep -- '- checkedRepositories: 2' >/dev/null
+echo "$doctor_output" | grep -- '- readyRepositories: 1' >/dev/null
+echo "$doctor_output" | grep -- '- warningRepositories: 1' >/dev/null
+echo "$doctor_output" | grep -- '- errorRepositories: 0' >/dev/null
+
 push_all_output="$(
   HOME="$home_dir" "$consumer_dir/node_modules/.bin/foxpilot" task push-beads \
     --path "$project_dir" \

@@ -43,6 +43,9 @@ FoxPilot is a local multi-project task control tool for developer workspaces. It
 - `foxpilot task sync-beads`
   - Sync local Beads tasks directly from `bd list --json --all` in a selected repository
   - Support `--dry-run`, repository-scoped `--close-missing`, and `--all-repositories`
+- `foxpilot task doctor-beads`
+  - Diagnose the local Beads environment in read-only mode
+  - Support `--repository` and `--all-repositories`
 - `foxpilot task push-beads`
   - Push one imported Beads task back to the local `bd` repository
   - Support `--id`, `--external-id`, `--repository`, `--all-repositories`, and `--dry-run`
@@ -175,6 +178,13 @@ foxpilot task sync-beads --repository frontend --close-missing
 foxpilot task sync-beads --all-repositories
 ```
 
+Diagnose the local Beads environment:
+
+```bash
+foxpilot task doctor-beads --repository frontend
+foxpilot task doctor-beads --all-repositories
+```
+
 Push one modified task back to local `bd`:
 
 ```bash
@@ -232,4 +242,4 @@ foxpilot task update-status --external-id BEADS-1001 --status analyzing
 
 ## Status
 
-The repository is now in the CLI MVP implementation stage. Core initialization, manual task management, local Beads snapshot import, diff preview, export, next-task selection, task metadata editing, scan suggestion tasks, executor switching, priority adjustment, task run history, and minimal transition-guard flows are available, and the next iterations will extend collaboration orchestration.
+The repository is now in the CLI MVP implementation stage. Core initialization, manual task management, local Beads snapshot import, diff preview, local sync, local environment diagnosis, single-task and batch push, export, next-task selection, task metadata editing, scan suggestion tasks, executor switching, priority adjustment, task run history, and minimal transition-guard flows are available, and the next iterations will extend collaboration orchestration.
