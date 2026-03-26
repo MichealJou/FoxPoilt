@@ -29,7 +29,9 @@
     "cli": "tsx src/cli/run.ts",
     "verify:install": "zsh ./scripts/verify-install.sh",
     "release:assets": "sh ./scripts/build-release-assets.sh",
-    "brew:formula": "node ./scripts/render-homebrew-formula.mjs"
+    "release:publish": "sh ./scripts/publish-github-release.sh",
+    "brew:formula": "node ./scripts/render-homebrew-formula.mjs",
+    "brew:publish": "sh ./scripts/publish-homebrew-tap.sh"
   },
   "dependencies": {
     "better-sqlite3": "^11.8.1"

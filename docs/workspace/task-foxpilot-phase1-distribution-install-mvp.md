@@ -77,6 +77,9 @@
   - `scripts/install.sh`
   - `scripts/install.ps1`
   - `scripts/build-release-assets.sh`
+- [x] 已完成外部发布自动化脚本：
+  - `scripts/publish-github-release.sh`
+  - `scripts/publish-homebrew-tap.sh`
 - [x] 已完成 Homebrew formula 生成器：
   - `scripts/render-homebrew-formula.mjs`
   - `src/install/homebrew-formula.ts`
