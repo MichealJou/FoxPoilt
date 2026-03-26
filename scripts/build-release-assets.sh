@@ -84,6 +84,10 @@ build_unix_archive "darwin" "x64"
 build_unix_archive "linux" "x64"
 build_windows_archive
 
+# 额外导出一键安装脚本，避免用户入口依赖 raw.githubusercontent.com。
+cp scripts/install.sh "${out_dir}/foxpilot-install.sh"
+cp scripts/install.ps1 "${out_dir}/foxpilot-install.ps1"
+
 cat <<EOF
 [FoxPilot] Release 资产已生成
 - outputDir: ${out_dir}

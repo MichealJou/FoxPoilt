@@ -56,7 +56,7 @@ If you want the fastest path, use this order:
 > 💻 Best for most macOS users.
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/MichealJou/FoxPoilt/main/install.sh | sh
+curl -fsSL https://github.com/MichealJou/FoxPoilt/releases/latest/download/foxpilot-install.sh | sh
 ```
 
 #### Option 2: Homebrew
@@ -80,7 +80,7 @@ npm install -g foxpilot --registry https://registry.npmjs.org
 > 🐧 Best for most Linux users.
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/MichealJou/FoxPoilt/main/install.sh | sh
+curl -fsSL https://github.com/MichealJou/FoxPoilt/releases/latest/download/foxpilot-install.sh | sh
 ```
 
 #### Option 2: Global npm Install
@@ -92,7 +92,7 @@ npm install -g foxpilot --registry https://registry.npmjs.org
 #### Option 3: GitHub Release Installer
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/MichealJou/FoxPoilt/main/scripts/install.sh | sh
+curl -fsSL https://github.com/MichealJou/FoxPoilt/releases/latest/download/foxpilot-install.sh | sh
 ```
 
 ### Windows
@@ -102,7 +102,7 @@ curl -fsSL https://raw.githubusercontent.com/MichealJou/FoxPoilt/main/scripts/in
 > 🪟 Best for PowerShell users.
 
 ```powershell
-irm https://raw.githubusercontent.com/MichealJou/FoxPoilt/main/install.ps1 | iex
+irm https://github.com/MichealJou/FoxPoilt/releases/latest/download/foxpilot-install.ps1 | iex
 ```
 
 #### Option 2: Global npm Install
