@@ -56,7 +56,7 @@ If you want the fastest path, use this order:
 > 💻 Best for most macOS users.
 
 ```bash
-curl -fsSL https://github.com/MichealJou/FoxPoilt/releases/latest/download/install.sh | sh
+curl -fsSL https://unpkg.com/foxpilot@latest/scripts/install.sh | sh
 ```
 
 The installer automatically writes `~/.foxpilot/bin` into your shell startup file.
@@ -83,7 +83,7 @@ npm install -g foxpilot --registry https://registry.npmjs.org
 > 🐧 Best for most Linux users.
 
 ```bash
-curl -fsSL https://github.com/MichealJou/FoxPoilt/releases/latest/download/install.sh | sh
+curl -fsSL https://unpkg.com/foxpilot@latest/scripts/install.sh | sh
 ```
 
 #### Option 2: Global npm Install
@@ -95,7 +95,7 @@ npm install -g foxpilot --registry https://registry.npmjs.org
 #### Option 3: GitHub Release Installer
 
 ```bash
-curl -fsSL https://github.com/MichealJou/FoxPoilt/releases/latest/download/install.sh | sh
+curl -fsSL https://unpkg.com/foxpilot@latest/scripts/install.sh | sh
 ```
 
 ### Windows
@@ -105,7 +105,7 @@ curl -fsSL https://github.com/MichealJou/FoxPoilt/releases/latest/download/insta
 > 🪟 Best for PowerShell users.
 
 ```powershell
-irm https://github.com/MichealJou/FoxPoilt/releases/latest/download/install.ps1 | iex
+irm https://unpkg.com/foxpilot@latest/scripts/install.ps1 | iex
 ```
 
 The installer automatically updates the user-level `PATH`. Reopen PowerShell if needed.

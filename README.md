@@ -56,7 +56,7 @@ FoxPilot 目前适合下面几类场景：
 > 💻 适合大多数 macOS 用户。
 
 ```bash
-curl -fsSL https://github.com/MichealJou/FoxPoilt/releases/latest/download/install.sh | sh
+curl -fsSL https://unpkg.com/foxpilot@latest/scripts/install.sh | sh
 ```
 
 安装脚本会自动把 `~/.foxpilot/bin` 写入你的 shell 启动文件。
@@ -83,7 +83,7 @@ npm install -g foxpilot --registry https://registry.npmjs.org
 > 🐧 适合大多数 Linux 用户。
 
 ```bash
-curl -fsSL https://github.com/MichealJou/FoxPoilt/releases/latest/download/install.sh | sh
+curl -fsSL https://unpkg.com/foxpilot@latest/scripts/install.sh | sh
 ```
 
 #### 方式 2：npm 全局安装
@@ -95,7 +95,7 @@ npm install -g foxpilot --registry https://registry.npmjs.org
 #### 方式 3：GitHub Release 安装脚本
 
 ```bash
-curl -fsSL https://github.com/MichealJou/FoxPoilt/releases/latest/download/install.sh | sh
+curl -fsSL https://unpkg.com/foxpilot@latest/scripts/install.sh | sh
 ```
 
 ### Windows
@@ -105,7 +105,7 @@ curl -fsSL https://github.com/MichealJou/FoxPoilt/releases/latest/download/insta
 > 🪟 适合 PowerShell 用户。
 
 ```powershell
-irm https://github.com/MichealJou/FoxPoilt/releases/latest/download/install.ps1 | iex
+irm https://unpkg.com/foxpilot@latest/scripts/install.ps1 | iex
 ```
 
 安装脚本会自动写入用户级 `PATH`，通常重新打开 PowerShell 后即可生效。

@@ -2,28 +2,28 @@
 
 set -eu
 
-repository="${FOXPILOT_REPOSITORY:-MichealJou/FoxPoilt}"
+package_name="${FOXPILOT_PACKAGE_NAME:-foxpilot}"
+package_spec="${FOXPILOT_PACKAGE_SPEC:-}"
+registry="${FOXPILOT_NPM_REGISTRY:-https://registry.npmjs.org}"
 version="${FOXPILOT_VERSION:-latest}"
-install_dir="${FOXPILOT_INSTALL_DIR:-$HOME/.foxpilot/release/current}"
-bin_dir="${FOXPILOT_BIN_DIR:-$HOME/.foxpilot/bin}"
 dry_run=0
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
-    --repository)
-      repository="$2"
+    --package-name)
+      package_name="$2"
+      shift 2
+      ;;
+    --package-spec)
+      package_spec="$2"
+      shift 2
+      ;;
+    --registry)
+      registry="$2"
       shift 2
       ;;
     --version)
       version="$2"
-      shift 2
-      ;;
-    --install-dir)
-      install_dir="$2"
-      shift 2
-      ;;
-    --bin-dir)
-      bin_dir="$2"
       shift 2
       ;;
     --dry-run)
@@ -37,79 +37,34 @@ while [ "$#" -gt 0 ]; do
   esac
 done
 
-uname_s="$(uname -s)"
-uname_m="$(uname -m)"
+if [ -z "$package_spec" ]; then
+  if [ "$version" = "latest" ]; then
+    package_spec="$package_name"
+  else
+    package_spec="${package_name}@${version}"
+  fi
+fi
 
-case "$uname_s" in
-  Darwin) platform="darwin" ;;
-  Linux) platform="linux" ;;
-  *)
-    echo "[FoxPilot] 当前脚本仅支持 macOS / Linux" >&2
-    exit 1
-    ;;
-esac
-
-case "$uname_m" in
-  arm64|aarch64) arch="arm64" ;;
-  x86_64|amd64) arch="x64" ;;
-  *)
-    echo "[FoxPilot] 不支持的架构: $uname_m" >&2
-    exit 1
-    ;;
-esac
-
-asset_name="foxpilot-${platform}-${arch}.tar.gz"
-
-if [ "$version" = "latest" ]; then
-  download_url="https://github.com/${repository}/releases/latest/download/${asset_name}"
-else
-  download_url="https://github.com/${repository}/releases/download/v${version}/${asset_name}"
+if ! command -v npm >/dev/null 2>&1; then
+  echo "[FoxPilot] 缺少 npm。请先安装 Node.js 与 npm。" >&2
+  exit 1
 fi
 
 if [ "$dry_run" -eq 1 ]; then
   cat <<EOF
-[FoxPilot] Release 安装预演
-- repository: ${repository}
-- version: ${version}
-- platform: ${platform}
-- arch: ${arch}
-- asset: ${asset_name}
-- downloadUrl: ${download_url}
-- installDir: ${install_dir}
-- binDir: ${bin_dir}
+[FoxPilot] npm 安装预演
+- packageSpec: ${package_spec}
+- registry: ${registry}
 EOF
   exit 0
 fi
 
-tmp_dir="$(mktemp -d)"
-archive_path="${tmp_dir}/${asset_name}"
+npm install -g "${package_spec}" --registry "${registry}"
 
-cleanup() {
-  rm -rf "${tmp_dir}"
-}
-
-trap cleanup EXIT
-
-mkdir -p "${install_dir}" "${bin_dir}"
-
-curl -fsSL "${download_url}" -o "${archive_path}"
-rm -rf "${install_dir}"
-mkdir -p "${install_dir}"
-tar -xzf "${archive_path}" -C "${install_dir}"
-
-if ! command -v node >/dev/null 2>&1; then
-  echo "[FoxPilot] 缺少 node 运行时，当前 release 安装包还需要 Node.js。" >&2
-  exit 1
-fi
-
-chmod +x "${install_dir}/foxpilot" "${install_dir}/fp"
-ln -sf "${install_dir}/foxpilot" "${bin_dir}/foxpilot"
-ln -sf "${install_dir}/fp" "${bin_dir}/fp"
-
-node "${install_dir}/dist/install/register-installation.js" \
-  --method release \
-  --install-root "${install_dir}" \
-  --executable-path "${install_dir}/foxpilot" >/dev/null
+npm_root="$(npm root -g)"
+npm_prefix="$(npm prefix -g)"
+install_dir="${npm_root}/${package_name}"
+bin_dir="${npm_prefix}/bin"
 
 path_config_output=""
 path_config_exit_code=0
@@ -125,9 +80,8 @@ else
 fi
 
 cat <<EOF
-[FoxPilot] Release 安装完成
-- version: ${version}
-- asset: ${asset_name}
+[FoxPilot] 安装完成
+- packageSpec: ${package_spec}
 - installDir: ${install_dir}
 - binDir: ${bin_dir}
 EOF
