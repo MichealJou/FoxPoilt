@@ -1,4 +1,4 @@
-import { mkdir } from 'node:fs/promises'
+import { mkdir, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 
 import Database from 'better-sqlite3'
@@ -80,6 +80,56 @@ describe('task show CLI', () => {
     expect(result.stdout).toContain('任务运行历史')
     expect(result.stdout).toContain('analysis')
     expect(result.stdout).toContain('running')
+  })
+
+  it('shows external reference fields for imported beads tasks', async () => {
+    const homeDir = await createTempDir('foxpilot-home-')
+    const projectRoot = await createTempDir('foxpilot-project-')
+    tempDirs.push(homeDir, projectRoot)
+
+    await mkdir(path.join(projectRoot, '.git'), { recursive: true })
+
+    const initResult = await runCli(
+      ['init', '--path', projectRoot, '--workspace-root', path.dirname(projectRoot), '--mode', 'non-interactive'],
+      { homeDir },
+    )
+    expect(initResult.exitCode).toBe(0)
+
+    const snapshotPath = path.join(projectRoot, 'beads.json')
+    await writeFile(snapshotPath, `${JSON.stringify([
+      {
+        externalTaskId: 'BEADS-701',
+        title: '导入后看详情',
+        status: 'ready',
+        priority: 'P2',
+        repository: '.',
+      },
+    ], null, 2)}\n`, 'utf8')
+
+    const importResult = await runCli(
+      ['task', 'import-beads', '--file', snapshotPath],
+      { cwd: projectRoot, homeDir },
+    )
+    expect(importResult.exitCode).toBe(0)
+
+    const db = new Database(path.join(homeDir, '.foxpilot', 'foxpilot.db'))
+    const row = db.prepare(`
+      SELECT id
+      FROM task
+      WHERE external_source = 'beads'
+        AND external_id = 'BEADS-701'
+      LIMIT 1
+    `).get() as { id: string }
+    db.close()
+
+    const result = await runCli(
+      ['task', 'show', '--id', row.id],
+      { cwd: projectRoot, homeDir },
+    )
+
+    expect(result.exitCode).toBe(0)
+    expect(result.stdout).toContain('externalSource: beads')
+    expect(result.stdout).toContain('externalId: BEADS-701')
   })
 
   it('prints help and accepts fp alias', async () => {

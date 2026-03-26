@@ -125,6 +125,8 @@ export type TaskListRow = {
   priority: TaskRow['priority']
   task_type: TaskRow['task_type']
   current_executor: TaskRow['current_executor']
+  external_source: TaskRow['external_source']
+  external_id: TaskRow['external_id']
   updated_at: string
 }
 
@@ -143,6 +145,8 @@ export type TaskNextRow = {
   priority: TaskRow['priority']
   task_type: TaskRow['task_type']
   current_executor: TaskRow['current_executor']
+  external_source: TaskRow['external_source']
+  external_id: TaskRow['external_id']
   updated_at: string
 }
 
@@ -190,6 +194,10 @@ export type TaskDetail = {
     task_type: TaskRow['task_type']
     /** 当前默认执行方。 */
     current_executor: TaskRow['current_executor']
+    /** 外部来源键。 */
+    external_source: TaskRow['external_source']
+    /** 外部任务 ID。 */
+    external_id: TaskRow['external_id']
     /** 最近更新时间。 */
     updated_at: string
   }
@@ -335,7 +343,7 @@ export function createTaskStore(db: SqliteDatabase) {
   })
 
   const listTasksStmt = db.prepare(`
-    SELECT id, title, source_type, status, priority, task_type, current_executor, updated_at
+    SELECT id, title, source_type, status, priority, task_type, current_executor, external_source, external_id, updated_at
     FROM task
     WHERE project_id = @project_id
       AND (@status IS NULL OR status = @status)
@@ -353,7 +361,7 @@ export function createTaskStore(db: SqliteDatabase) {
   `)
 
   const getNextTaskStmt = db.prepare(`
-    SELECT id, title, description, source_type, status, priority, task_type, current_executor, updated_at
+    SELECT id, title, description, source_type, status, priority, task_type, current_executor, external_source, external_id, updated_at
     FROM task
     WHERE project_id = @project_id
       AND status IN ('todo', 'analyzing', 'awaiting_plan_confirm', 'executing', 'awaiting_result_confirm')
@@ -456,7 +464,7 @@ export function createTaskStore(db: SqliteDatabase) {
   `)
 
   const getTaskDetailStmt = db.prepare(`
-    SELECT id, title, description, status, priority, task_type, current_executor, updated_at
+    SELECT id, title, description, status, priority, task_type, current_executor, external_source, external_id, updated_at
     FROM task
     WHERE project_id = @project_id
       AND id = @id

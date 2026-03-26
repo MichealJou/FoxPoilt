@@ -1,4 +1,4 @@
-import { mkdir } from 'node:fs/promises'
+import { mkdir, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 
 import Database from 'better-sqlite3'
@@ -110,6 +110,36 @@ describe('task list CLI', () => {
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('扫描建议')
     expect(result.stdout).not.toContain('先做 task list')
+  })
+
+  it('shows external reference markers for imported beads tasks', async () => {
+    const { homeDir, projectRoot } = await createManagedProjectWithTasks()
+    const snapshotPath = path.join(projectRoot, 'beads.json')
+
+    await writeFile(snapshotPath, `${JSON.stringify([
+      {
+        externalTaskId: 'BEADS-801',
+        title: '外部同步任务',
+        status: 'doing',
+        priority: 'P1',
+        repository: '.',
+      },
+    ], null, 2)}\n`, 'utf8')
+
+    const importResult = await runCli(
+      ['task', 'import-beads', '--file', snapshotPath],
+      { cwd: projectRoot, homeDir },
+    )
+    expect(importResult.exitCode).toBe(0)
+
+    const result = await runCli(
+      ['task', 'list', '--source', 'beads_sync'],
+      { cwd: projectRoot, homeDir },
+    )
+
+    expect(result.exitCode).toBe(0)
+    expect(result.stdout).toContain('外部同步任务')
+    expect(result.stdout).toContain('[beads:BEADS-801]')
   })
 
   it('prints help and accepts fp alias', async () => {

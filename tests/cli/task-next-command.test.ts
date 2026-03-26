@@ -1,4 +1,4 @@
-import { mkdir } from 'node:fs/promises'
+import { mkdir, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 
 import Database from 'better-sqlite3'
@@ -122,6 +122,37 @@ describe('task next CLI', () => {
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('source: scan_suggestion')
     expect(result.stdout).toContain('扫描建议')
+  })
+
+  it('shows external reference fields for imported beads tasks', async () => {
+    const { homeDir, projectRoot } = await createManagedProjectWithTasks()
+    const snapshotPath = path.join(projectRoot, 'beads.json')
+
+    await writeFile(snapshotPath, `${JSON.stringify([
+      {
+        externalTaskId: 'BEADS-901',
+        title: '下一条外部任务',
+        status: 'doing',
+        priority: 'P0',
+        repository: '.',
+      },
+    ], null, 2)}\n`, 'utf8')
+
+    const importResult = await runCli(
+      ['task', 'import-beads', '--file', snapshotPath],
+      { cwd: projectRoot, homeDir },
+    )
+    expect(importResult.exitCode).toBe(0)
+
+    const result = await runCli(
+      ['task', 'next', '--source', 'beads_sync'],
+      { cwd: projectRoot, homeDir },
+    )
+
+    expect(result.exitCode).toBe(0)
+    expect(result.stdout).toContain('title: 下一条外部任务')
+    expect(result.stdout).toContain('externalSource: beads')
+    expect(result.stdout).toContain('externalId: BEADS-901')
   })
 
   it('prints help and accepts fp alias', async () => {

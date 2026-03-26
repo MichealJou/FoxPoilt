@@ -139,6 +139,8 @@ export async function runTaskNextCommand(
       `- status: ${task.status}`,
       `- priority: ${task.priority}`,
       `- taskType: ${task.task_type}`,
+      ...(task.external_source ? [`- externalSource: ${task.external_source}`] : []),
+      ...(task.external_id ? [`- externalId: ${task.external_id}`] : []),
       ...(task.description ? [`- description: ${task.description}`] : []),
     ].join('\n'),
   }

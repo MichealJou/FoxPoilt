@@ -136,8 +136,13 @@ export async function runTaskListCommand(
       `- total: ${tasks.length}`,
       '',
       ...tasks.map(
-        (task, index) =>
-          `${index + 1}. [${task.source_type}][${task.current_executor}][${task.status}][${task.priority}][${task.task_type}] ${task.title}`,
+        (task, index) => {
+          const externalRef = task.external_source && task.external_id
+            ? `[${task.external_source}:${task.external_id}]`
+            : ''
+
+          return `${index + 1}. [${task.source_type}][${task.current_executor}][${task.status}][${task.priority}][${task.task_type}]${externalRef} ${task.title}`
+        },
       ),
     ].join('\n'),
   }

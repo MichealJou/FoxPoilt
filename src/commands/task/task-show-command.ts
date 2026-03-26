@@ -160,6 +160,8 @@ export async function runTaskShowCommand(
       `- priority: ${detail.task.priority}`,
       `- taskType: ${detail.task.task_type}`,
       `- executor: ${detail.task.current_executor}`,
+      ...(detail.task.external_source ? [`- externalSource: ${detail.task.external_source}`] : []),
+      ...(detail.task.external_id ? [`- externalId: ${detail.task.external_id}`] : []),
       `- updatedAt: ${detail.task.updated_at}`,
       `- description: ${detail.task.description ?? ''}`,
       '',
