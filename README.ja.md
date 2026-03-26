@@ -1,105 +1,119 @@
-# FoxPilot
+# FoxPilot 利用マニュアル
 
-[中文](./README.zh-CN.md) | [English](./README.en.md) | [日本語](./README.ja.md)
+[简体中文](./README.md) | [English](./README.en.md) | [日本語](./README.ja.md)
 
-FoxPilot はローカル開発環境向けのマルチプロジェクトタスク制御ツールです。プロジェクト初期化、タスク登録、タスク確認、状態更新を 1 つのローカル CLI ワークフローにまとめます。
+FoxPilot はローカル開発環境向けのタスク中枢 CLI です。プロジェクト初期化、タスク登録、タスク流転、ローカル Beads 協調を 1 つのコマンドライン作業にまとめます。
 
-## 現在の機能
+> 📌 FoxPilot は「ローカルなプロジェクトタスク制御台」と考えると分かりやすいです。
+>
+> リモートのプロジェクト管理基盤を置き換えるものではなく、端末で実際に使う初期化・タスク更新・ローカル協調コマンドを整理して集約するための CLI です。
 
-- `foxpilot init` / `fp init`
-  - 管理対象プロジェクトを初期化
-  - `.foxpilot/project.json` を生成
-  - グローバル設定と SQLite を初期化
-- `foxpilot config set-language`
-  - CLI の表示言語を設定
-  - 対応値: `zh-CN`、`en-US`、`ja-JP`
-- `foxpilot version`
-  - 現在の CLI バージョンを表示
-- `foxpilot install-info`
-  - 現在の導入元と登録済みインストール一覧を表示
-- `foxpilot update`
-  - 現在の導入元に従って更新
-- `foxpilot task create`
-  - 手動タスクを登録
-- `foxpilot task list`
-  - 現在のプロジェクトのタスク一覧を表示
-  - 状態・ソース・実行者で絞り込み可能
-- `foxpilot task next`
-  - 現在のプロジェクトで次に進めるべきタスクを 1 件表示
-  - ソース・実行者で絞り込み可能
-- `foxpilot task edit`
-  - タスクのタイトル・説明・種別を編集
-  - 説明の明示的なクリアに対応
-  - `--id` または `--external-id` で単一タスクを直接指定可能
-- `foxpilot task show`
-  - タスク詳細と対象を表示
-  - 取り込み済みタスクを外部タスク ID で直接参照可能
-- `foxpilot task history`
-  - タスク実行履歴を表示
-  - `--external-id` で取り込み済みタスク履歴を参照可能
-- `foxpilot task import-beads`
-  - ローカル JSON スナップショットから Beads タスクを取り込み
-  - 外部タスク ID による冪等な作成・更新・スキップに対応
-  - `--close-missing` で現在のスナップショットに存在しない未完了タスクを収口可能
-  - `--dry-run` で書き込み前に結果を予演可能
-- `foxpilot task diff-beads`
-  - ローカルスナップショット取り込み時の create / update / skip / close 差分を只読で予覧
-  - `--file`、`--repository`、`--all-repositories` をサポート
-  - 実際の取り込みと同じ検証・冪等判定ルールを再利用
-- `foxpilot task sync-beads`
-  - 指定リポジトリ内の `bd list --json --all` からローカル Beads タスクを直接同期
-  - `--dry-run`、リポジトリ単位の `--close-missing`、`--all-repositories` をサポート
-- `foxpilot task doctor-beads`
-  - ローカル Beads 環境を読み取り専用で診断
-  - `--repository` と `--all-repositories` をサポート
-- `foxpilot task init-beads`
-  - プロジェクト内リポジトリのローカル `.beads` 環境を初期化
-  - `--repository`、`--all-repositories`、`--dry-run` をサポート
-- `foxpilot task push-beads`
-  - 取り込み済みの単一 Beads タスクの現在状態をローカル `bd` リポジトリへ書き戻し
-  - `--id`、`--external-id`、`--repository`、`--all-repositories`、`--dry-run` をサポート
-- `foxpilot task export-beads`
-  - 現在のプロジェクト内の Beads 同期タスクをローカル JSON スナップショットとして再出力
-  - 出力結果は `import-beads` と互換
-  - 取り消し済みの導入タスクは自動で除外
-- `foxpilot task beads-summary`
-  - 現在のプロジェクト内の Beads 同期タスク集計を表示
-- `foxpilot task suggest-scan`
-  - 登録済みリポジトリに対して走査提案タスクを生成
-  - 未完了の提案があるリポジトリは自動でスキップ
-- `foxpilot task update-executor`
-  - タスクの現在の責任実行者を更新
-  - 対応値: `codex`、`beads`、`none`
-- `foxpilot task update-priority`
-  - タスクの現在の優先度を更新
-  - 対応値: `P0`、`P1`、`P2`、`P3`
-- `foxpilot task update-status`
-  - タスク状態を更新
-  - 最小限の合法な状態遷移ルールを適用
+## ✨ 概要
 
-## クイックスタート
+FoxPilot は汎用スキャフォールドでもホスト型 PM サービスでもありません。より近いのはローカル task console です。
 
-### 利用者向けインストール
+- 現在のディレクトリを管理対象プロジェクトとして初期化する
+- 同じ CLI でタスクを登録、確認、絞り込み、更新する
+- ローカルタスクと Beads スナップショット、`bd` ワークフローをつなぐ
 
-現在正式に利用できる公開インストール方法:
+端末の中で「初期化」「タスク管理」「ローカル協調」をまとめて扱いたい場合に向いています。
 
-- macOS / Linux
-  - ワンラインインストーラ
-  - コマンド: `curl -fsSL https://raw.githubusercontent.com/MichealJou/FoxPoilt/main/install.sh | sh`
-- Windows
-  - ワンラインインストーラ
-  - コマンド: `irm https://raw.githubusercontent.com/MichealJou/FoxPoilt/main/install.ps1 | iex`
-- 全プラットフォーム
-  - `npm` グローバルインストール
-  - コマンド: `npm install -g foxpilot --registry https://registry.npmjs.org`
-- macOS / Linux
-  - `Homebrew` インストール
-  - コマンド: `brew install MichealJou/tap/foxpilot`
-- macOS / Linux
-  - `GitHub Release` インストーラ
-  - コマンド: `curl -fsSL https://raw.githubusercontent.com/MichealJou/FoxPoilt/main/scripts/install.sh | sh`
+## 🧱 背景
 
-導入後の確認:
+開発現場では次のような分断が起きやすいです。
+
+- プロジェクト初期化とタスク推進が別の流れになっている
+- 手動タスク、走査提案タスク、外部取り込みタスクが別々に散っている
+- ローカル Beads を使いたいのに制御レイヤがない
+- リポジトリが増えるほど「次に何をやるか」をすぐ決めにくい
+
+FoxPilot の第一段階はこの問題に対して、まずローカル CLI 主線を安定させることに集中しています。
+
+## 🎯 向いている場面
+
+FoxPilot は現在、次のような用途に向いています。
+
+- ローカル端末で複数プロジェクトのタスクを扱いたい
+- Beads / `bd` をすでに使っている、または使う予定がある
+- 手動タスク、走査提案、外部取り込みタスクを 1 つのタスクプールに集めたい
+- GUI やリモートサービスの前に、まず CLI から始めたい
+
+## 🚀 インストール
+
+### 推奨順
+
+最短で使い始めたい場合の推奨順は次の通りです。
+
+1. ワンラインインストール
+2. `npm` グローバルインストール
+3. `Homebrew`
+4. GitHub Release の直接利用
+
+### macOS
+
+#### 方法 1: ワンラインインストール
+
+> 💻 多くの macOS 利用者向けです。
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/MichealJou/FoxPoilt/main/install.sh | sh
+```
+
+#### 方法 2: Homebrew
+
+> 🍺 Homebrew で CLI を管理している利用者向けです。
+
+```bash
+brew install MichealJou/tap/foxpilot
+```
+
+#### 方法 3: npm グローバルインストール
+
+```bash
+npm install -g foxpilot --registry https://registry.npmjs.org
+```
+
+### Linux
+
+#### 方法 1: ワンラインインストール
+
+> 🐧 多くの Linux 利用者向けです。
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/MichealJou/FoxPoilt/main/install.sh | sh
+```
+
+#### 方法 2: npm グローバルインストール
+
+```bash
+npm install -g foxpilot --registry https://registry.npmjs.org
+```
+
+#### 方法 3: GitHub Release インストーラ
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/MichealJou/FoxPoilt/main/scripts/install.sh | sh
+```
+
+### Windows
+
+#### 方法 1: ワンラインインストール
+
+> 🪟 PowerShell 利用者向けです。
+
+```powershell
+irm https://raw.githubusercontent.com/MichealJou/FoxPoilt/main/install.ps1 | iex
+```
+
+#### 方法 2: npm グローバルインストール
+
+```powershell
+npm install -g foxpilot --registry https://registry.npmjs.org
+```
+
+### インストール確認
+
+> ✅ インストール後、まず次の 3 つを確認してください。
 
 ```bash
 foxpilot version
@@ -109,201 +123,227 @@ fp version
 
 補足:
 
-- `npm install -g` はシステム全体に入るグローバルインストールであり、プロジェクトローカル依存ではありません
-- ルートの `install.sh` / `install.ps1` は公開向けワンライン起動入口です
-- `Homebrew` と `GitHub Release` はすでに公開済みです
-- 現在の `GitHub Release` パッケージはローカルの `Node.js` 実行環境を必要とします
+- `npm install -g foxpilot` はグローバルインストールであり、ローカル依存ではありません
+- `foxpilot` と `fp` は同じ CLI の正式名と短縮名です
+- 現在の GitHub Release 方式はローカル `Node.js` 実行環境を前提にしています
 
-### 開発者向けソース実行
+## 🧩 現在の機能
 
-このリポジトリ自体を開発する場合のみ、次の手順を使います:
+| 名称 | 命令 | 説明 |
+| --- | --- | --- |
+| プロジェクト初期化 | `foxpilot init` / `fp init` | 現在のプロジェクトを初期化し、プロジェクト設定、全局設定、SQLite を準備する |
+| 言語設定 | `foxpilot config set-language` | CLI の表示言語を中国語、英語、日本語に切り替える |
+| バージョンとインストール管理 | `foxpilot version` / `foxpilot install-info` / `foxpilot update` | バージョンと導入元を確認し、導入元に従って更新する |
+| 手動タスク作成 | `foxpilot task create` | 優先度、種別、対象リポジトリ付きで手動タスクを登録する |
+| タスク一覧と絞り込み | `foxpilot task list` | 現在のプロジェクトタスクを一覧表示し、状態や実行者で絞り込む |
+| 次タスク提案 | `foxpilot task next` | 現在のプロジェクトで次に進めるべきタスクを 1 件選ぶ |
+| タスク詳細と履歴 | `foxpilot task show` / `foxpilot task history` | 単一タスクの詳細、対象、履歴を確認する |
+| タスク編集と状態流転 | `foxpilot task edit` / `foxpilot task update-status` / `foxpilot task update-executor` / `foxpilot task update-priority` | タイトル、説明、状態、実行者、優先度を更新する |
+| 走査提案タスク | `foxpilot task suggest-scan` | 登録済みリポジトリに対して走査提案タスクを生成する |
+| Beads 取り込みと差分予覧 | `foxpilot task import-beads` / `foxpilot task diff-beads` | Beads スナップショットを取り込み、または先に差分だけ確認する |
+| Beads ローカル同期と環境 | `foxpilot task sync-beads` / `foxpilot task doctor-beads` / `foxpilot task init-beads` | ローカル `bd` から同期し、環境診断や初期化を行う |
+| Beads 書き戻しと書き出し | `foxpilot task push-beads` / `foxpilot task export-beads` / `foxpilot task beads-summary` | ローカル `bd` へ書き戻し、スナップショットを書き出し、集計を表示する |
 
-```bash
-pnpm install
-pnpm typecheck
-pnpm test
-pnpm verify:install
-```
+## 🪄 使い方
 
-補足:
+### 1. プロジェクト初期化
 
-- `pnpm install` はリポジトリ開発専用であり、利用者向けの正式インストールコマンドではありません
-- `pnpm install` で `prepare` が実行され、`dist/` が生成されます
-- `pnpm verify:install` は現在のリポジトリをパックし、テンポラリディレクトリにインストールして実際に `foxpilot init` を実行します
-
-現在のプロジェクトを初期化:
+> 📦 管理したいプロジェクトのルートで実行します。
 
 ```bash
 foxpilot init
 ```
 
-短縮コマンド:
+または:
 
 ```bash
 fp init
 ```
 
-ソースから直接 CLI を実行:
+これにより、FoxPilot は必要なプロジェクト設定、ユーザー設定、ローカル DB を作成します。
+
+### 2. タスク作成と確認
+
+> 📝 まずタスクを作り、その後で流転させます。
 
 ```bash
-pnpm cli init --help
-pnpm cli task next --help
-```
-
-表示言語を設定:
-
-```bash
-foxpilot config set-language --lang en-US
-fp config set-language --lang ja-JP
-```
-
-バージョン、導入情報、更新入口を確認:
-
-```bash
-foxpilot version
-foxpilot install-info
-foxpilot update --help
-```
-
-## コマンド例
-
-タスクを作成:
-
-```bash
-foxpilot task create --title "init コメントを追加"
-```
-
-タスク一覧:
-
-```bash
+foxpilot task create --title "初期化説明を補足"
 foxpilot task list
-foxpilot task list --source scan_suggestion --executor beads
-```
-
-次のタスクを表示:
-
-```bash
 foxpilot task next
-foxpilot task next --executor codex
 ```
 
-タスクメタデータを編集:
+この 3 つは次の用途です。
 
-```bash
-foxpilot task edit --id task:example --title "タスク説明を補足" --task-type docs
-foxpilot task edit --id task:example --clear-description
-foxpilot task edit --external-id BEADS-1001 --title "取り込みタスクのタイトル修正"
-```
+- 手動タスクを作る
+- 現在のタスク一覧を見る
+- 次に進めるべきタスクを選ぶ
 
-タスク詳細:
+### 3. タスク状態を進める
+
+> 🔄 よく使う流れは「詳細 → 状態更新 → 履歴確認」です。
 
 ```bash
 foxpilot task show --id task:example
-foxpilot task show --external-id BEADS-1001
-```
-
-タスク履歴:
-
-```bash
+foxpilot task update-status --id task:example --status executing
 foxpilot task history --id task:example
-foxpilot task history --external-id BEADS-1001
 ```
 
-Beads スナップショットを取り込み:
+### 4. Beads とローカル協調する
 
-```bash
-foxpilot task import-beads --file ./examples/beads-snapshot.sample.json
-foxpilot task import-beads --file ./examples/beads-snapshot.sample.json --close-missing
-foxpilot task import-beads --file ./examples/beads-snapshot.sample.json --dry-run --close-missing
-```
-
-Beads スナップショット差分を予覧:
-
-```bash
-foxpilot task diff-beads --file ./examples/beads-snapshot.sample.json
-foxpilot task diff-beads --file ./examples/beads-snapshot.sample.json --close-missing
-foxpilot task diff-beads --repository frontend
-foxpilot task diff-beads --all-repositories
-```
-
-ローカル `bd` リポジトリから直接同期:
+> 🔗 すでにローカル `bd` を使っている場合はここから始めます。
 
 ```bash
 foxpilot task sync-beads --repository frontend
-foxpilot task sync-beads --repository frontend --dry-run
-foxpilot task sync-beads --repository frontend --close-missing
-foxpilot task sync-beads --all-repositories
-```
-
-ローカル Beads 環境を診断:
-
-```bash
-foxpilot task doctor-beads --repository frontend
-foxpilot task doctor-beads --all-repositories
-```
-
-ローカル Beads 環境を初期化:
-
-```bash
-foxpilot task init-beads --repository frontend
-foxpilot task init-beads --all-repositories --dry-run
-```
-
-変更済みの単一タスクを書き戻す:
-
-```bash
-foxpilot task push-beads --external-id BEADS-1001
-foxpilot task push-beads --id task:example --dry-run
+foxpilot task diff-beads --repository frontend
 foxpilot task push-beads --repository frontend
-foxpilot task push-beads --all-repositories --dry-run
-```
-
-Beads スナップショットを書き出し:
-
-```bash
-foxpilot task export-beads --file ./tmp/beads-export.json
-```
-
-Beads 集計を表示:
-
-```bash
 foxpilot task beads-summary
 ```
 
-走査提案タスクを生成:
+## 🧠 中核概念
 
-```bash
-foxpilot task suggest-scan
-```
+### project
 
-タスク実行者を更新:
+FoxPilot が管理するプロジェクトルート。  
+初期化後、`.foxpilot/project.json` が作られます。
 
-```bash
-foxpilot task update-executor --id task:example --executor beads
-foxpilot task update-executor --external-id BEADS-1002 --executor codex
-```
+### repository
 
-タスク優先度を更新:
+プロジェクト内の登録済みコードリポジトリ。  
+走査提案、Beads 同期、Beads 初期化はリポジトリ単位で扱えます。
 
-```bash
-foxpilot task update-priority --id task:example --priority P0
-foxpilot task update-priority --external-id BEADS-1002 --priority P0
-```
+### task
 
-タスク状態更新:
+FoxPilot のタスク実体。  
+手動作成、走査提案、外部取り込みのいずれからでも作られます。
 
-```bash
-foxpilot task update-status --id task:example --status executing
-foxpilot task update-status --external-id BEADS-1001 --status analyzing
-```
+### Beads 協調
 
-## ドキュメント
+FoxPilot が現在サポートしている外部協調の主線。  
+リモート API ではなく、ローカルスナップショットとローカル `bd` コマンドが中心です。
+
+## 🧭 コマンド案内
+
+### システムコマンド
+
+- `foxpilot version`
+- `foxpilot install-info`
+- `foxpilot update`
+
+### 初期化と設定
+
+- `foxpilot init`
+- `foxpilot config set-language`
+
+### 手動タスク系
+
+- `foxpilot task create`
+- `foxpilot task list`
+- `foxpilot task next`
+- `foxpilot task edit`
+- `foxpilot task show`
+- `foxpilot task history`
+- `foxpilot task update-status`
+- `foxpilot task update-executor`
+- `foxpilot task update-priority`
+- `foxpilot task suggest-scan`
+
+### Beads 協調系
+
+- `foxpilot task import-beads`
+- `foxpilot task diff-beads`
+- `foxpilot task sync-beads`
+- `foxpilot task doctor-beads`
+- `foxpilot task init-beads`
+- `foxpilot task push-beads`
+- `foxpilot task export-beads`
+- `foxpilot task beads-summary`
+
+完全なコマンド手冊は次を参照してください。
+
+- [中文命令参考](./docs/specs/foxpilot-cli-command-reference.zh-CN.md)
+
+## 🗂 コードとリポジトリ構成
+
+### ルート
+
+- `README.md`
+  - 既定の中国語利用手冊
+- `README.zh-CN.md`
+  - 中国語エイリアス入口
+- `README.en.md`
+  - 英語版手冊
+- `README.ja.md`
+  - 日本語版手冊
+
+### src
+
+- `src/cli/`
+  - CLI エントリ、引数解析、実行時コンテキスト
+- `src/commands/`
+  - `system`、`config`、`init`、`task` ごとのコマンド実装
+- `src/config/`
+  - 全局設定と言語設定
+- `src/project/`
+  - プロジェクト解決と設定読み書き
+- `src/db/`
+  - SQLite 初期化、タスク保存、目録保存
+- `src/sync/`
+  - Beads スナップショットと `bd` 協調サービス
+- `src/i18n/`
+  - 多言語メッセージ
+
+### docs
 
 - `docs/specs/`
-  - 製品定義、データモデル、設定モデル、SQLite 草案
+  - 仕様、モデル、コマンド参考
+- `docs/plans/`
+  - 実装計画
 - `docs/workspace/`
-  - タスク計画、実装計画、進捗記録
+  - 作業記録、進捗、判断記録
 
-## 現在の状態
+### tests
 
-このリポジトリは CLI MVP 実装段階に入っています。コアとなる初期化、手動タスク管理、Beads ローカルスナップショットの取り込み・差分予覧・ローカル同期・ローカル環境診断・ローカル環境初期化・書き出し・単一タスクと一括書き戻し、次タスク選択、タスクメタデータ編集、走査提案タスク、実行者切替、優先度更新、タスク実行履歴、最小限の状態遷移制約の流れは利用可能で、次の反復では協調オーケストレーションを拡張していきます。
+- `tests/cli/`
+  - コマンド挙動テスト
+- `tests/db/`
+  - 保存とトランザクションのテスト
+- `tests/helpers/`
+  - テスト補助
+- `tests/sync/`
+  - 同期サービスのテスト
+
+## 📚 読み進め方
+
+初めてこのリポジトリを見る場合は次の順で読むのがおすすめです。
+
+1. この `README.ja.md`
+2. [中文命令参考](./docs/specs/foxpilot-cli-command-reference.zh-CN.md)
+3. `docs/specs/` のモデル系文書
+4. `docs/workspace/` と `docs/plans/` の作業記録
+
+## 🛠 開発者向けソース実行
+
+エンドユーザーとしてではなく、このリポジトリを直接開発する場合は次を使います。
+
+```bash
+pnpm install
+pnpm typecheck
+pnpm test
+pnpm build
+pnpm verify:install
+```
+
+補足:
+
+- `pnpm install` はリポジトリ開発専用です
+- `pnpm verify:install` はパッケージを作成し、テンポラリ環境で実インストールを検証します
+
+## 📍 現在の状態
+
+ローカル CLI 第一段階は完了しています。現在の主な能力は次の通りです。
+
+- プロジェクト初期化
+- 手動タスク管理
+- Beads スナップショットの取り込み、予演、収口、書き出し
+- ローカル `bd` 同期、差分予覧、診断、初期化、書き戻し
+- ワンラインインストール、`npm`、`Homebrew`、GitHub Release による公開配布

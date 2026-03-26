@@ -1,105 +1,119 @@
-# FoxPilot
+# FoxPilot Manual
 
-[中文](./README.zh-CN.md) | [English](./README.en.md) | [日本語](./README.ja.md)
+[简体中文](./README.md) | [English](./README.en.md) | [日本語](./README.ja.md)
 
-FoxPilot is a local multi-project task control tool for developer workspaces. It brings project initialization, task registration, task inspection, and task status updates into one local CLI workflow.
+FoxPilot is a local task-control CLI for developer workspaces. It centralizes project initialization, task registration, task lifecycle updates, and local Beads collaboration in one command-line workflow.
 
-## Current Features
+> 📌 You can think of FoxPilot as a local project task console.
+>
+> It is not trying to replace a remote project platform. It is designed to keep the commands you actually use in the terminal in one place.
 
-- `foxpilot init` / `fp init`
-  - Initialize a managed project
-  - Create `.foxpilot/project.json`
-  - Bootstrap global config and SQLite
-- `foxpilot config set-language`
-  - Set the CLI interface language
-  - Supported values: `zh-CN`, `en-US`, `ja-JP`
-- `foxpilot version`
-  - Show the current CLI version
-- `foxpilot install-info`
-  - Show the current install source and registered install entries
-- `foxpilot update`
-  - Update by following the current install source
-- `foxpilot task create`
-  - Create a manual task
-- `foxpilot task list`
-  - List tasks for the current project
-  - Support filtering by status, source, and executor
-- `foxpilot task next`
-  - Show the next actionable task for the current project
-  - Support filtering by source and executor
-- `foxpilot task edit`
-  - Edit the title, description, and task type of a task
-  - Support explicitly clearing the description
-  - Support locating one task by `--id` or `--external-id`
-- `foxpilot task show`
-  - Inspect task detail and targets
-  - Support reading imported tasks directly by external task ID
-- `foxpilot task history`
-  - Inspect task run history
-  - Support viewing imported task history by `--external-id`
-- `foxpilot task import-beads`
-  - Import Beads tasks from a local JSON snapshot
-  - Apply idempotent create, update, and skip behavior by external task ID
-  - Support `--close-missing` to cancel unfinished imported tasks missing from the current snapshot
-  - Support `--dry-run` to preview import results without writing to SQLite
-- `foxpilot task diff-beads`
-  - Preview create, update, skip, and close actions without writing to SQLite
-  - Support `--file`, `--repository`, and `--all-repositories`
-  - Reuse the same validation and idempotency rules as real import
-- `foxpilot task sync-beads`
-  - Sync local Beads tasks directly from `bd list --json --all` in a selected repository
-  - Support `--dry-run`, repository-scoped `--close-missing`, and `--all-repositories`
-- `foxpilot task doctor-beads`
-  - Diagnose the local Beads environment in read-only mode
-  - Support `--repository` and `--all-repositories`
-- `foxpilot task init-beads`
-  - Initialize the local `.beads` environment for project repositories
-  - Supports `--repository`, `--all-repositories`, and `--dry-run`
-- `foxpilot task push-beads`
-  - Push one imported Beads task back to the local `bd` repository
-  - Support `--id`, `--external-id`, `--repository`, `--all-repositories`, and `--dry-run`
-- `foxpilot task export-beads`
-  - Export Beads sync tasks in the current project back to a local JSON snapshot
-  - Produce a snapshot compatible with `import-beads`
-  - Automatically exclude cancelled imported tasks
-- `foxpilot task beads-summary`
-  - Show an aggregated summary of imported Beads tasks in the current project
-- `foxpilot task suggest-scan`
-  - Generate scan suggestion tasks for registered repositories
-  - Skip repositories that already have unfinished suggestions
-- `foxpilot task update-executor`
-  - Update the current responsible executor of a task
-  - Supported values: `codex`, `beads`, `none`
-- `foxpilot task update-priority`
-  - Update the current priority of a task
-  - Supported values: `P0`, `P1`, `P2`, `P3`
-- `foxpilot task update-status`
-  - Update task status
-  - Enforce the minimal valid transition rules
+## ✨ Overview
 
-## Quick Start
+FoxPilot is closer to a local task console than a general scaffold or hosted PM product:
 
-### User Installation
+- initialize the current directory as a managed project
+- register, inspect, filter, and advance tasks through one CLI
+- connect local tasks with Beads snapshots and local `bd` workflows
 
-Current public installation methods:
+If you want to handle project setup, task management, and local collaboration from the terminal, FoxPilot is built for that path.
 
-- macOS / Linux
-  - One-line installer
-  - Command: `curl -fsSL https://raw.githubusercontent.com/MichealJou/FoxPoilt/main/install.sh | sh`
-- Windows
-  - One-line installer
-  - Command: `irm https://raw.githubusercontent.com/MichealJou/FoxPoilt/main/install.ps1 | iex`
-- All platforms
-  - Global `npm` install
-  - Command: `npm install -g foxpilot --registry https://registry.npmjs.org`
-- macOS / Linux
-  - `Homebrew` install
-  - Command: `brew install MichealJou/tap/foxpilot`
-- macOS / Linux
-  - `GitHub Release` installer
-  - Command: `curl -fsSL https://raw.githubusercontent.com/MichealJou/FoxPoilt/main/scripts/install.sh | sh`
+## 🧱 Background
 
-Verify the installation:
+Developer workflows often run into the same problems:
+
+- project setup and task execution live in separate flows
+- manual tasks, scan suggestions, and imported tasks are split across tools
+- local Beads workflows need a stable control layer
+- once repositories grow, it becomes hard to decide the next task quickly
+
+Phase 1 of FoxPilot solves this by stabilizing the local CLI path first, so project, repository, task, and Beads collaboration can all live inside one local workflow.
+
+## 🎯 Good Fit
+
+FoxPilot is currently a good fit if:
+
+- you want to manage multi-project tasks from a local terminal
+- you already use or plan to use Beads / `bd`
+- you want manual tasks, scan suggestions, and imported tasks in one pool
+- you want to start with a CLI-first workflow before building a GUI or remote service
+
+## 🚀 Installation
+
+### Recommended Order
+
+If you want the fastest path, use this order:
+
+1. one-line installer
+2. global `npm` install
+3. `Homebrew`
+4. direct GitHub Release path
+
+### macOS
+
+#### Option 1: One-Line Install
+
+> 💻 Best for most macOS users.
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/MichealJou/FoxPoilt/main/install.sh | sh
+```
+
+#### Option 2: Homebrew
+
+> 🍺 Best if you already manage CLIs with Homebrew.
+
+```bash
+brew install MichealJou/tap/foxpilot
+```
+
+#### Option 3: Global npm Install
+
+```bash
+npm install -g foxpilot --registry https://registry.npmjs.org
+```
+
+### Linux
+
+#### Option 1: One-Line Install
+
+> 🐧 Best for most Linux users.
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/MichealJou/FoxPoilt/main/install.sh | sh
+```
+
+#### Option 2: Global npm Install
+
+```bash
+npm install -g foxpilot --registry https://registry.npmjs.org
+```
+
+#### Option 3: GitHub Release Installer
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/MichealJou/FoxPoilt/main/scripts/install.sh | sh
+```
+
+### Windows
+
+#### Option 1: One-Line Install
+
+> 🪟 Best for PowerShell users.
+
+```powershell
+irm https://raw.githubusercontent.com/MichealJou/FoxPoilt/main/install.ps1 | iex
+```
+
+#### Option 2: Global npm Install
+
+```powershell
+npm install -g foxpilot --registry https://registry.npmjs.org
+```
+
+### Verify Installation
+
+> ✅ Run these commands after installation.
 
 ```bash
 foxpilot version
@@ -109,201 +123,231 @@ fp version
 
 Notes:
 
-- `npm install -g` is a system-wide global install, not a project-local dependency install
-- The root `install.sh` / `install.ps1` scripts are the public one-line bootstrap entry points
-- `Homebrew` and `GitHub Release` are now publicly published
-- The current `GitHub Release` package still requires a local `Node.js` runtime
+- `npm install -g foxpilot` is a global install, not a local project dependency
+- `foxpilot` and `fp` are the full command and short alias for the same CLI
+- the current GitHub Release install path still expects a local `Node.js` runtime
 
-### Developer Source Workflow
+## 🧩 Current Capabilities
 
-If you are working inside this repository, use the developer workflow instead:
+| Name | Command | Description |
+| --- | --- | --- |
+| Project initialization | `foxpilot init` / `fp init` | Initialize the current project and create project config, global config, and local SQLite |
+| Language setting | `foxpilot config set-language` | Set CLI language to Chinese, English, or Japanese |
+| Version and install management | `foxpilot version` / `foxpilot install-info` / `foxpilot update` | Inspect version, install source, and update through the current install channel |
+| Manual task creation | `foxpilot task create` | Create a manual task with optional priority, type, and repository |
+| Task overview and filtering | `foxpilot task list` | List project tasks and filter by status, source, or executor |
+| Next-task suggestion | `foxpilot task next` | Pick the next most actionable task in the current project |
+| Task detail and history | `foxpilot task show` / `foxpilot task history` | Inspect one task in detail and review its run history |
+| Task editing and transitions | `foxpilot task edit` / `foxpilot task update-status` / `foxpilot task update-executor` / `foxpilot task update-priority` | Update task title, description, status, executor, and priority |
+| Scan suggestion tasks | `foxpilot task suggest-scan` | Generate scan suggestion tasks for registered repositories |
+| Beads import and preview | `foxpilot task import-beads` / `foxpilot task diff-beads` | Import Beads snapshot data or preview the diff first |
+| Beads local sync and environment | `foxpilot task sync-beads` / `foxpilot task doctor-beads` / `foxpilot task init-beads` | Sync from local `bd`, diagnose the Beads environment, and initialize local Beads setup |
+| Beads pushback and export | `foxpilot task push-beads` / `foxpilot task export-beads` / `foxpilot task beads-summary` | Push task state back to local `bd`, export snapshots, and inspect aggregate summaries |
 
-```bash
-pnpm install
-pnpm typecheck
-pnpm test
-pnpm verify:install
-```
+## 🪄 How To Use
 
-Notes:
+### 1. Initialize a Project
 
-- `pnpm install` is only for local repository development, not the end-user install command
-- `pnpm install` triggers `prepare` and generates `dist/`
-- `pnpm verify:install` packs the current repository, installs it into a temporary directory, and runs a real `foxpilot init`
-
-Initialize the current project:
+> 📦 Run this inside the project root you want FoxPilot to manage.
 
 ```bash
 foxpilot init
 ```
 
-Use the short alias:
+or:
 
 ```bash
 fp init
 ```
 
-Run the CLI directly from source:
+FoxPilot will create the required project config, user-level config, and local database entries.
+
+### 2. Create and Inspect Tasks
+
+> 📝 Create tasks first, then move them through the workflow.
 
 ```bash
-pnpm cli init --help
-pnpm cli task next --help
-```
-
-Set the interface language:
-
-```bash
-foxpilot config set-language --lang en-US
-fp config set-language --lang ja-JP
-```
-
-Inspect version, install info, and update entry:
-
-```bash
-foxpilot version
-foxpilot install-info
-foxpilot update --help
-```
-
-## Command Examples
-
-Create a task:
-
-```bash
-foxpilot task create --title "Add init comments"
-```
-
-List tasks:
-
-```bash
+foxpilot task create --title "Add missing init note"
 foxpilot task list
-foxpilot task list --source scan_suggestion --executor beads
-```
-
-Show the next task:
-
-```bash
 foxpilot task next
-foxpilot task next --executor codex
 ```
 
-Edit task metadata:
+These commands are used to:
 
-```bash
-foxpilot task edit --id task:example --title "Refine task note" --task-type docs
-foxpilot task edit --id task:example --clear-description
-foxpilot task edit --external-id BEADS-1001 --title "Fix imported task title"
-```
+- create a manual task
+- inspect the project task list
+- pick the next most actionable task
 
-Show task detail:
+### 3. Advance Task State
+
+> 🔄 The most common flow is detail → status update → history.
 
 ```bash
 foxpilot task show --id task:example
-foxpilot task show --external-id BEADS-1001
-```
-
-Show task history:
-
-```bash
+foxpilot task update-status --id task:example --status executing
 foxpilot task history --id task:example
-foxpilot task history --external-id BEADS-1001
 ```
 
-Import a Beads snapshot:
+This flow is used to inspect one task, move it forward, and review its history.
 
-```bash
-foxpilot task import-beads --file ./examples/beads-snapshot.sample.json
-foxpilot task import-beads --file ./examples/beads-snapshot.sample.json --close-missing
-foxpilot task import-beads --file ./examples/beads-snapshot.sample.json --dry-run --close-missing
-```
+### 4. Work with Local Beads
 
-Preview a Beads snapshot diff:
-
-```bash
-foxpilot task diff-beads --file ./examples/beads-snapshot.sample.json
-foxpilot task diff-beads --file ./examples/beads-snapshot.sample.json --close-missing
-foxpilot task diff-beads --repository frontend
-foxpilot task diff-beads --all-repositories
-```
-
-Sync directly from a local `bd` repository:
+> 🔗 If your repositories already use local `bd`, start here.
 
 ```bash
 foxpilot task sync-beads --repository frontend
-foxpilot task sync-beads --repository frontend --dry-run
-foxpilot task sync-beads --repository frontend --close-missing
-foxpilot task sync-beads --all-repositories
-```
-
-Diagnose the local Beads environment:
-
-```bash
-foxpilot task doctor-beads --repository frontend
-foxpilot task doctor-beads --all-repositories
-```
-
-Initialize the local Beads environment:
-
-```bash
-foxpilot task init-beads --repository frontend
-foxpilot task init-beads --all-repositories --dry-run
-```
-
-Push one modified task back to local `bd`:
-
-```bash
-foxpilot task push-beads --external-id BEADS-1001
-foxpilot task push-beads --id task:example --dry-run
+foxpilot task diff-beads --repository frontend
 foxpilot task push-beads --repository frontend
-foxpilot task push-beads --all-repositories --dry-run
-```
-
-Export a Beads snapshot:
-
-```bash
-foxpilot task export-beads --file ./tmp/beads-export.json
-```
-
-Show the Beads summary:
-
-```bash
 foxpilot task beads-summary
 ```
 
-Generate scan suggestion tasks:
+This group covers sync, diff preview, pushback, and summary.
 
-```bash
-foxpilot task suggest-scan
-```
+## 🧠 Core Concepts
 
-Update task executor:
+### project
 
-```bash
-foxpilot task update-executor --id task:example --executor beads
-foxpilot task update-executor --external-id BEADS-1002 --executor codex
-```
+The managed project root in FoxPilot.  
+After initialization, FoxPilot writes `.foxpilot/project.json`, and all task commands are scoped by project.
 
-Update task priority:
+### repository
 
-```bash
-foxpilot task update-priority --id task:example --priority P0
-foxpilot task update-priority --external-id BEADS-1002 --priority P0
-```
+A registered code repository inside the project.  
+Scan suggestions, Beads sync, and Beads initialization can all run at repository scope.
 
-Update task status:
+### task
 
-```bash
-foxpilot task update-status --id task:example --status executing
-foxpilot task update-status --external-id BEADS-1001 --status analyzing
-```
+The task entity in FoxPilot.  
+Tasks can come from manual creation, scan suggestions, or imported external sources such as Beads snapshots.
 
-## Documentation
+### Beads collaboration
+
+The current external collaboration path supported by FoxPilot.  
+It is built around local snapshots and local `bd` commands, not remote orchestration.
+
+## 🧭 Command Map
+
+### System commands
+
+- `foxpilot version`
+- `foxpilot install-info`
+- `foxpilot update`
+
+### Init and config commands
+
+- `foxpilot init`
+- `foxpilot config set-language`
+
+### Manual task commands
+
+- `foxpilot task create`
+- `foxpilot task list`
+- `foxpilot task next`
+- `foxpilot task edit`
+- `foxpilot task show`
+- `foxpilot task history`
+- `foxpilot task update-status`
+- `foxpilot task update-executor`
+- `foxpilot task update-priority`
+- `foxpilot task suggest-scan`
+
+### Beads collaboration commands
+
+- `foxpilot task import-beads`
+- `foxpilot task diff-beads`
+- `foxpilot task sync-beads`
+- `foxpilot task doctor-beads`
+- `foxpilot task init-beads`
+- `foxpilot task push-beads`
+- `foxpilot task export-beads`
+- `foxpilot task beads-summary`
+
+For the full command manual, see:
+
+- [Chinese command reference](./docs/specs/foxpilot-cli-command-reference.zh-CN.md)
+
+## 🗂 Code and Repository Layout
+
+### Repository root
+
+- `README.md`
+  - default Chinese manual
+- `README.zh-CN.md`
+  - Chinese alias entry
+- `README.en.md`
+  - English manual
+- `README.ja.md`
+  - Japanese manual
+
+### src
+
+- `src/cli/`
+  - CLI entry, argument parsing, runtime context
+- `src/commands/`
+  - command implementations grouped by `system`, `config`, `init`, and `task`
+- `src/config/`
+  - global config and language config
+- `src/project/`
+  - project resolution and project config
+- `src/db/`
+  - SQLite bootstrap, task store, catalog store
+- `src/sync/`
+  - local Beads snapshot and local `bd` collaboration services
+- `src/i18n/`
+  - localized message catalog
+
+### docs
 
 - `docs/specs/`
-  - Product definition, data model, config model, SQLite draft
+  - stable specifications, models, and command reference docs
+- `docs/plans/`
+  - implementation plans
 - `docs/workspace/`
-  - Task plans, implementation plans, progress logs
+  - task records, progress notes, and decisions
 
-## Status
+### tests
 
-The repository is now in the CLI MVP implementation stage. Core initialization, manual task management, local Beads snapshot import, diff preview, local sync, local environment diagnosis, local environment initialization, single-task and batch push, export, next-task selection, task metadata editing, scan suggestion tasks, executor switching, priority adjustment, task run history, and minimal transition-guard flows are available, and the next iterations will extend collaboration orchestration.
+- `tests/cli/`
+  - command-level behavior tests
+- `tests/db/`
+  - storage and transaction tests
+- `tests/helpers/`
+  - testing helpers
+- `tests/sync/`
+  - sync service tests
+
+## 📚 Reading Order
+
+If this is your first time in the repo, read in this order:
+
+1. this `README.en.md`
+2. [Chinese command reference](./docs/specs/foxpilot-cli-command-reference.zh-CN.md)
+3. the model and SQLite docs in `docs/specs/`
+4. the work records in `docs/workspace/` and `docs/plans/`
+
+## 🛠 Developer Source Workflow
+
+If you are developing inside this repository instead of installing FoxPilot as an end user, use:
+
+```bash
+pnpm install
+pnpm typecheck
+pnpm test
+pnpm build
+pnpm verify:install
+```
+
+Notes:
+
+- `pnpm install` is only for repository development
+- `pnpm verify:install` packs the repo and verifies real install behavior in a temporary directory
+
+## 📍 Status
+
+The local CLI first phase is complete. Key capabilities now include:
+
+- project initialization
+- manual task management
+- local Beads snapshot import, preview, close-missing, and export
+- local `bd` sync, diff preview, diagnosis, initialization, and pushback
+- public distribution through one-line install, `npm`, `Homebrew`, and GitHub Release
