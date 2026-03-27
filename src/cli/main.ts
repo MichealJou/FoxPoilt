@@ -8,8 +8,19 @@ import os from 'node:os'
 import type { CliRuntimeContext } from '@/cli/runtime-context.js'
 import { parseArgs } from '@/cli/parse-args.js'
 import { runConfigSetLanguageCommand } from '@/commands/config/config-set-language-command.js'
+import { runControlPlaneOverviewCommand } from '@/commands/control-plane/control-plane-overview-command.js'
 import { runInitCommand } from '@/commands/init/init-command.js'
 import type { CliResult, InitCommandContext } from '@/commands/init/init-types.js'
+import { runMcpInspectCommand } from '@/commands/mcp/mcp-inspect-command.js'
+import { runMcpListCommand } from '@/commands/mcp/mcp-list-command.js'
+import { runMcpDoctorCommand } from '@/commands/mcp/mcp-doctor-command.js'
+import { runPlatformsCapabilitiesCommand } from '@/commands/platforms/platforms-capabilities-command.js'
+import { runPlatformsDoctorCommand } from '@/commands/platforms/platforms-doctor-command.js'
+import { runPlatformsInspectCommand } from '@/commands/platforms/platforms-inspect-command.js'
+import { runPlatformsListCommand } from '@/commands/platforms/platforms-list-command.js'
+import { runSkillsDoctorCommand } from '@/commands/skills/skills-doctor-command.js'
+import { runSkillsInspectCommand } from '@/commands/skills/skills-inspect-command.js'
+import { runSkillsListCommand } from '@/commands/skills/skills-list-command.js'
 import { runSystemFoundationCommand } from '@/commands/system/system-foundation-command.js'
 import { runSystemInstallInfoCommand } from '@/commands/system/system-install-info-command.js'
 import { runSystemUninstallCommand } from '@/commands/system/system-uninstall-command.js'
@@ -454,6 +465,142 @@ export async function main(
         help: args.help,
         json: args.json,
         lang: args.lang,
+      },
+      runtimeContext,
+    )
+  }
+
+  if (args.command === 'control-plane' && args.subcommand === 'overview') {
+    return runControlPlaneOverviewCommand(
+      {
+        command: 'control-plane',
+        subcommand: 'overview',
+        help: args.help,
+        json: args.json,
+      },
+      runtimeContext,
+    )
+  }
+
+  if (args.command === 'platforms' && args.subcommand === 'list') {
+    return runPlatformsListCommand(
+      {
+        command: 'platforms',
+        subcommand: 'list',
+        help: args.help,
+        json: args.json,
+      },
+      runtimeContext,
+    )
+  }
+
+  if (args.command === 'platforms' && args.subcommand === 'inspect') {
+    return runPlatformsInspectCommand(
+      {
+        command: 'platforms',
+        subcommand: 'inspect',
+        help: args.help,
+        json: args.json,
+        platform: args.platform,
+      },
+      runtimeContext,
+    )
+  }
+
+  if (args.command === 'platforms' && args.subcommand === 'capabilities') {
+    return runPlatformsCapabilitiesCommand(
+      {
+        command: 'platforms',
+        subcommand: 'capabilities',
+        help: args.help,
+        json: args.json,
+        platform: args.platform,
+      },
+      runtimeContext,
+    )
+  }
+
+  if (args.command === 'platforms' && args.subcommand === 'doctor') {
+    return runPlatformsDoctorCommand(
+      {
+        command: 'platforms',
+        subcommand: 'doctor',
+        help: args.help,
+        json: args.json,
+      },
+      runtimeContext,
+    )
+  }
+
+  if (args.command === 'skills' && args.subcommand === 'list') {
+    return runSkillsListCommand(
+      {
+        command: 'skills',
+        subcommand: 'list',
+        help: args.help,
+        json: args.json,
+      },
+      runtimeContext,
+    )
+  }
+
+  if (args.command === 'skills' && args.subcommand === 'inspect') {
+    return runSkillsInspectCommand(
+      {
+        command: 'skills',
+        subcommand: 'inspect',
+        help: args.help,
+        json: args.json,
+        skill: args.skill,
+      },
+      runtimeContext,
+    )
+  }
+
+  if (args.command === 'skills' && args.subcommand === 'doctor') {
+    return runSkillsDoctorCommand(
+      {
+        command: 'skills',
+        subcommand: 'doctor',
+        help: args.help,
+        json: args.json,
+      },
+      runtimeContext,
+    )
+  }
+
+  if (args.command === 'mcp' && args.subcommand === 'list') {
+    return runMcpListCommand(
+      {
+        command: 'mcp',
+        subcommand: 'list',
+        help: args.help,
+        json: args.json,
+      },
+      runtimeContext,
+    )
+  }
+
+  if (args.command === 'mcp' && args.subcommand === 'inspect') {
+    return runMcpInspectCommand(
+      {
+        command: 'mcp',
+        subcommand: 'inspect',
+        help: args.help,
+        json: args.json,
+        server: args.server,
+      },
+      runtimeContext,
+    )
+  }
+
+  if (args.command === 'mcp' && args.subcommand === 'doctor') {
+    return runMcpDoctorCommand(
+      {
+        command: 'mcp',
+        subcommand: 'doctor',
+        help: args.help,
+        json: args.json,
       },
       runtimeContext,
     )

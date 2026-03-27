@@ -26,6 +26,12 @@ export type CliArgs = {
   name?: string
   /** 可选的工作区根目录覆盖值。 */
   workspaceRoot?: string
+  /** 中控平台 inspect 命令使用的平台标识。 */
+  platform?: string
+  /** Skills inspect 命令使用的 skill 标识。 */
+  skill?: string
+  /** MCP inspect 命令使用的 server 标识。 */
+  server?: string
   /** 第二阶段项目协作 profile。 */
   profile?: ProjectProfileId
   /** init 执行模式。 */
@@ -91,11 +97,21 @@ export type CliArgs = {
  */
 export function parseArgs(argv: string[]): CliArgs {
   const [command] = argv
-  const subcommand = command === 'task' || command === 'config' ? argv[1] : undefined
-  const rest = command === 'task' || command === 'config' ? argv.slice(2) : argv.slice(1)
+  const isGroupedCommand =
+    command === 'task' ||
+    command === 'config' ||
+    command === 'control-plane' ||
+    command === 'platforms' ||
+    command === 'skills' ||
+    command === 'mcp'
+  const subcommand = isGroupedCommand ? argv[1] : undefined
+  const rest = isGroupedCommand ? argv.slice(2) : argv.slice(1)
   let path: string | undefined
   let name: string | undefined
   let workspaceRoot: string | undefined
+  let platform: string | undefined
+  let skill: string | undefined
+  let server: string | undefined
   let profile: ProjectProfileId | undefined
   let mode: 'interactive' | 'non-interactive' = 'interactive'
   let preview = false
@@ -130,7 +146,7 @@ export function parseArgs(argv: string[]): CliArgs {
   let source: 'manual' | 'beads_sync' | 'scan_suggestion' | undefined
 
   /**
-   * `task` 和 `config` 是分组命令，因此要跳过二级命令后再扫描 flag。
+   * `task`、`config` 和第二阶段控制台命令都是分组命令，因此要跳过二级命令后再扫描 flag。
    * `init` 这类单级命令则从第一个 flag 开始扫描即可。
    */
   for (let index = 0; index < rest.length; index += 1) {
@@ -167,6 +183,24 @@ export function parseArgs(argv: string[]): CliArgs {
 
     if (value === '--workspace-root') {
       workspaceRoot = rest[index + 1]
+      index += 1
+      continue
+    }
+
+    if (value === '--platform') {
+      platform = rest[index + 1]
+      index += 1
+      continue
+    }
+
+    if (value === '--skill') {
+      skill = rest[index + 1]
+      index += 1
+      continue
+    }
+
+    if (value === '--server') {
+      server = rest[index + 1]
       index += 1
       continue
     }
@@ -333,6 +367,9 @@ export function parseArgs(argv: string[]): CliArgs {
     path,
     name,
     workspaceRoot,
+    platform,
+    skill,
+    server,
     profile,
     mode,
     preview,
