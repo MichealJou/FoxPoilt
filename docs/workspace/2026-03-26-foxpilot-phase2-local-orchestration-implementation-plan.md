@@ -31,6 +31,9 @@
 - `docs/specs/foxpilot-phase2-runtime-query-surface.md`
 - `docs/specs/foxpilot-phase2-control-plane-page-action-matrix.md`
 - `docs/specs/foxpilot-phase2-read-model-refresh-policy.md`
+- `docs/specs/foxpilot-phase2-runtime-mutation-surface.md`
+- `docs/specs/foxpilot-phase2-risk-confirmation-policy.md`
+- `docs/specs/foxpilot-phase2-stage-role-platform-handoff-model.md`
 
 ---
 
@@ -120,6 +123,12 @@
   - 阶段到角色的映射与交接
 - `src/runtime/orchestrators/platform-resolver.ts`
   - 平台推荐值、显式覆盖值和最终生效值的统一结构
+- `src/runtime/orchestrators/stage-handoff-orchestrator.ts`
+  - 阶段推进、交接包生成与下一阶段落地
+- `src/runtime/mutations/runtime-mutation-surface.ts`
+  - Runtime 正式写接口与结果结构
+- `src/runtime/confirmation/risk-confirmation-policy.ts`
+  - 高风险动作确认规则
 - `src/platforms/platform-contract.ts`
   - 多平台统一适配器契约
 - `src/platforms/codex-adapter.ts`
@@ -166,6 +175,12 @@
   - 平台解析测试
 - `tests/runtime/stage-role-orchestrator.test.ts`
   - 阶段 / 角色 编排测试
+- `tests/runtime/stage-handoff-orchestrator.test.ts`
+  - 阶段交接与 handoff 测试
+- `tests/runtime/runtime-mutation-surface.test.ts`
+  - Runtime 正式写接口测试
+- `tests/runtime/risk-confirmation-policy.test.ts`
+  - 高风险动作确认测试
 - `tests/platforms/platform-contract.test.ts`
   - 多平台契约测试
 - `tests/runtime/control-plane-read-model.test.ts`
@@ -195,6 +210,9 @@
 - 阶段 / 角色 / 平台 必须拆开，不能再把平台当单一执行器
 - 执行平台集成必须按统一契约接入，避免后续接入 Claude Code / Qoder / Trae 时返工
 - 桌面端必须按“中控平台”设计，不只停留在任务面板
+- 所有正式写动作必须先进入 Runtime Mutation Surface
+- 高风险动作必须统一走 Risk Confirmation Policy
+- 阶段推进必须形成 handoff，而不是只改任务字段
 - 保持 TDD：先写失败测试，再补最小实现
 
 ### Task 0: 双入口与 Shared Runtime 基线

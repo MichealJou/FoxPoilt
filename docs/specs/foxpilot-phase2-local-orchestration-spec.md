@@ -300,6 +300,50 @@ repair     -> fixer    -> trae
 
 的执行平台集成层。
 
+### 5.7 交接必须成为正式对象
+
+第二阶段里，阶段推进不能只是：
+
+```text
+改 stage 字段
+```
+
+而必须形成：
+
+```text
+handoff
+```
+
+也就是：
+
+- 当前阶段的摘要
+- 下一阶段的角色
+- 下一阶段的平台
+- 必要的上下文交接包
+
+### 5.8 写操作必须走正式变更面
+
+第二阶段不允许页面或入口层自己拼写链。
+
+必须固定为：
+
+```text
+Desktop / CLI
+-> Runtime Mutation Surface
+-> Event / refreshHints
+```
+
+### 5.9 高风险动作必须走统一确认策略
+
+第二阶段里，以下动作都不能只靠页面自行判断：
+
+- 基础组合安装
+- 项目接管
+- Skills / MCP 安装或移除
+- 平台或阶段重分配
+
+这些动作的确认口径必须由 Runtime Core 统一裁决。
+
 ## 6. 桌面控制台范围
 
 第二阶段 UI 的定位是：
@@ -412,6 +456,9 @@ repair     -> fixer    -> trae
 - 中控页面动作协议
 - 中控 JSON 返回结构
 - 平台解析结果模型
+- Runtime 变更面
+- 风险确认策略
+- 阶段 / 角色 / 平台交接模型
 - Desktop Bridge 契约
 - 桌面读模型契约
 - Init Wizard 状态机
@@ -437,3 +484,6 @@ repair     -> fixer    -> trae
 - `Tauri + React + Vite + shadcn/ui` 作为桌面层
 - `Beads / Superpowers / Skills / MCP` 作为协作集成层
 - `Codex / Claude Code / Qoder / Trae` 作为执行平台集成层
+- `Runtime Mutation Surface` 作为正式写入口
+- `Handoff` 作为阶段推进的正式交接对象
+- `Risk Confirmation Policy` 作为高风险动作唯一确认规则

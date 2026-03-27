@@ -27,6 +27,8 @@
 - 第二阶段桌面端控制台信息架构
 - 第二阶段中控平台信息架构
 - 第二阶段工具架构图与技术路线
+- 第二阶段 Runtime 写接口与高风险确认规则
+- 第二阶段阶段 / 角色 / 平台交接模型
 
 ## 设计约束
 
@@ -39,6 +41,9 @@
 - Desktop 与 CLI 必须分开
 - 两者共用 `Runtime Core`
 - 阶段 / 角色 / 平台 必须拆开
+- Runtime 写操作必须统一收口
+- 高风险动作不能只靠 UI 自行确认
+- 阶段推进必须有正式 handoff
 
 ## 关键结论
 
@@ -51,6 +56,9 @@
 - 关键 CLI 命令仍可补 `--json`，但定位是脚本化接口
 - `Skills / MCP` 管理必须走桌面端正式入口和 Runtime Core
 - 执行平台层必须预留 `Codex / Claude Code / Qoder / Trae`
+- 所有正式写动作最终必须进入 Runtime Mutation Surface
+- 高风险动作必须由 Risk Confirmation Policy 最终裁决
+- 阶段推进必须沉淀为 handoff 对象，并可进入事件链
 
 ## 当前进度
 
@@ -83,3 +91,6 @@
 - [x] 已补 Runtime 查询面
 - [x] 已补 Control Plane 页面动作矩阵
 - [x] 已补读模型刷新策略
+- [x] 已补 Runtime 变更面
+- [x] 已补风险确认策略
+- [x] 已补阶段 / 角色 / 平台交接模型
