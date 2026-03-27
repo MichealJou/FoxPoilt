@@ -85,6 +85,7 @@ flowchart TD
 建议单独维护：
 
 - `src/desktop/bridge/runtime-bridge.ts`
+- `src/desktop/bridge/bridge-contract.ts`
 
 ### 3.4 前端读模型层
 
@@ -98,6 +99,11 @@ flowchart TD
 它是“展示态”，不是“业务真相”。
 
 业务真相仍然来自 Runtime Core 和本地数据层。
+
+建议优先固定两份配套契约：
+
+- `Desktop Bridge` 契约
+- 桌面读模型契约
 
 ## 4. 一级页面与主职责
 

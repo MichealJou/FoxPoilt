@@ -22,6 +22,9 @@
 - `docs/specs/foxpilot-phase2-runtime-command-model.md`
 - `docs/specs/foxpilot-phase2-control-plane-action-protocol.md`
 - `docs/specs/foxpilot-phase2-control-plane-json-contract.md`
+- `docs/specs/foxpilot-phase2-platform-resolution-model.md`
+- `docs/specs/foxpilot-phase2-desktop-bridge-contract.md`
+- `docs/specs/foxpilot-phase2-desktop-read-model-contract.md`
 
 ---
 

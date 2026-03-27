@@ -411,6 +411,9 @@ repair     -> fixer    -> trae
 - Runtime 命令模型
 - 中控页面动作协议
 - 中控 JSON 返回结构
+- 平台解析结果模型
+- Desktop Bridge 契约
+- 桌面读模型契约
 
 ## 9. 当前结论
 
