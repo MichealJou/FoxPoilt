@@ -26,15 +26,24 @@ async function createManagedProjectWithTask(): Promise<{
   await mkdir(path.join(projectRoot, '.git'), { recursive: true })
 
   const initResult = await runCli(
-    ['init', '--path', projectRoot, '--workspace-root', path.dirname(projectRoot), '--mode', 'non-interactive', '--no-scan'],
+    [
+      'init',
+      '--path',
+      projectRoot,
+      '--workspace-root',
+      path.dirname(projectRoot),
+      '--mode',
+      'non-interactive',
+      '--no-scan',
+    ],
     { homeDir },
   )
   expect(initResult.exitCode).toBe(0)
 
-  const createResult = await runCli(
-    ['task', 'create', '--title', '查看任务历史'],
-    { cwd: projectRoot, homeDir },
-  )
+  const createResult = await runCli(['task', 'create', '--title', '查看任务历史'], {
+    cwd: projectRoot,
+    homeDir,
+  })
   expect(createResult.exitCode).toBe(0)
 
   const db = new Database(path.join(homeDir, '.foxpilot', 'foxpilot.db'))
@@ -46,10 +55,7 @@ async function createManagedProjectWithTask(): Promise<{
 
 describe('task history CLI', () => {
   it('prints help and accepts fp alias', async () => {
-    const result = await runCli(
-      ['task', 'history', '--help'],
-      { binName: 'fp' },
-    )
+    const result = await runCli(['task', 'history', '--help'], { binName: 'fp' })
 
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('foxpilot task history')
@@ -59,10 +65,7 @@ describe('task history CLI', () => {
   it('shows empty history for a task without runs', async () => {
     const { homeDir, projectRoot, taskId } = await createManagedProjectWithTask()
 
-    const result = await runCli(
-      ['task', 'history', '--id', taskId],
-      { cwd: projectRoot, homeDir },
-    )
+    const result = await runCli(['task', 'history', '--id', taskId], { cwd: projectRoot, homeDir })
 
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('[FoxPilot] 任务运行历史')
@@ -78,10 +81,7 @@ describe('task history CLI', () => {
     )
     expect(updateResult.exitCode).toBe(0)
 
-    const result = await runCli(
-      ['task', 'history', '--id', taskId],
-      { cwd: projectRoot, homeDir },
-    )
+    const result = await runCli(['task', 'history', '--id', taskId], { cwd: projectRoot, homeDir })
 
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('analysis')
@@ -101,10 +101,10 @@ describe('task history CLI', () => {
     )
     expect(updateResult.exitCode).toBe(0)
 
-    const result = await runCli(
-      ['task', 'history', '--external-id', externalId],
-      { cwd: projectRoot, homeDir },
-    )
+    const result = await runCli(['task', 'history', '--external-id', externalId], {
+      cwd: projectRoot,
+      homeDir,
+    })
 
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('外部号查历史')
@@ -115,15 +115,15 @@ describe('task history CLI', () => {
   it('returns structured json task history output', async () => {
     const { homeDir, projectRoot, taskId } = await createManagedProjectWithTask()
 
-    await runCli(
-      ['task', 'update-status', '--id', taskId, '--status', 'analyzing'],
-      { cwd: projectRoot, homeDir },
-    )
+    await runCli(['task', 'update-status', '--id', taskId, '--status', 'analyzing'], {
+      cwd: projectRoot,
+      homeDir,
+    })
 
-    const result = await runCli(
-      ['task', 'history', '--id', taskId, '--json'],
-      { cwd: projectRoot, homeDir },
-    )
+    const result = await runCli(['task', 'history', '--id', taskId, '--json'], {
+      cwd: projectRoot,
+      homeDir,
+    })
 
     const payload = JSON.parse(result.stdout) as {
       ok: boolean
@@ -151,10 +151,10 @@ describe('task history CLI', () => {
     const projectRoot = await createTempDir('foxpilot-project-')
     tempDirs.push(homeDir, projectRoot)
 
-    const result = await runCli(
-      ['task', 'history', '--id', 'task:missing'],
-      { cwd: projectRoot, homeDir },
-    )
+    const result = await runCli(['task', 'history', '--id', 'task:missing'], {
+      cwd: projectRoot,
+      homeDir,
+    })
 
     expect(result.exitCode).toBe(1)
     expect(result.stdout).toContain('项目尚未初始化')
@@ -164,10 +164,10 @@ describe('task history CLI', () => {
     const first = await createManagedProjectWithTask()
     const second = await createManagedProjectWithTask()
 
-    const result = await runCli(
-      ['task', 'history', '--id', second.taskId],
-      { cwd: first.projectRoot, homeDir: first.homeDir },
-    )
+    const result = await runCli(['task', 'history', '--id', second.taskId], {
+      cwd: first.projectRoot,
+      homeDir: first.homeDir,
+    })
 
     expect(result.exitCode).toBe(1)
     expect(result.stdout).toContain('未找到任务')
@@ -176,10 +176,11 @@ describe('task history CLI', () => {
   it('returns exit code 4 when sqlite bootstrap fails', async () => {
     const { homeDir, projectRoot, taskId } = await createManagedProjectWithTask()
 
-    const result = await runCli(
-      ['task', 'history', '--id', taskId],
-      { cwd: projectRoot, homeDir, failBootstrap: true },
-    )
+    const result = await runCli(['task', 'history', '--id', taskId], {
+      cwd: projectRoot,
+      homeDir,
+      failBootstrap: true,
+    })
 
     expect(result.exitCode).toBe(4)
     expect(result.stdout).toContain('foxpilot.db 初始化失败')

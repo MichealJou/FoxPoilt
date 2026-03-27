@@ -42,37 +42,57 @@ export async function createManagedProjectWithImportedBeadsTask(input?: {
   await mkdir(path.join(projectRoot, '.git'), { recursive: true })
 
   const initResult = await runCli(
-    ['init', '--path', projectRoot, '--workspace-root', path.dirname(projectRoot), '--mode', 'non-interactive'],
+    [
+      'init',
+      '--path',
+      projectRoot,
+      '--workspace-root',
+      path.dirname(projectRoot),
+      '--mode',
+      'non-interactive',
+    ],
     { homeDir },
   )
   expect(initResult.exitCode).toBe(0)
 
   const externalId = input?.externalTaskId ?? 'BEADS-2001'
   const snapshotPath = path.join(projectRoot, 'beads.json')
-  await writeFile(snapshotPath, `${JSON.stringify([
-    {
-      externalTaskId: externalId,
-      title: input?.title ?? '导入任务',
-      status: input?.status ?? 'ready',
-      priority: input?.priority ?? 'P1',
-      repository: input?.repository ?? '.',
-    },
-  ], null, 2)}\n`, 'utf8')
-
-  const importResult = await runCli(
-    ['task', 'import-beads', '--file', snapshotPath],
-    { cwd: projectRoot, homeDir },
+  await writeFile(
+    snapshotPath,
+    `${JSON.stringify(
+      [
+        {
+          externalTaskId: externalId,
+          title: input?.title ?? '导入任务',
+          status: input?.status ?? 'ready',
+          priority: input?.priority ?? 'P1',
+          repository: input?.repository ?? '.',
+        },
+      ],
+      null,
+      2,
+    )}\n`,
+    'utf8',
   )
+
+  const importResult = await runCli(['task', 'import-beads', '--file', snapshotPath], {
+    cwd: projectRoot,
+    homeDir,
+  })
   expect(importResult.exitCode).toBe(0)
 
   const db = new Database(path.join(homeDir, '.foxpilot', 'foxpilot.db'))
-  const row = db.prepare(`
+  const row = db
+    .prepare(
+      `
     SELECT id
     FROM task
     WHERE external_source = 'beads'
       AND external_id = ?
     LIMIT 1
-  `).get(externalId) as { id: string }
+  `,
+    )
+    .get(externalId) as { id: string }
   db.close()
 
   return {

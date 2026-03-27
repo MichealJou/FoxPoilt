@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 :root {
   --background: #08111f;
@@ -23,7 +23,7 @@
   --ring: #38bdf8;
   --radius: 0.875rem;
   color-scheme: dark;
-  font-family: "IBM Plex Sans", "SF Pro Display", ui-sans-serif, system-ui, sans-serif;
+  font-family: 'IBM Plex Sans', 'SF Pro Display', ui-sans-serif, system-ui, sans-serif;
 }
 
 @theme inline {
@@ -73,6 +73,6 @@ body {
 
 code,
 pre,
-[data-mono="true"] {
-  font-family: "JetBrains Mono", "SFMono-Regular", ui-monospace, monospace;
+[data-mono='true'] {
+  font-family: 'JetBrains Mono', 'SFMono-Regular', ui-monospace, monospace;
 }

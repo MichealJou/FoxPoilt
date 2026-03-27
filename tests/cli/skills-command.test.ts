@@ -44,11 +44,14 @@ describe('skills CLI', () => {
   })
 
   it('inspects a single skill in json mode', async () => {
-    const result = await runCli(['skills', 'inspect', '--skill', 'architecture-designer', '--json'], {
-      dependencies: {
-        collectSkillRegistry: async () => [...skillItems],
+    const result = await runCli(
+      ['skills', 'inspect', '--skill', 'architecture-designer', '--json'],
+      {
+        dependencies: {
+          collectSkillRegistry: async () => [...skillItems],
+        },
       },
-    })
+    )
 
     const payload = JSON.parse(result.stdout) as {
       ok: boolean

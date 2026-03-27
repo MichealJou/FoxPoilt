@@ -69,7 +69,10 @@ export const defaultGlobalConfig: GlobalConfig = {
 }
 
 export class GlobalConfigParseError extends Error {
-  constructor(public readonly configPath: string, options?: { cause?: unknown }) {
+  constructor(
+    public readonly configPath: string,
+    options?: { cause?: unknown },
+  ) {
     super(`Failed to parse global config: ${configPath}`, options)
     this.name = 'GlobalConfigParseError'
   }
@@ -110,7 +113,10 @@ function isWithin(rootPath: string, targetPath: string): boolean {
  * 1. 允许工作区嵌套存在，例如 `/Users/program` 和 `/Users/program/code`。
  * 2. 当项目路径同时命中多个工作区时，必须选更具体的那个，否则项目会被错误归到更大的上层空间。
  */
-export function findMatchingWorkspaceRoot(projectRoot: string, workspaceRoots: string[]): string | null {
+export function findMatchingWorkspaceRoot(
+  projectRoot: string,
+  workspaceRoots: string[],
+): string | null {
   const matches = normalizePaths(workspaceRoots)
     .filter((rootPath) => isWithin(rootPath, projectRoot))
     .sort((left, right) => right.length - left.length)
@@ -149,7 +155,9 @@ function normalizeGlobalConfig(config: Partial<GlobalConfig>): GlobalConfig {
     ...defaultGlobalConfig,
     ...config,
     workspaceRoots: Array.isArray(config.workspaceRoots)
-      ? normalizePaths(config.workspaceRoots.filter((item): item is string => typeof item === 'string'))
+      ? normalizePaths(
+          config.workspaceRoots.filter((item): item is string => typeof item === 'string'),
+        )
       : [],
     interfaceLanguage,
   }
@@ -223,7 +231,9 @@ export async function ensureGlobalConfig(input: {
  * 1. 语言解析属于“入口前置步骤”，不能因为配置损坏就让所有命令都在入口直接崩掉。
  * 2. 因此这里采用兜底策略，读取失败时回退到默认中文，把真正的配置错误交给具体命令处理。
  */
-export async function resolveInterfaceLanguage(input: { homeDir: string }): Promise<InterfaceLanguage> {
+export async function resolveInterfaceLanguage(input: {
+  homeDir: string
+}): Promise<InterfaceLanguage> {
   try {
     const { config } = await readGlobalConfig(input)
     return config.interfaceLanguage

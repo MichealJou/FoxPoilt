@@ -11,15 +11,7 @@ export function getFallbackDesktopRuntimeStatus(): DesktopRuntimeStatus {
     shell: 'web',
     runtime: 'shared-runtime-core',
     cliJsonReady: true,
-    pages: [
-      'dashboard',
-      'workspace',
-      'tasks',
-      'runs',
-      'events',
-      'control-plane',
-      'health',
-    ],
+    pages: ['dashboard', 'workspace', 'tasks', 'runs', 'events', 'control-plane', 'health'],
     platformAdapters: ['codex', 'claude_code', 'qoder', 'trae'],
   }
 }

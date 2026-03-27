@@ -55,7 +55,7 @@ function buildPathExpression(homeDir: string, binDir: string): string {
   const relativePath = path.relative(homeDir, binDir)
 
   if (!relativePath || (!relativePath.startsWith('..') && !path.isAbsolute(relativePath))) {
-    const normalized = relativePath === '' ? '.': relativePath.split(path.sep).join('/')
+    const normalized = relativePath === '' ? '.' : relativePath.split(path.sep).join('/')
     const homeRelative = normalized.startsWith('.') ? normalized : normalized
 
     if (homeRelative === '.') {
@@ -82,7 +82,9 @@ function buildProfileBlock(pathExpression: string): string {
  * 这个动作不会影响当前父 shell 进程，但会让后续打开的新终端自动带上
  * `~/.foxpilot/bin`。重复执行时必须保持幂等，不能一遍遍追加相同片段。
  */
-export async function ensureUnixShellPath(args: EnsureUnixShellPathArgs): Promise<UnixShellPathResult> {
+export async function ensureUnixShellPath(
+  args: EnsureUnixShellPathArgs,
+): Promise<UnixShellPathResult> {
   const shellProfile = resolveShellProfile(args.shellPath)
   const profilePath = path.join(args.homeDir, shellProfile.profileFileName)
   const pathExpression = buildPathExpression(args.homeDir, args.binDir)
@@ -98,7 +100,10 @@ export async function ensureUnixShellPath(args: EnsureUnixShellPathArgs): Promis
     }
   }
 
-  if (currentContent.includes(profileBlock) || currentContent.includes(`export PATH="${pathExpression}:$PATH"`)) {
+  if (
+    currentContent.includes(profileBlock) ||
+    currentContent.includes(`export PATH="${pathExpression}:$PATH"`)
+  ) {
     return {
       shellName: shellProfile.shellName,
       profilePath,
@@ -106,9 +111,10 @@ export async function ensureUnixShellPath(args: EnsureUnixShellPathArgs): Promis
     }
   }
 
-  const nextContent = currentContent.trim().length === 0
-    ? `${profileBlock}\n`
-    : `${currentContent.replace(/\s*$/, '\n\n')}${profileBlock}\n`
+  const nextContent =
+    currentContent.trim().length === 0
+      ? `${profileBlock}\n`
+      : `${currentContent.replace(/\s*$/, '\n\n')}${profileBlock}\n`
 
   await mkdir(path.dirname(profilePath), { recursive: true })
   await writeFile(profilePath, nextContent)
@@ -126,10 +132,7 @@ export async function ensureUnixShellPath(args: EnsureUnixShellPathArgs): Promis
  * 卸载时只删除由 FoxPilot 自己写入的 block，不碰用户手写的其他 PATH 配置，
  * 这样可以避免把无关命令的环境变量一起清掉。
  */
-export async function removeUnixShellPath(args: {
-  homeDir: string
-  binDir: string
-}): Promise<{
+export async function removeUnixShellPath(args: { homeDir: string; binDir: string }): Promise<{
   updatedProfiles: string[]
 }> {
   const pathExpression = buildPathExpression(args.homeDir, args.binDir)
@@ -201,7 +204,7 @@ function buildWindowsPathRemovalScript(targetPath: string): string {
     '$updated = $false',
     "foreach ($entry in ($currentPath -split ';')) {",
     '  $normalizedEntry = Normalize-PathValue $entry',
-    "  if ([string]::IsNullOrWhiteSpace($normalizedEntry)) { continue }",
+    '  if ([string]::IsNullOrWhiteSpace($normalizedEntry)) { continue }',
     '  if ([string]::Compare($normalizedEntry, $normalizedTargetPath, $true) -eq 0) {',
     '    $updated = $true',
     '    continue',
@@ -220,7 +223,9 @@ function buildWindowsPathRemovalScript(targetPath: string): string {
  * 因此这里通过 PowerShell 读取并回写 `Path(User)`。
  * 只会删除完全匹配的那一项，不会改动其他 PATH 片段。
  */
-export async function removeWindowsPathEntry(targetPath: string): Promise<WindowsPathCleanupResult> {
+export async function removeWindowsPathEntry(
+  targetPath: string,
+): Promise<WindowsPathCleanupResult> {
   const script = buildWindowsPathRemovalScript(targetPath)
 
   return new Promise((resolve, reject) => {

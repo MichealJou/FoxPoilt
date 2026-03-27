@@ -7,9 +7,17 @@ import type { CliResult } from '@/commands/init/init-types.js'
 import { toJsonErrorOutput, toJsonSuccessOutput } from '@/cli/json-output.js'
 import { dispatchUpdate } from '@foxpilot/infra/install/update-dispatcher.js'
 import { readInstallManifest } from '@foxpilot/infra/install/install-manifest.js'
-import { runBrewUpdate, runNpmUpdate, runReleaseUpdate } from '@foxpilot/infra/install/update-runner.js'
+import {
+  runBrewUpdate,
+  runNpmUpdate,
+  runReleaseUpdate,
+} from '@foxpilot/infra/install/update-runner.js'
 
-import type { SystemUpdateArgs, SystemUpdateContext, SystemUpdateDependencies } from '@/commands/system/system-update-types.js'
+import type {
+  SystemUpdateArgs,
+  SystemUpdateContext,
+  SystemUpdateDependencies,
+} from '@/commands/system/system-update-types.js'
 
 function getDependencies(
   overrides: Partial<SystemUpdateDependencies> = {},
@@ -27,11 +35,7 @@ function getDependencies(
 }
 
 function buildHelpText(binName: 'foxpilot' | 'fp'): string {
-  return [
-    '沿用当前命令实例来源执行更新。',
-    '',
-    `${binName} update`,
-  ].join('\n')
+  return ['沿用当前命令实例来源执行更新。', '', `${binName} update`].join('\n')
 }
 
 /**
@@ -54,7 +58,9 @@ export async function runSystemUpdateCommand(
   }
 
   const dependencies = getDependencies(context.dependencies)
-  const manifest = await dependencies.readInstallManifest({ executablePath: context.executablePath })
+  const manifest = await dependencies.readInstallManifest({
+    executablePath: context.executablePath,
+  })
 
   if (!manifest) {
     return {
@@ -67,10 +73,9 @@ export async function runSystemUpdateCommand(
               executablePath: context.executablePath,
             },
           })
-        : [
-            '[FoxPilot] 无法识别当前安装来源',
-            `- executablePath: ${context.executablePath}`,
-          ].join('\n'),
+        : ['[FoxPilot] 无法识别当前安装来源', `- executablePath: ${context.executablePath}`].join(
+            '\n',
+          ),
     }
   }
 

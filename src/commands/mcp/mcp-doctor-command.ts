@@ -8,9 +8,7 @@ import type {
   McpDoctorDependencies,
 } from '@/commands/mcp/mcp-doctor-types.js'
 
-function getDependencies(
-  overrides: Partial<McpDoctorDependencies> = {},
-): McpDoctorDependencies {
+function getDependencies(overrides: Partial<McpDoctorDependencies> = {}): McpDoctorDependencies {
   return {
     collectMcpRegistry,
     ...overrides,

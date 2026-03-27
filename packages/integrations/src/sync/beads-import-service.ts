@@ -160,9 +160,7 @@ export function collectDeclaredBeadsExternalTaskIds(records: unknown[]): Set<str
     }
 
     const item = record as BeadsSnapshotRecord
-    const externalTaskId = typeof item.externalTaskId === 'string'
-      ? item.externalTaskId.trim()
-      : ''
+    const externalTaskId = typeof item.externalTaskId === 'string' ? item.externalTaskId.trim() : ''
 
     if (externalTaskId) {
       declaredIds.add(externalTaskId)
@@ -238,7 +236,12 @@ export function mapTaskStatusToBeadsStatus(
  * 把外部优先级映射到本地优先级集合。
  */
 export function mapBeadsPriority(rawPriority: string): TaskRow['priority'] | null {
-  if (rawPriority === 'P0' || rawPriority === 'P1' || rawPriority === 'P2' || rawPriority === 'P3') {
+  if (
+    rawPriority === 'P0' ||
+    rawPriority === 'P1' ||
+    rawPriority === 'P2' ||
+    rawPriority === 'P3'
+  ) {
     return rawPriority
   }
 
@@ -292,7 +295,8 @@ export function normalizeBeadsSnapshot(input: {
       continue
     }
 
-    const priority = typeof item.priority === 'string' ? mapBeadsPriority(item.priority.trim()) : null
+    const priority =
+      typeof item.priority === 'string' ? mapBeadsPriority(item.priority.trim()) : null
     if (!priority) {
       rejected.push(`${prefix}: priority 非法或缺失`)
       continue
@@ -647,18 +651,14 @@ export function buildBeadsDiffPreview(input: {
     }
 
     updated += 1
-    const changes = existingTask
-      ? collectBeadsImportChangeKeys(existingTask, record)
-      : []
+    const changes = existingTask ? collectBeadsImportChangeKeys(existingTask, record) : []
 
     entries.push({
       action: 'update',
       externalTaskId: record.externalTaskId,
       title: record.title,
       repositoryPath: record.repositoryPath,
-      detail: changes.length > 0
-        ? `差异: ${changes.join(',')}`
-        : '存在同步差异',
+      detail: changes.length > 0 ? `差异: ${changes.join(',')}` : '存在同步差异',
     })
   }
 

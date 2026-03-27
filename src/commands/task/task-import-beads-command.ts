@@ -245,7 +245,11 @@ export async function runTaskImportBeadsCommand(
       `- closed: ${importResult.closed}`,
       `- rejected: ${normalized.rejected.length}`,
       ...(normalized.rejected.length > 0
-        ? ['', messages.taskImportBeads.rejectedTitle, ...normalized.rejected.map((item) => `- ${item}`)]
+        ? [
+            '',
+            messages.taskImportBeads.rejectedTitle,
+            ...normalized.rejected.map((item) => `- ${item}`),
+          ]
         : []),
     ].join('\n'),
   }

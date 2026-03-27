@@ -2,13 +2,15 @@ import { describe, expect, it } from 'vitest'
 
 describe('foundation installer', () => {
   it('returns the default foundation pack with beads and superpowers', async () => {
-    const { getDefaultFoundationPack } = await import('@foxpilot/integrations/foundation/foundation-profile.js')
+    const { getDefaultFoundationPack } =
+      await import('@foxpilot/integrations/foundation/foundation-profile.js')
 
     expect(getDefaultFoundationPack().items).toEqual(['beads', 'superpowers'])
   })
 
   it('marks missing tools as installable units', async () => {
-    const { ensureFoundationPack } = await import('@foxpilot/integrations/foundation/foundation-installer.js')
+    const { ensureFoundationPack } =
+      await import('@foxpilot/integrations/foundation/foundation-installer.js')
 
     const result = await ensureFoundationPack({
       detectTool: async (tool) =>
@@ -36,7 +38,8 @@ describe('foundation installer', () => {
   })
 
   it('installs missing tools through the official installer and re-checks readiness', async () => {
-    const { setupFoundationPack } = await import('@foxpilot/integrations/foundation/foundation-installer.js')
+    const { setupFoundationPack } =
+      await import('@foxpilot/integrations/foundation/foundation-installer.js')
 
     const installedTools: string[] = []
 

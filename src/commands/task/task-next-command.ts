@@ -9,7 +9,10 @@ import { resolveGlobalDatabasePath } from '@foxpilot/infra/core/paths.js'
 import { bootstrapDatabase } from '@foxpilot/infra/db/bootstrap.js'
 import { createTaskStore } from '@foxpilot/infra/db/task-store.js'
 import { getMessages } from '@/i18n/messages.js'
-import { ProjectNotInitializedError, resolveManagedProject } from '@foxpilot/infra/project/resolve-project.js'
+import {
+  ProjectNotInitializedError,
+  resolveManagedProject,
+} from '@foxpilot/infra/project/resolve-project.js'
 
 import type {
   TaskNextArgs,
@@ -27,9 +30,7 @@ import type {
  * - 读取 store 选出的单条候选任务；
  * - 组织面向终端的输出。
  */
-function getDependencies(
-  overrides: Partial<TaskNextDependencies> = {},
-): TaskNextDependencies {
+function getDependencies(overrides: Partial<TaskNextDependencies> = {}): TaskNextDependencies {
   return {
     resolveManagedProject,
     bootstrapDatabase,
@@ -168,10 +169,7 @@ export async function runTaskNextCommand(
   if (!task) {
     return {
       exitCode: 0,
-      stdout: [
-        messages.taskNext.empty,
-        `- projectRoot: ${managedProject.projectRoot}`,
-      ].join('\n'),
+      stdout: [messages.taskNext.empty, `- projectRoot: ${managedProject.projectRoot}`].join('\n'),
     }
   }
 

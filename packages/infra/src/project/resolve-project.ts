@@ -9,7 +9,10 @@ import path from 'node:path'
 import { readJsonFile } from '@foxpilot/infra/core/json-file.js'
 import { resolveProjectConfigPath } from '@foxpilot/infra/core/paths.js'
 
-import type { ProjectConfig, ProjectRepositoryConfig } from '@foxpilot/infra/project/project-config.js'
+import type {
+  ProjectConfig,
+  ProjectRepositoryConfig,
+} from '@foxpilot/infra/project/project-config.js'
 
 /**
  * 当 CLI 命令在未初始化的受管项目之外执行时抛出。
@@ -76,10 +79,7 @@ async function findManagedProjectRoot(startPath: string): Promise<string | null>
  * 1. 显式 `--path` 的优先级高于当前目录推断。
  * 2. 命令层不需要关心项目查找细节，只需要拿到稳定的项目上下文。
  */
-export async function resolveManagedProject(input: {
-  cwd: string
-  projectPath?: string
-}): Promise<{
+export async function resolveManagedProject(input: { cwd: string; projectPath?: string }): Promise<{
   projectRoot: string
   configPath: string
   projectConfig: ProjectConfig

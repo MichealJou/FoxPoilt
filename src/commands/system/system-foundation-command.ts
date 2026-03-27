@@ -23,11 +23,7 @@ function getDependencies(
 }
 
 function buildHelpText(binName: 'foxpilot' | 'fp'): string {
-  return [
-    '检查安装阶段基础组合的当前状态。',
-    '',
-    `${binName} foundation`,
-  ].join('\n')
+  return ['检查安装阶段基础组合的当前状态。', '', `${binName} foundation`].join('\n')
 }
 
 export async function runSystemFoundationCommand(
@@ -53,8 +49,8 @@ export async function runSystemFoundationCommand(
           `- packId: ${result.packId}`,
           `- ready: ${result.ready.length > 0 ? result.ready.join(', ') : 'none'}`,
           `- missing: ${result.missing.length > 0 ? result.missing.join(', ') : 'none'}`,
-          ...result.items.map((item) =>
-            `- ${item.tool}: ${item.status}${item.version ? ` (${item.version})` : ''}`,
+          ...result.items.map(
+            (item) => `- ${item.tool}: ${item.status}${item.version ? ` (${item.version})` : ''}`,
           ),
         ].join('\n'),
   }

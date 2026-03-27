@@ -17,7 +17,7 @@ async function createManagedProjectWithRepositories(homeDir?: string): Promise<{
   homeDir: string
   projectRoot: string
 }> {
-  const resolvedHomeDir = homeDir ?? await createTempDir('foxpilot-home-')
+  const resolvedHomeDir = homeDir ?? (await createTempDir('foxpilot-home-'))
   const projectRoot = await createTempDir('foxpilot-project-')
 
   if (!homeDir) {
@@ -30,7 +30,15 @@ async function createManagedProjectWithRepositories(homeDir?: string): Promise<{
   await mkdir(path.join(projectRoot, 'frontend', '.git'), { recursive: true })
 
   const initResult = await runCli(
-    ['init', '--path', projectRoot, '--workspace-root', path.dirname(projectRoot), '--mode', 'non-interactive'],
+    [
+      'init',
+      '--path',
+      projectRoot,
+      '--workspace-root',
+      path.dirname(projectRoot),
+      '--mode',
+      'non-interactive',
+    ],
     { homeDir: resolvedHomeDir },
   )
   expect(initResult.exitCode).toBe(0)
@@ -71,10 +79,10 @@ describe('task import-beads CLI', () => {
       },
     ])
 
-    const result = await runCli(
-      ['task', 'import-beads', '--file', snapshotPath],
-      { cwd: projectRoot, homeDir },
-    )
+    const result = await runCli(['task', 'import-beads', '--file', snapshotPath], {
+      cwd: projectRoot,
+      homeDir,
+    })
 
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('[FoxPilot] 已完成 Beads 任务导入')
@@ -84,7 +92,9 @@ describe('task import-beads CLI', () => {
     expect(result.stdout).toContain('- rejected: 0')
 
     const db = new Database(path.join(homeDir, '.foxpilot', 'foxpilot.db'))
-    const rows = db.prepare(`
+    const rows = db
+      .prepare(
+        `
       SELECT
         t.external_source,
         t.external_id,
@@ -101,7 +111,9 @@ describe('task import-beads CLI', () => {
       JOIN repository r ON r.id = tt.repository_id
       WHERE t.source_type = 'beads_sync'
       ORDER BY t.external_id ASC
-    `).all() as Array<{
+    `,
+      )
+      .all() as Array<{
       external_source: string | null
       external_id: string | null
       title: string
@@ -163,16 +175,16 @@ describe('task import-beads CLI', () => {
       },
     ])
 
-    const firstRun = await runCli(
-      ['task', 'import-beads', '--file', snapshotPath],
-      { cwd: projectRoot, homeDir },
-    )
+    const firstRun = await runCli(['task', 'import-beads', '--file', snapshotPath], {
+      cwd: projectRoot,
+      homeDir,
+    })
     expect(firstRun.exitCode).toBe(0)
 
-    const secondRun = await runCli(
-      ['task', 'import-beads', '--file', snapshotPath],
-      { cwd: projectRoot, homeDir },
-    )
+    const secondRun = await runCli(['task', 'import-beads', '--file', snapshotPath], {
+      cwd: projectRoot,
+      homeDir,
+    })
 
     expect(secondRun.exitCode).toBe(0)
     expect(secondRun.stdout).toContain('- created: 0')
@@ -200,10 +212,10 @@ describe('task import-beads CLI', () => {
       },
     ])
 
-    const firstRun = await runCli(
-      ['task', 'import-beads', '--file', initialSnapshotPath],
-      { cwd: projectRoot, homeDir },
-    )
+    const firstRun = await runCli(['task', 'import-beads', '--file', initialSnapshotPath], {
+      cwd: projectRoot,
+      homeDir,
+    })
     expect(firstRun.exitCode).toBe(0)
 
     const updatedSnapshotPath = await writeSnapshotFile(projectRoot, 'beads-updated.json', [
@@ -223,10 +235,10 @@ describe('task import-beads CLI', () => {
       },
     ])
 
-    const secondRun = await runCli(
-      ['task', 'import-beads', '--file', updatedSnapshotPath],
-      { cwd: projectRoot, homeDir },
-    )
+    const secondRun = await runCli(['task', 'import-beads', '--file', updatedSnapshotPath], {
+      cwd: projectRoot,
+      homeDir,
+    })
 
     expect(secondRun.exitCode).toBe(0)
     expect(secondRun.stdout).toContain('- created: 0')
@@ -234,7 +246,9 @@ describe('task import-beads CLI', () => {
     expect(secondRun.stdout).toContain('- skipped: 1')
 
     const db = new Database(path.join(homeDir, '.foxpilot', 'foxpilot.db'))
-    const row = db.prepare(`
+    const row = db
+      .prepare(
+        `
       SELECT
         t.title,
         t.status,
@@ -246,7 +260,9 @@ describe('task import-beads CLI', () => {
       WHERE t.external_source = 'beads'
         AND t.external_id = 'BEADS-301'
       LIMIT 1
-    `).get() as {
+    `,
+      )
+      .get() as {
       title: string
       status: string
       priority: string
@@ -295,10 +311,10 @@ describe('task import-beads CLI', () => {
       },
     ])
 
-    const result = await runCli(
-      ['task', 'import-beads', '--file', snapshotPath],
-      { cwd: projectRoot, homeDir },
-    )
+    const result = await runCli(['task', 'import-beads', '--file', snapshotPath], {
+      cwd: projectRoot,
+      homeDir,
+    })
 
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('- created: 1')
@@ -310,11 +326,15 @@ describe('task import-beads CLI', () => {
     expect(result.stdout).toContain('repository')
 
     const db = new Database(path.join(homeDir, '.foxpilot', 'foxpilot.db'))
-    const row = db.prepare(`
+    const row = db
+      .prepare(
+        `
       SELECT COUNT(*) AS count
       FROM task
       WHERE source_type = 'beads_sync'
-    `).get() as { count: number }
+    `,
+      )
+      .get() as { count: number }
     expect(row.count).toBe(1)
     db.close()
   })
@@ -326,47 +346,59 @@ describe('task import-beads CLI', () => {
     const firstProject = await createManagedProjectWithRepositories(homeDir)
     const secondProject = await createManagedProjectWithRepositories(homeDir)
 
-    const firstSnapshotPath = await writeSnapshotFile(firstProject.projectRoot, 'beads-project-a.json', [
-      {
-        externalTaskId: 'BEADS-501',
-        title: '项目 A 的任务',
-        status: 'ready',
-        priority: 'P2',
-        repository: '.',
-      },
-    ])
-
-    const secondSnapshotPath = await writeSnapshotFile(secondProject.projectRoot, 'beads-project-b.json', [
-      {
-        externalTaskId: 'BEADS-501',
-        title: '项目 B 的任务',
-        status: 'ready',
-        priority: 'P2',
-        repository: '.',
-      },
-    ])
-
-    const firstResult = await runCli(
-      ['task', 'import-beads', '--file', firstSnapshotPath],
-      { cwd: firstProject.projectRoot, homeDir },
+    const firstSnapshotPath = await writeSnapshotFile(
+      firstProject.projectRoot,
+      'beads-project-a.json',
+      [
+        {
+          externalTaskId: 'BEADS-501',
+          title: '项目 A 的任务',
+          status: 'ready',
+          priority: 'P2',
+          repository: '.',
+        },
+      ],
     )
+
+    const secondSnapshotPath = await writeSnapshotFile(
+      secondProject.projectRoot,
+      'beads-project-b.json',
+      [
+        {
+          externalTaskId: 'BEADS-501',
+          title: '项目 B 的任务',
+          status: 'ready',
+          priority: 'P2',
+          repository: '.',
+        },
+      ],
+    )
+
+    const firstResult = await runCli(['task', 'import-beads', '--file', firstSnapshotPath], {
+      cwd: firstProject.projectRoot,
+      homeDir,
+    })
     expect(firstResult.exitCode).toBe(0)
 
-    const secondResult = await runCli(
-      ['task', 'import-beads', '--file', secondSnapshotPath],
-      { cwd: secondProject.projectRoot, homeDir },
-    )
+    const secondResult = await runCli(['task', 'import-beads', '--file', secondSnapshotPath], {
+      cwd: secondProject.projectRoot,
+      homeDir,
+    })
     expect(secondResult.exitCode).toBe(0)
     expect(secondResult.stdout).toContain('- created: 1')
 
     const db = new Database(path.join(homeDir, '.foxpilot', 'foxpilot.db'))
-    const rows = db.prepare(`
+    const rows = db
+      .prepare(
+        `
       SELECT project_id, title
       FROM task
       WHERE external_source = 'beads'
         AND external_id = 'BEADS-501'
       ORDER BY project_id ASC
-    `).all() as Array<{
+    `,
+      )
+      .all() as Array<{
       project_id: string
       title: string
     }>
@@ -395,10 +427,14 @@ describe('task import-beads CLI', () => {
       },
     ])
 
-    expect((await runCli(
-      ['task', 'import-beads', '--file', firstSnapshotPath],
-      { cwd: projectRoot, homeDir },
-    )).exitCode).toBe(0)
+    expect(
+      (
+        await runCli(['task', 'import-beads', '--file', firstSnapshotPath], {
+          cwd: projectRoot,
+          homeDir,
+        })
+      ).exitCode,
+    ).toBe(0)
 
     const secondSnapshotPath = await writeSnapshotFile(projectRoot, 'beads-second.json', [
       {
@@ -410,10 +446,10 @@ describe('task import-beads CLI', () => {
       },
     ])
 
-    const result = await runCli(
-      ['task', 'import-beads', '--file', secondSnapshotPath],
-      { cwd: projectRoot, homeDir },
-    )
+    const result = await runCli(['task', 'import-beads', '--file', secondSnapshotPath], {
+      cwd: projectRoot,
+      homeDir,
+    })
 
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('- created: 0')
@@ -421,13 +457,17 @@ describe('task import-beads CLI', () => {
     expect(result.stdout).toContain('- skipped: 1')
 
     const db = new Database(path.join(homeDir, '.foxpilot', 'foxpilot.db'))
-    const row = db.prepare(`
+    const row = db
+      .prepare(
+        `
       SELECT status
       FROM task
       WHERE external_source = 'beads'
         AND external_id = 'BEADS-602'
       LIMIT 1
-    `).get() as { status: string }
+    `,
+      )
+      .get() as { status: string }
     expect(row.status).toBe('executing')
     db.close()
   })
@@ -451,10 +491,14 @@ describe('task import-beads CLI', () => {
       },
     ])
 
-    expect((await runCli(
-      ['task', 'import-beads', '--file', firstSnapshotPath],
-      { cwd: projectRoot, homeDir },
-    )).exitCode).toBe(0)
+    expect(
+      (
+        await runCli(['task', 'import-beads', '--file', firstSnapshotPath], {
+          cwd: projectRoot,
+          homeDir,
+        })
+      ).exitCode,
+    ).toBe(0)
 
     const secondSnapshotPath = await writeSnapshotFile(projectRoot, 'beads-close.json', [
       {
@@ -478,12 +522,16 @@ describe('task import-beads CLI', () => {
     expect(result.stdout).toContain('- closed: 1')
 
     const db = new Database(path.join(homeDir, '.foxpilot', 'foxpilot.db'))
-    const rows = db.prepare(`
+    const rows = db
+      .prepare(
+        `
       SELECT external_id, status
       FROM task
       WHERE external_source = 'beads'
       ORDER BY external_id ASC
-    `).all() as Array<{
+    `,
+      )
+      .all() as Array<{
       external_id: string
       status: string
     }>
@@ -512,10 +560,14 @@ describe('task import-beads CLI', () => {
       },
     ])
 
-    expect((await runCli(
-      ['task', 'import-beads', '--file', firstSnapshotPath],
-      { cwd: projectRoot, homeDir },
-    )).exitCode).toBe(0)
+    expect(
+      (
+        await runCli(['task', 'import-beads', '--file', firstSnapshotPath], {
+          cwd: projectRoot,
+          homeDir,
+        })
+      ).exitCode,
+    ).toBe(0)
 
     const secondSnapshotPath = await writeSnapshotFile(projectRoot, 'beads-safe-next.json', [
       {
@@ -537,13 +589,17 @@ describe('task import-beads CLI', () => {
     expect(result.stdout).toContain('- closed: 0')
 
     const db = new Database(path.join(homeDir, '.foxpilot', 'foxpilot.db'))
-    const row = db.prepare(`
+    const row = db
+      .prepare(
+        `
       SELECT status
       FROM task
       WHERE external_source = 'beads'
         AND external_id = 'BEADS-801'
       LIMIT 1
-    `).get() as { status: string }
+    `,
+      )
+      .get() as { status: string }
     expect(row.status).toBe('executing')
     db.close()
   })
@@ -560,10 +616,10 @@ describe('task import-beads CLI', () => {
       },
     ])
 
-    const result = await runCli(
-      ['task', 'import-beads', '--file', snapshotPath, '--dry-run'],
-      { cwd: projectRoot, homeDir },
-    )
+    const result = await runCli(['task', 'import-beads', '--file', snapshotPath, '--dry-run'], {
+      cwd: projectRoot,
+      homeDir,
+    })
 
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('- dryRun: true')
@@ -573,11 +629,15 @@ describe('task import-beads CLI', () => {
     expect(result.stdout).toContain('- closed: 0')
 
     const db = new Database(path.join(homeDir, '.foxpilot', 'foxpilot.db'))
-    const row = db.prepare(`
+    const row = db
+      .prepare(
+        `
       SELECT COUNT(*) AS count
       FROM task
       WHERE external_source = 'beads'
-    `).get() as { count: number }
+    `,
+      )
+      .get() as { count: number }
     expect(row.count).toBe(0)
     db.close()
   })
@@ -594,10 +654,14 @@ describe('task import-beads CLI', () => {
       },
     ])
 
-    expect((await runCli(
-      ['task', 'import-beads', '--file', firstSnapshotPath],
-      { cwd: projectRoot, homeDir },
-    )).exitCode).toBe(0)
+    expect(
+      (
+        await runCli(['task', 'import-beads', '--file', firstSnapshotPath], {
+          cwd: projectRoot,
+          homeDir,
+        })
+      ).exitCode,
+    ).toBe(0)
 
     const secondSnapshotPath = await writeSnapshotFile(projectRoot, 'beads-dry-run-close.json', [])
 
@@ -611,22 +675,23 @@ describe('task import-beads CLI', () => {
     expect(result.stdout).toContain('- closed: 1')
 
     const db = new Database(path.join(homeDir, '.foxpilot', 'foxpilot.db'))
-    const row = db.prepare(`
+    const row = db
+      .prepare(
+        `
       SELECT status
       FROM task
       WHERE external_source = 'beads'
         AND external_id = 'BEADS-902'
       LIMIT 1
-    `).get() as { status: string }
+    `,
+      )
+      .get() as { status: string }
     expect(row.status).toBe('executing')
     db.close()
   })
 
   it('prints help and accepts fp alias', async () => {
-    const result = await runCli(
-      ['task', 'import-beads', '--help'],
-      { binName: 'fp' },
-    )
+    const result = await runCli(['task', 'import-beads', '--help'], { binName: 'fp' })
 
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('foxpilot task import-beads')
@@ -642,10 +707,10 @@ describe('task import-beads CLI', () => {
     const snapshotPath = await writeSnapshotFile(projectRoot, 'beads.json', [])
     tempDirs.push(homeDir, projectRoot)
 
-    const result = await runCli(
-      ['task', 'import-beads', '--file', snapshotPath],
-      { cwd: projectRoot, homeDir },
-    )
+    const result = await runCli(['task', 'import-beads', '--file', snapshotPath], {
+      cwd: projectRoot,
+      homeDir,
+    })
 
     expect(result.exitCode).toBe(1)
     expect(result.stdout).toContain('项目尚未初始化')
@@ -655,10 +720,11 @@ describe('task import-beads CLI', () => {
     const { homeDir, projectRoot } = await createManagedProjectWithRepositories()
     const snapshotPath = await writeSnapshotFile(projectRoot, 'beads.json', [])
 
-    const result = await runCli(
-      ['task', 'import-beads', '--file', snapshotPath],
-      { cwd: projectRoot, homeDir, failBootstrap: true },
-    )
+    const result = await runCli(['task', 'import-beads', '--file', snapshotPath], {
+      cwd: projectRoot,
+      homeDir,
+      failBootstrap: true,
+    })
 
     expect(result.exitCode).toBe(4)
     expect(result.stdout).toContain('foxpilot.db 初始化失败')
@@ -676,10 +742,10 @@ describe('task import-beads CLI', () => {
       },
     ])
 
-    const result = await runCli(
-      ['task', 'import-beads', '--file', snapshotPath, '--json'],
-      { cwd: projectRoot, homeDir },
-    )
+    const result = await runCli(['task', 'import-beads', '--file', snapshotPath, '--json'], {
+      cwd: projectRoot,
+      homeDir,
+    })
 
     expect(result.exitCode).toBe(0)
 

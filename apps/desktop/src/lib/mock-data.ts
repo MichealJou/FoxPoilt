@@ -59,10 +59,28 @@ export const focusQueue = [
 ] as const
 
 export const tasksTable = [
-  { title: '实现 Init Wizard 预览', source: 'local', status: 'analyzing', owner: 'codex', priority: 'P0' },
-  { title: '编排平台适配契约', source: 'beads', status: 'awaiting_plan_confirm', owner: 'claude_code', priority: 'P1' },
+  {
+    title: '实现 Init Wizard 预览',
+    source: 'local',
+    status: 'analyzing',
+    owner: 'codex',
+    priority: 'P0',
+  },
+  {
+    title: '编排平台适配契约',
+    source: 'beads',
+    status: 'awaiting_plan_confirm',
+    owner: 'claude_code',
+    priority: 'P1',
+  },
   { title: 'MCP 注册表修复入口', source: 'local', status: 'todo', owner: 'manual', priority: 'P2' },
-  { title: '运行详情页布局策略', source: 'beads', status: 'implementing', owner: 'trae', priority: 'P1' },
+  {
+    title: '运行详情页布局策略',
+    source: 'beads',
+    status: 'implementing',
+    owner: 'trae',
+    priority: 'P1',
+  },
 ] as const
 
 export const runTimeline = [
@@ -98,8 +116,16 @@ export const mcpRegistry = [
 ] as const
 
 export const healthIssues = [
-  { title: 'Trae 平台不可用', severity: 'danger', detail: '未探测到可调用入口，当前 repair 阶段会回退 manual。' },
-  { title: 'Slack MCP 降级', severity: 'warning', detail: '最近一次 health check 在拉取频道时超时。' },
+  {
+    title: 'Trae 平台不可用',
+    severity: 'danger',
+    detail: '未探测到可调用入口，当前 repair 阶段会回退 manual。',
+  },
+  {
+    title: 'Slack MCP 降级',
+    severity: 'warning',
+    detail: '最近一次 health check 在拉取频道时超时。',
+  },
 ] as const
 
 export const workspaceSummary = {

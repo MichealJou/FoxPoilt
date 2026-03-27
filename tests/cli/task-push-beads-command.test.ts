@@ -26,15 +26,24 @@ async function createManagedProjectWithManualTask(): Promise<{
   await mkdir(path.join(projectRoot, '.git'), { recursive: true })
 
   const initResult = await runCli(
-    ['init', '--path', projectRoot, '--workspace-root', path.dirname(projectRoot), '--mode', 'non-interactive', '--no-scan'],
+    [
+      'init',
+      '--path',
+      projectRoot,
+      '--workspace-root',
+      path.dirname(projectRoot),
+      '--mode',
+      'non-interactive',
+      '--no-scan',
+    ],
     { homeDir },
   )
   expect(initResult.exitCode).toBe(0)
 
-  const createResult = await runCli(
-    ['task', 'create', '--title', '手工任务'],
-    { cwd: projectRoot, homeDir },
-  )
+  const createResult = await runCli(['task', 'create', '--title', '手工任务'], {
+    cwd: projectRoot,
+    homeDir,
+  })
   expect(createResult.exitCode).toBe(0)
 
   const db = new Database(path.join(homeDir, '.foxpilot', 'foxpilot.db'))
@@ -60,13 +69,22 @@ async function createManagedProjectWithImportedBeadsTasks(): Promise<{
   await mkdir(path.join(projectRoot, 'frontend', '.git'), { recursive: true })
 
   const initResult = await runCli(
-    ['init', '--path', projectRoot, '--workspace-root', path.dirname(projectRoot), '--mode', 'non-interactive'],
+    [
+      'init',
+      '--path',
+      projectRoot,
+      '--workspace-root',
+      path.dirname(projectRoot),
+      '--mode',
+      'non-interactive',
+    ],
     { homeDir },
   )
   expect(initResult.exitCode).toBe(0)
 
   const db = new Database(path.join(homeDir, '.foxpilot', 'foxpilot.db'))
-  db.prepare(`
+  db.prepare(
+    `
     INSERT INTO task (
       id, project_id, title, description, source_type, status, priority, task_type,
       execution_mode, requires_plan_confirm, current_executor, external_source, external_id,
@@ -75,7 +93,8 @@ async function createManagedProjectWithImportedBeadsTasks(): Promise<{
       @id, @project_id, @title, @description, 'beads_sync', @status, @priority, 'generic',
       'manual', 0, 'beads', 'beads', @external_id, @created_at, @updated_at
     )
-  `).run({
+  `,
+  ).run({
     id: 'task:root-1',
     project_id: `project:${projectRoot}`,
     title: '根仓库任务',
@@ -86,7 +105,8 @@ async function createManagedProjectWithImportedBeadsTasks(): Promise<{
     created_at: '2026-03-26T00:00:00.000Z',
     updated_at: '2026-03-26T00:00:00.000Z',
   })
-  db.prepare(`
+  db.prepare(
+    `
     INSERT INTO task (
       id, project_id, title, description, source_type, status, priority, task_type,
       execution_mode, requires_plan_confirm, current_executor, external_source, external_id,
@@ -95,7 +115,8 @@ async function createManagedProjectWithImportedBeadsTasks(): Promise<{
       @id, @project_id, @title, @description, 'beads_sync', @status, @priority, 'generic',
       'manual', 0, 'beads', 'beads', @external_id, @created_at, @updated_at
     )
-  `).run({
+  `,
+  ).run({
     id: 'task:fe-1',
     project_id: `project:${projectRoot}`,
     title: '前端任务',
@@ -106,25 +127,29 @@ async function createManagedProjectWithImportedBeadsTasks(): Promise<{
     created_at: '2026-03-26T00:00:00.000Z',
     updated_at: '2026-03-26T00:00:00.000Z',
   })
-  db.prepare(`
+  db.prepare(
+    `
     INSERT INTO task_target (
       id, task_id, repository_id, target_type, target_value, created_at
     ) VALUES (
       @id, @task_id, @repository_id, 'repository', NULL, @created_at
     )
-  `).run({
+  `,
+  ).run({
     id: 'task_target:root-1',
     task_id: 'task:root-1',
     repository_id: `repository:${projectRoot}:.`,
     created_at: '2026-03-26T00:00:00.000Z',
   })
-  db.prepare(`
+  db.prepare(
+    `
     INSERT INTO task_target (
       id, task_id, repository_id, target_type, target_value, created_at
     ) VALUES (
       @id, @task_id, @repository_id, 'repository', NULL, @created_at
     )
-  `).run({
+  `,
+  ).run({
     id: 'task_target:fe-1',
     task_id: 'task:fe-1',
     repository_id: `repository:${projectRoot}:frontend`,
@@ -142,36 +167,54 @@ describe('task push-beads CLI', () => {
   it('把已导入的 Beads 任务回写到本地 bd 仓库', async () => {
     const fixture = await createManagedProjectWithImportedBeadsTask({ tempDirs })
 
-    expect((await runCli(
-      ['task', 'edit', '--external-id', fixture.externalId, '--title', '回写后的标题', '--description', '回写后的说明'],
-      { cwd: fixture.projectRoot, homeDir: fixture.homeDir },
-    )).exitCode).toBe(0)
+    expect(
+      (
+        await runCli(
+          [
+            'task',
+            'edit',
+            '--external-id',
+            fixture.externalId,
+            '--title',
+            '回写后的标题',
+            '--description',
+            '回写后的说明',
+          ],
+          { cwd: fixture.projectRoot, homeDir: fixture.homeDir },
+        )
+      ).exitCode,
+    ).toBe(0)
 
-    expect((await runCli(
-      ['task', 'update-priority', '--external-id', fixture.externalId, '--priority', 'P0'],
-      { cwd: fixture.projectRoot, homeDir: fixture.homeDir },
-    )).exitCode).toBe(0)
+    expect(
+      (
+        await runCli(
+          ['task', 'update-priority', '--external-id', fixture.externalId, '--priority', 'P0'],
+          { cwd: fixture.projectRoot, homeDir: fixture.homeDir },
+        )
+      ).exitCode,
+    ).toBe(0)
 
-    expect((await runCli(
-      ['task', 'update-status', '--external-id', fixture.externalId, '--status', 'analyzing'],
-      { cwd: fixture.projectRoot, homeDir: fixture.homeDir },
-    )).exitCode).toBe(0)
+    expect(
+      (
+        await runCli(
+          ['task', 'update-status', '--external-id', fixture.externalId, '--status', 'analyzing'],
+          { cwd: fixture.projectRoot, homeDir: fixture.homeDir },
+        )
+      ).exitCode,
+    ).toBe(0)
 
     let receivedInput: Record<string, unknown> | null = null
 
-    const result = await runCli(
-      ['task', 'push-beads', '--external-id', fixture.externalId],
-      {
-        cwd: fixture.projectRoot,
-        homeDir: fixture.homeDir,
-        dependencies: {
-          hasLocalBeadsRepository: async () => true,
-          runBdUpdate: async (input: Record<string, unknown>) => {
-            receivedInput = input
-          },
+    const result = await runCli(['task', 'push-beads', '--external-id', fixture.externalId], {
+      cwd: fixture.projectRoot,
+      homeDir: fixture.homeDir,
+      dependencies: {
+        hasLocalBeadsRepository: async () => true,
+        runBdUpdate: async (input: Record<string, unknown>) => {
+          receivedInput = input
         },
       },
-    )
+    })
 
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('[FoxPilot] 已完成 Beads 回写')
@@ -213,19 +256,17 @@ describe('task push-beads CLI', () => {
     const fixture = await createManagedProjectWithImportedBeadsTasks()
     const calls: Array<Record<string, unknown>> = []
 
-    const result = await runCli(
-      ['task', 'push-beads', '--repository', 'frontend'],
-      {
-        cwd: fixture.projectRoot,
-        homeDir: fixture.homeDir,
-        dependencies: {
-          hasLocalBeadsRepository: async (input: { repositoryRoot: string }) => input.repositoryRoot.endsWith('/frontend'),
-          runBdUpdate: async (input: Record<string, unknown>) => {
-            calls.push(input)
-          },
+    const result = await runCli(['task', 'push-beads', '--repository', 'frontend'], {
+      cwd: fixture.projectRoot,
+      homeDir: fixture.homeDir,
+      dependencies: {
+        hasLocalBeadsRepository: async (input: { repositoryRoot: string }) =>
+          input.repositoryRoot.endsWith('/frontend'),
+        runBdUpdate: async (input: Record<string, unknown>) => {
+          calls.push(input)
         },
       },
-    )
+    })
 
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('- mode: repository')
@@ -247,19 +288,17 @@ describe('task push-beads CLI', () => {
     const fixture = await createManagedProjectWithImportedBeadsTasks()
     const calls: Array<Record<string, unknown>> = []
 
-    const result = await runCli(
-      ['task', 'push-beads', '--all-repositories', '--dry-run'],
-      {
-        cwd: fixture.projectRoot,
-        homeDir: fixture.homeDir,
-        dependencies: {
-          hasLocalBeadsRepository: async (input: { repositoryRoot: string }) => input.repositoryRoot.endsWith('/frontend'),
-          runBdUpdate: async (input: Record<string, unknown>) => {
-            calls.push(input)
-          },
+    const result = await runCli(['task', 'push-beads', '--all-repositories', '--dry-run'], {
+      cwd: fixture.projectRoot,
+      homeDir: fixture.homeDir,
+      dependencies: {
+        hasLocalBeadsRepository: async (input: { repositoryRoot: string }) =>
+          input.repositoryRoot.endsWith('/frontend'),
+        runBdUpdate: async (input: Record<string, unknown>) => {
+          calls.push(input)
         },
       },
-    )
+    })
 
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('- mode: all-repositories')
@@ -274,10 +313,10 @@ describe('task push-beads CLI', () => {
   it('拒绝回写手工创建的任务', async () => {
     const fixture = await createManagedProjectWithManualTask()
 
-    const result = await runCli(
-      ['task', 'push-beads', '--id', fixture.taskId],
-      { cwd: fixture.projectRoot, homeDir: fixture.homeDir },
-    )
+    const result = await runCli(['task', 'push-beads', '--id', fixture.taskId], {
+      cwd: fixture.projectRoot,
+      homeDir: fixture.homeDir,
+    })
 
     expect(result.exitCode).toBe(1)
     expect(result.stdout).toContain('任务不是 Beads 导入任务')
@@ -286,16 +325,13 @@ describe('task push-beads CLI', () => {
   it('在仓库没有本地 Beads 初始化时返回错误', async () => {
     const fixture = await createManagedProjectWithImportedBeadsTask({ tempDirs })
 
-    const result = await runCli(
-      ['task', 'push-beads', '--external-id', fixture.externalId],
-      {
-        cwd: fixture.projectRoot,
-        homeDir: fixture.homeDir,
-        dependencies: {
-          hasLocalBeadsRepository: async () => false,
-        },
+    const result = await runCli(['task', 'push-beads', '--external-id', fixture.externalId], {
+      cwd: fixture.projectRoot,
+      homeDir: fixture.homeDir,
+      dependencies: {
+        hasLocalBeadsRepository: async () => false,
       },
-    )
+    })
 
     expect(result.exitCode).toBe(1)
     expect(result.stdout).toContain('目标仓库未初始化本地 Beads')
@@ -304,20 +340,19 @@ describe('task push-beads CLI', () => {
   it('在没有指定单任务或仓库范围时返回错误', async () => {
     const fixture = await createManagedProjectWithImportedBeadsTask({ tempDirs })
 
-    const result = await runCli(
-      ['task', 'push-beads'],
-      { cwd: fixture.projectRoot, homeDir: fixture.homeDir },
-    )
+    const result = await runCli(['task', 'push-beads'], {
+      cwd: fixture.projectRoot,
+      homeDir: fixture.homeDir,
+    })
 
     expect(result.exitCode).toBe(1)
-    expect(result.stdout).toContain('id、external-id、repository 或 --all-repositories 必须提供其一')
+    expect(result.stdout).toContain(
+      'id、external-id、repository 或 --all-repositories 必须提供其一',
+    )
   })
 
   it('支持帮助输出与 fp 简写入口', async () => {
-    const result = await runCli(
-      ['task', 'push-beads', '--help'],
-      { binName: 'fp' },
-    )
+    const result = await runCli(['task', 'push-beads', '--help'], { binName: 'fp' })
 
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('foxpilot task push-beads')
@@ -327,10 +362,11 @@ describe('task push-beads CLI', () => {
   it('在 sqlite 初始化失败时返回 exit code 4', async () => {
     const fixture = await createManagedProjectWithImportedBeadsTask({ tempDirs })
 
-    const result = await runCli(
-      ['task', 'push-beads', '--external-id', fixture.externalId],
-      { cwd: fixture.projectRoot, homeDir: fixture.homeDir, failBootstrap: true },
-    )
+    const result = await runCli(['task', 'push-beads', '--external-id', fixture.externalId], {
+      cwd: fixture.projectRoot,
+      homeDir: fixture.homeDir,
+      failBootstrap: true,
+    })
 
     expect(result.exitCode).toBe(4)
     expect(result.stdout).toContain('foxpilot.db 初始化失败')

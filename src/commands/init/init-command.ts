@@ -22,7 +22,11 @@ import {
   type WorkspaceRootRow,
 } from '@foxpilot/infra/db/catalog-store.js'
 import { bootstrapDatabase } from '@foxpilot/infra/db/bootstrap.js'
-import { resolveGlobalConfigPath, resolveGlobalDatabasePath, resolveProjectConfigPath } from '@foxpilot/infra/core/paths.js'
+import {
+  resolveGlobalConfigPath,
+  resolveGlobalDatabasePath,
+  resolveProjectConfigPath,
+} from '@foxpilot/infra/core/paths.js'
 import { isInterfaceLanguage, type InterfaceLanguage } from '@/i18n/interface-language.js'
 import { getMessages, type MessageCatalog } from '@/i18n/messages.js'
 import {
@@ -143,7 +147,12 @@ function createWorkspaceRootRow(workspaceRoot: string, now: string): WorkspaceRo
  *
  * 项目记录表达的是“这个项目已经被手动初始化并受 FoxPilot 管理”。
  */
-function createProjectRow(projectRoot: string, workspaceRoot: string, name: string, now: string): ProjectRow {
+function createProjectRow(
+  projectRoot: string,
+  workspaceRoot: string,
+  name: string,
+  now: string,
+): ProjectRow {
   return {
     id: `project:${projectRoot}`,
     workspace_root_id: `workspace_root:${workspaceRoot}`,
@@ -189,7 +198,10 @@ function createRepositoryRows(
  * 1. 仅仅知道最终语言值还不够，还要知道它是不是用户明确选过的。
  * 2. 如果语言只是默认值，而不是用户选择值，首次交互式 init 仍然要弹出语言选择。
  */
-function parseStoredGlobalConfig(rawContent: string, configPath: string): {
+function parseStoredGlobalConfig(
+  rawContent: string,
+  configPath: string,
+): {
   config: GlobalConfig
   hasStoredInterfaceLanguage: boolean
 } {
@@ -534,7 +546,10 @@ async function cleanupAfterFailure(input: {
   await restoreFileSnapshot(input.globalConfigPath, input.globalConfigSnapshot)
 
   if (input.store) {
-    input.store.deleteProjectCatalog(`project:${input.projectRoot}`, `workspace_root:${input.workspaceRoot}`)
+    input.store.deleteProjectCatalog(
+      `project:${input.projectRoot}`,
+      `workspace_root:${input.workspaceRoot}`,
+    )
   }
 }
 
@@ -546,7 +561,10 @@ async function cleanupAfterFailure(input: {
  * 2. 真正的数据库事务无法覆盖文件系统，因此这里通过“快照 + 补偿”实现近似事务效果。
  * 3. 项目配置写在最后，只有当前面的全局状态和索引都准备好后，才把项目正式标记为已接管。
  */
-export async function runInitCommand(args: InitArgs, context: InitCommandContext): Promise<CliResult> {
+export async function runInitCommand(
+  args: InitArgs,
+  context: InitCommandContext,
+): Promise<CliResult> {
   let messages = getMessages(context.interfaceLanguage)
   const commandName = args.preview ? 'init.preview' : 'init'
 
@@ -637,9 +655,7 @@ export async function runInitCommand(args: InitArgs, context: InitCommandContext
         exitCode: 3,
         code: 'GLOBAL_CONFIG_MALFORMED',
         message: messages.init.malformedGlobalConfig,
-        stdout: buildErrorOutput(messages.init.malformedGlobalConfig, [
-          `- ${error.configPath}`,
-        ]),
+        stdout: buildErrorOutput(messages.init.malformedGlobalConfig, [`- ${error.configPath}`]),
         details: {
           configPath: error.configPath,
         },
@@ -659,7 +675,11 @@ export async function runInitCommand(args: InitArgs, context: InitCommandContext
    * 1. 只有首次交互式初始化才主动询问语言。
    * 2. 一旦语言已经被持久化，后续 init 不再重复打扰用户。
    */
-  if (args.mode === 'interactive' && !args.preview && !globalConfigState.hasStoredInterfaceLanguage) {
+  if (
+    args.mode === 'interactive' &&
+    !args.preview &&
+    !globalConfigState.hasStoredInterfaceLanguage
+  ) {
     interfaceLanguage = selectInterfaceLanguage(lines, interactiveInput)
     messages = getMessages(interfaceLanguage)
   } else {
@@ -678,7 +698,9 @@ export async function runInitCommand(args: InitArgs, context: InitCommandContext
     repositories,
   })
   const initRecommendation = createInitRecommendation(scanSignals)
-  const selectedProfile = resolveProjectProfileId(args.profile ?? initRecommendation.profile.recommended)
+  const selectedProfile = resolveProjectProfileId(
+    args.profile ?? initRecommendation.profile.recommended,
+  )
 
   if (args.mode === 'interactive' && !args.preview) {
     const interactiveResult = await runInteractivePrompts({
@@ -758,9 +780,7 @@ export async function runInitCommand(args: InitArgs, context: InitCommandContext
         exitCode: 3,
         code: 'GLOBAL_CONFIG_MALFORMED',
         message: messages.init.malformedGlobalConfig,
-        stdout: buildErrorOutput(messages.init.malformedGlobalConfig, [
-          `- ${error.configPath}`,
-        ]),
+        stdout: buildErrorOutput(messages.init.malformedGlobalConfig, [`- ${error.configPath}`]),
         details: {
           configPath: error.configPath,
         },
@@ -887,19 +907,24 @@ export async function runInitCommand(args: InitArgs, context: InitCommandContext
   })
 
   return createSuccessResult(
-    [...lines, buildSuccessOutput({
-      messages,
-      projectRoot,
-      projectName,
-      workspaceRoot,
-      profile: selectedProfile,
-      recommendedProfile: initRecommendation.profile.recommended,
-      repositories,
-      platformStageCount: platformResolution.stages.length,
-      projectConfigPath,
-      globalConfigPath: ensureResult.configPath,
-      dbPath,
-    })].filter(Boolean).join('\n'),
+    [
+      ...lines,
+      buildSuccessOutput({
+        messages,
+        projectRoot,
+        projectName,
+        workspaceRoot,
+        profile: selectedProfile,
+        recommendedProfile: initRecommendation.profile.recommended,
+        repositories,
+        platformStageCount: platformResolution.stages.length,
+        projectConfigPath,
+        globalConfigPath: ensureResult.configPath,
+        dbPath,
+      }),
+    ]
+      .filter(Boolean)
+      .join('\n'),
     appliedResult,
   )
 }

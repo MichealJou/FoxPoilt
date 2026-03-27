@@ -2,7 +2,10 @@
 
 import { existsSync } from 'node:fs'
 
-const runtimePostinstallUrl = new URL('../dist/packages/infra/src/install/postinstall.js', import.meta.url)
+const runtimePostinstallUrl = new URL(
+  '../dist/packages/infra/src/install/postinstall.js',
+  import.meta.url,
+)
 
 if (!existsSync(runtimePostinstallUrl)) {
   process.exit(0)

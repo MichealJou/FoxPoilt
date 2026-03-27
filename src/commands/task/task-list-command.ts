@@ -9,9 +9,16 @@ import { bootstrapDatabase } from '@foxpilot/infra/db/bootstrap.js'
 import { createTaskStore } from '@foxpilot/infra/db/task-store.js'
 import { resolveGlobalDatabasePath } from '@foxpilot/infra/core/paths.js'
 import { getMessages } from '@/i18n/messages.js'
-import { ProjectNotInitializedError, resolveManagedProject } from '@foxpilot/infra/project/resolve-project.js'
+import {
+  ProjectNotInitializedError,
+  resolveManagedProject,
+} from '@foxpilot/infra/project/resolve-project.js'
 
-import type { TaskListArgs, TaskListContext, TaskListDependencies } from '@/commands/task/task-list-types.js'
+import type {
+  TaskListArgs,
+  TaskListContext,
+  TaskListDependencies,
+} from '@/commands/task/task-list-types.js'
 
 /**
  * 解析任务列表命令使用的默认依赖集合。
@@ -22,9 +29,7 @@ import type { TaskListArgs, TaskListContext, TaskListDependencies } from '@/comm
  * - 任务查询
  * 因此通过依赖注入把 IO 与查询实现解耦，测试时可以单独替换任一环节。
  */
-function getDependencies(
-  overrides: Partial<TaskListDependencies> = {},
-): TaskListDependencies {
+function getDependencies(overrides: Partial<TaskListDependencies> = {}): TaskListDependencies {
   return {
     resolveManagedProject,
     bootstrapDatabase,
@@ -170,10 +175,7 @@ export async function runTaskListCommand(
   if (tasks.length === 0) {
     return {
       exitCode: 0,
-      stdout: [
-        messages.taskList.empty,
-        `- projectRoot: ${managedProject.projectRoot}`,
-      ].join('\n'),
+      stdout: [messages.taskList.empty, `- projectRoot: ${managedProject.projectRoot}`].join('\n'),
     }
   }
 
@@ -184,15 +186,14 @@ export async function runTaskListCommand(
       `- projectRoot: ${managedProject.projectRoot}`,
       `- total: ${tasks.length}`,
       '',
-      ...tasks.map(
-        (task, index) => {
-          const externalRef = task.external_source && task.external_id
+      ...tasks.map((task, index) => {
+        const externalRef =
+          task.external_source && task.external_id
             ? `[${task.external_source}:${task.external_id}]`
             : ''
 
-          return `${index + 1}. [${task.source_type}][${task.current_executor}][${task.status}][${task.priority}][${task.task_type}]${externalRef} ${task.title}`
-        },
-      ),
+        return `${index + 1}. [${task.source_type}][${task.current_executor}][${task.status}][${task.priority}][${task.task_type}]${externalRef} ${task.title}`
+      }),
     ].join('\n'),
   }
 }

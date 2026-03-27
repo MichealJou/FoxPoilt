@@ -48,16 +48,10 @@ describe('foxpilot init CLI', () => {
     const homeDir = await createTempDir('foxpilot-home-')
     tempDirs.push(homeDir)
 
-    const setLanguage = await runCli(
-      ['config', 'set-language', '--lang', 'en-US'],
-      { homeDir },
-    )
+    const setLanguage = await runCli(['config', 'set-language', '--lang', 'en-US'], { homeDir })
     expect(setLanguage.exitCode).toBe(0)
 
-    const result = await runCli(
-      ['init', '--help'],
-      { homeDir },
-    )
+    const result = await runCli(['init', '--help'], { homeDir })
 
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('Initialize a managed project')
@@ -253,7 +247,11 @@ describe('foxpilot init CLI', () => {
     expect(payload.data.projectRoot).toBe(projectRoot)
     expect(payload.data.orchestrationPreview.selectedProfile).toBe('minimal')
     expect(payload.data.orchestrationPreview.recommendedProfile).toBe('collaboration')
-    expect(payload.data.orchestrationPreview.platformResolution.stages.every((stage) => stage.platform.effective === 'manual')).toBe(true)
+    expect(
+      payload.data.orchestrationPreview.platformResolution.stages.every(
+        (stage) => stage.platform.effective === 'manual',
+      ),
+    ).toBe(true)
     await expectMissing(path.join(projectRoot, '.foxpilot', 'project.json'))
   })
 
@@ -293,7 +291,9 @@ describe('foxpilot init CLI', () => {
 
     expect(payload.ok).toBe(true)
     expect(payload.command).toBe('init')
-    expect(payload.data.outputs.projectConfigPath).toBe(path.join(projectRoot, '.foxpilot', 'project.json'))
+    expect(payload.data.outputs.projectConfigPath).toBe(
+      path.join(projectRoot, '.foxpilot', 'project.json'),
+    )
     await expectExists(payload.data.outputs.projectConfigPath)
     await expectExists(payload.data.outputs.globalConfigPath)
     await expectExists(payload.data.outputs.dbPath)
@@ -375,7 +375,8 @@ describe('foxpilot init CLI', () => {
     tempDirs.push(homeDir)
     const globalDir = path.join(homeDir, '.foxpilot')
     const globalConfigPath = path.join(globalDir, 'foxpilot.config.json')
-    const originalConfig = '{\n  "workspaceRoots": [\n    "/tmp/existing"\n  ],\n  "defaultProjectMode": "workspace_root",\n  "defaultTaskView": "table",\n  "defaultExecutor": "codex"\n}\n'
+    const originalConfig =
+      '{\n  "workspaceRoots": [\n    "/tmp/existing"\n  ],\n  "defaultProjectMode": "workspace_root",\n  "defaultTaskView": "table",\n  "defaultExecutor": "codex"\n}\n'
 
     await mkdir(globalDir, { recursive: true })
     await writeFile(globalConfigPath, originalConfig, 'utf8')
@@ -420,9 +421,15 @@ describe('foxpilot init CLI', () => {
     await expectMissing(path.join(projectRoot, '.foxpilot', 'project.json'))
 
     const db = new Database(path.join(homeDir, '.foxpilot', 'foxpilot.db'))
-    const workspaceRootCount = db.prepare('SELECT COUNT(*) AS count FROM workspace_root').get() as { count: number }
-    const projectCount = db.prepare('SELECT COUNT(*) AS count FROM project').get() as { count: number }
-    const repositoryCount = db.prepare('SELECT COUNT(*) AS count FROM repository').get() as { count: number }
+    const workspaceRootCount = db.prepare('SELECT COUNT(*) AS count FROM workspace_root').get() as {
+      count: number
+    }
+    const projectCount = db.prepare('SELECT COUNT(*) AS count FROM project').get() as {
+      count: number
+    }
+    const repositoryCount = db.prepare('SELECT COUNT(*) AS count FROM repository').get() as {
+      count: number
+    }
 
     expect(workspaceRootCount.count).toBe(0)
     expect(projectCount.count).toBe(0)
@@ -452,10 +459,9 @@ describe('foxpilot init CLI', () => {
     tempDirs.push(homeDir)
     const projectRoot = path.join(homeDir, 'missing-project')
 
-    const result = await runCli(
-      ['init', '--path', projectRoot, '--mode', 'non-interactive'],
-      { homeDir },
-    )
+    const result = await runCli(['init', '--path', projectRoot, '--mode', 'non-interactive'], {
+      homeDir,
+    })
 
     expect(result.exitCode).toBe(1)
     expect(result.stdout).toContain('目标路径不存在')
@@ -468,10 +474,9 @@ describe('foxpilot init CLI', () => {
 
     await writeFile(filePath, 'hello', 'utf8')
 
-    const result = await runCli(
-      ['init', '--path', filePath, '--mode', 'non-interactive'],
-      { homeDir },
-    )
+    const result = await runCli(['init', '--path', filePath, '--mode', 'non-interactive'], {
+      homeDir,
+    })
 
     expect(result.exitCode).toBe(1)
     expect(result.stdout).toContain('目标路径不是目录')
@@ -507,10 +512,9 @@ describe('foxpilot init CLI', () => {
     await mkdir(path.join(homeDir, '.foxpilot'), { recursive: true })
     await writeFile(path.join(homeDir, '.foxpilot', 'foxpilot.config.json'), '{bad json', 'utf8')
 
-    const result = await runCli(
-      ['init', '--path', projectRoot, '--mode', 'non-interactive'],
-      { homeDir },
-    )
+    const result = await runCli(['init', '--path', projectRoot, '--mode', 'non-interactive'], {
+      homeDir,
+    })
 
     expect(result.exitCode).toBe(3)
     expect(result.stdout).toContain('foxpilot.config.json 格式错误')
@@ -521,10 +525,10 @@ describe('foxpilot init CLI', () => {
     const projectRoot = await createProjectFixture('foxpilot-project-')
     tempDirs.push(homeDir)
 
-    const result = await runCli(
-      ['init', '--path', projectRoot, '--mode', 'non-interactive'],
-      { homeDir, failBootstrap: true },
-    )
+    const result = await runCli(['init', '--path', projectRoot, '--mode', 'non-interactive'], {
+      homeDir,
+      failBootstrap: true,
+    })
 
     expect(result.exitCode).toBe(4)
     expect(result.stdout).toContain('foxpilot.db 初始化失败')
@@ -535,16 +539,14 @@ describe('foxpilot init CLI', () => {
     const projectRoot = await createProjectFixture('foxpilot-project-')
     tempDirs.push(homeDir)
 
-    const first = await runCli(
-      ['init', '--path', projectRoot, '--mode', 'non-interactive'],
-      { homeDir },
-    )
+    const first = await runCli(['init', '--path', projectRoot, '--mode', 'non-interactive'], {
+      homeDir,
+    })
     expect(first.exitCode).toBe(0)
 
-    const second = await runCli(
-      ['init', '--path', projectRoot, '--mode', 'non-interactive'],
-      { homeDir },
-    )
+    const second = await runCli(['init', '--path', projectRoot, '--mode', 'non-interactive'], {
+      homeDir,
+    })
 
     expect(second.exitCode).toBe(2)
     expect(second.stdout).toContain('项目已存在配置')

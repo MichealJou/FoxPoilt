@@ -25,7 +25,7 @@ export async function runCli(argv: string[], options: RunCliOptions = {}) {
     bootstrapDatabase: bootstrapModule.bootstrapDatabase,
     createCatalogStore: catalogStoreModule.createCatalogStore,
     writeProjectConfig: projectConfigModule.writeProjectConfig,
-    ...(options.dependencies ?? {}),
+    ...options.dependencies,
   }
 
   if (options.failEnsureGlobalConfig) {

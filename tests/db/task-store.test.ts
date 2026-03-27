@@ -47,7 +47,15 @@ type TaskStore = {
   countTaskRuns: () => number
   listTasks: (input: {
     projectId: string
-    status?: 'todo' | 'analyzing' | 'awaiting_plan_confirm' | 'executing' | 'awaiting_result_confirm' | 'done' | 'blocked' | 'cancelled'
+    status?:
+      | 'todo'
+      | 'analyzing'
+      | 'awaiting_plan_confirm'
+      | 'executing'
+      | 'awaiting_result_confirm'
+      | 'done'
+      | 'blocked'
+      | 'cancelled'
     sourceType?: 'manual' | 'beads_sync' | 'scan_suggestion'
     executor?: 'codex' | 'beads' | 'none'
   }) => Array<{
@@ -74,10 +82,7 @@ type TaskStore = {
     current_executor: string
     updated_at: string
   } | null
-  getTaskById: (input: {
-    projectId: string
-    taskId: string
-  }) => {
+  getTaskById: (input: { projectId: string; taskId: string }) => {
     id: string
     title: string
     status: string
@@ -87,7 +92,15 @@ type TaskStore = {
   updateTaskStatus: (input: {
     projectId: string
     taskId: string
-    status: 'todo' | 'analyzing' | 'awaiting_plan_confirm' | 'executing' | 'awaiting_result_confirm' | 'done' | 'blocked' | 'cancelled'
+    status:
+      | 'todo'
+      | 'analyzing'
+      | 'awaiting_plan_confirm'
+      | 'executing'
+      | 'awaiting_result_confirm'
+      | 'done'
+      | 'blocked'
+      | 'cancelled'
     updatedAt: string
   }) => boolean
   updateTaskExecutor: (input: {
@@ -130,9 +143,7 @@ type TaskStore = {
     summary?: string | null
     endedAt: string
   }) => boolean
-  listTaskRuns: (input: {
-    taskId: string
-  }) => Array<{
+  listTaskRuns: (input: { taskId: string }) => Array<{
     id: string
     task_id: string
     run_type: 'analysis' | 'execution' | 'verification'
@@ -143,10 +154,7 @@ type TaskStore = {
     ended_at: string | null
     created_at: string
   }>
-  getTaskDetail: (input: {
-    projectId: string
-    taskId: string
-  }) => {
+  getTaskDetail: (input: { projectId: string; taskId: string }) => {
     task: {
       id: string
       title: string
@@ -162,9 +170,7 @@ type TaskStore = {
       repository_path: string | null
     }>
   } | null
-  listOpenScanSuggestionRepositoryIds: (input: {
-    projectId: string
-  }) => string[]
+  listOpenScanSuggestionRepositoryIds: (input: { projectId: string }) => string[]
 }
 
 async function loadModules(): Promise<{
@@ -481,16 +487,20 @@ describe('task store', () => {
     })
 
     expect(
-      taskStore.listTasks({
-        projectId: 'project:/Users/program/code/foxpilot-workspace',
-      }).map((item) => item.id),
+      taskStore
+        .listTasks({
+          projectId: 'project:/Users/program/code/foxpilot-workspace',
+        })
+        .map((item) => item.id),
     ).toEqual(['task:done', 'task:todo'])
 
     expect(
-      taskStore.listTasks({
-        projectId: 'project:/Users/program/code/foxpilot-workspace',
-        status: 'todo',
-      }).map((item) => item.id),
+      taskStore
+        .listTasks({
+          projectId: 'project:/Users/program/code/foxpilot-workspace',
+          status: 'todo',
+        })
+        .map((item) => item.id),
     ).toEqual(['task:todo'])
 
     db.close?.()
@@ -1358,25 +1368,31 @@ describe('task store', () => {
       },
     })
 
-    expect(taskStore.finishLatestTaskRun({
-      taskId: 'task:history',
-      status: 'failed',
-      summary: '执行被阻塞',
-      endedAt: '2026-03-25T00:03:00Z',
-    })).toBe(true)
+    expect(
+      taskStore.finishLatestTaskRun({
+        taskId: 'task:history',
+        status: 'failed',
+        summary: '执行被阻塞',
+        endedAt: '2026-03-25T00:03:00Z',
+      }),
+    ).toBe(true)
 
-    expect(taskStore.finishLatestTaskRun({
-      taskId: 'task:history',
-      runType: 'analysis',
-      status: 'success',
-      summary: '分析完成',
-      endedAt: '2026-03-25T00:04:00Z',
-    })).toBe(true)
+    expect(
+      taskStore.finishLatestTaskRun({
+        taskId: 'task:history',
+        runType: 'analysis',
+        status: 'success',
+        summary: '分析完成',
+        endedAt: '2026-03-25T00:04:00Z',
+      }),
+    ).toBe(true)
 
     expect(taskStore.countTaskRuns()).toBe(2)
-    expect(taskStore.listTaskRuns({
-      taskId: 'task:history',
-    })).toEqual([
+    expect(
+      taskStore.listTaskRuns({
+        taskId: 'task:history',
+      }),
+    ).toEqual([
       {
         id: 'task_run:execution',
         task_id: 'task:history',

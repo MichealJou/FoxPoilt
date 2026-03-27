@@ -57,7 +57,13 @@ export function App() {
     setCurrentPage(page)
   }
 
-  return <AppLayout currentPage={currentPage} onNavigate={handleNavigate} runtimeStatus={runtimeStatus} />
+  return (
+    <AppLayout
+      currentPage={currentPage}
+      onNavigate={handleNavigate}
+      runtimeStatus={runtimeStatus}
+    />
+  )
 }
 
 export default App

@@ -67,12 +67,12 @@ describe('global config', () => {
     const { ensureGlobalConfig } = await loadGlobalConfigModule()
 
     await ensureGlobalConfig({ homeDir: tempHome, workspaceRoot: '/Users/program/code' })
-    const result = await ensureGlobalConfig({ homeDir: tempHome, workspaceRoot: '/Users/program/demo' })
+    const result = await ensureGlobalConfig({
+      homeDir: tempHome,
+      workspaceRoot: '/Users/program/demo',
+    })
 
-    expect(result.config.workspaceRoots).toEqual([
-      '/Users/program/code',
-      '/Users/program/demo',
-    ])
+    expect(result.config.workspaceRoots).toEqual(['/Users/program/code', '/Users/program/demo'])
     expect(result.config.defaultExecutor).toBe('codex')
   })
 
@@ -101,7 +101,9 @@ describe('global config', () => {
     await mkdir(`${tempHome}/.foxpilot`, { recursive: true })
     await writeFile(`${tempHome}/.foxpilot/foxpilot.config.json`, '{bad json')
 
-    await expect(ensureGlobalConfig({ homeDir: tempHome })).rejects.toBeInstanceOf(GlobalConfigParseError)
+    await expect(ensureGlobalConfig({ homeDir: tempHome })).rejects.toBeInstanceOf(
+      GlobalConfigParseError,
+    )
   })
 
   it('prefers the longest matching workspace root from existing config', async () => {

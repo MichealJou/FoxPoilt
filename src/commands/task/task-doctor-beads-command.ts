@@ -166,7 +166,9 @@ function buildDiagnosisOutput(input: {
       `- issueCount: ${item.issueCount}`,
       '',
     ]),
-  ].join('\n').trimEnd()
+  ]
+    .join('\n')
+    .trimEnd()
 }
 
 /**
@@ -253,7 +255,10 @@ export async function runTaskDoctorBeadsCommand(
     repositoryPaths = managedProject.projectConfig.repositories.map((repository) => repository.path)
   } else {
     try {
-      const repositoryTarget = resolveRepositoryTarget(managedProject.projectConfig, args.repository)
+      const repositoryTarget = resolveRepositoryTarget(
+        managedProject.projectConfig,
+        args.repository,
+      )
 
       if (!repositoryTarget) {
         return {
@@ -290,12 +295,14 @@ export async function runTaskDoctorBeadsCommand(
   }
 
   const diagnoses = await Promise.all(
-    repositoryPaths.map(async (repositoryPath) => diagnoseRepository({
-      projectRoot: managedProject.projectRoot,
-      repositoryPath,
-      hasLocalBeadsRepository: dependencies.hasLocalBeadsRepository,
-      runBdList: dependencies.runBdList,
-    })),
+    repositoryPaths.map(async (repositoryPath) =>
+      diagnoseRepository({
+        projectRoot: managedProject.projectRoot,
+        repositoryPath,
+        hasLocalBeadsRepository: dependencies.hasLocalBeadsRepository,
+        runBdList: dependencies.runBdList,
+      }),
+    ),
   )
 
   const hasIssues = diagnoses.some((item) => item.status !== 'ready')

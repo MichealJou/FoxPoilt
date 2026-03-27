@@ -55,7 +55,10 @@ export const DEFAULT_STAGE_PLATFORM_SEEDS: StagePlatformSeed[] = [
   },
 ]
 
-const platformCommandProbes: Record<DetectablePlatformId, Array<{ command: string; args: string[] }>> = {
+const platformCommandProbes: Record<
+  DetectablePlatformId,
+  Array<{ command: string; args: string[] }>
+> = {
   codex: [{ command: 'codex', args: ['--version'] }],
   claude_code: [
     { command: 'claude', args: ['--version'] },
@@ -82,7 +85,9 @@ async function canRunCommand(command: string, args: string[]): Promise<boolean> 
   })
 }
 
-export async function detectPlatformAvailability(platformId: DetectablePlatformId): Promise<PlatformDetectionResult> {
+export async function detectPlatformAvailability(
+  platformId: DetectablePlatformId,
+): Promise<PlatformDetectionResult> {
   const probes = platformCommandProbes[platformId]
 
   for (const probe of probes) {
@@ -142,7 +147,7 @@ export async function resolveProjectPlatformResolution(
   const stages = await Promise.all(
     DEFAULT_STAGE_PLATFORM_SEEDS.map(async (seed) => {
       const cached = detectionCache.get(seed.recommendedPlatform)
-      const detection = cached ?? await detectPlatform(seed.recommendedPlatform)
+      const detection = cached ?? (await detectPlatform(seed.recommendedPlatform))
 
       detectionCache.set(seed.recommendedPlatform, detection)
 

@@ -23,7 +23,10 @@ async function isGitRepository(targetPath: string): Promise<boolean> {
 /**
  * 为项目根目录构建兜底仓库描述。
  */
-function createRootCandidate(projectRoot: string, repoType: 'git' | 'directory'): ProjectRepositoryConfig {
+function createRootCandidate(
+  projectRoot: string,
+  repoType: 'git' | 'directory',
+): ProjectRepositoryConfig {
   return {
     name: path.basename(projectRoot) || 'root',
     path: '.',

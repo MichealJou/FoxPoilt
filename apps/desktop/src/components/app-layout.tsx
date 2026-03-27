@@ -32,12 +32,16 @@ export function AppLayout({
       <main className="px-6 py-5">
         <header className="mb-6 flex items-center justify-between gap-6 rounded-2xl border border-border/80 bg-card/70 px-5 py-4 shadow-[0_24px_60px_rgba(3,10,24,0.28)] backdrop-blur">
           <div>
-            <div className="text-xs uppercase tracking-[0.22em] text-primary">{pageMeta.eyebrow}</div>
+            <div className="text-xs uppercase tracking-[0.22em] text-primary">
+              {pageMeta.eyebrow}
+            </div>
             <h1 className="mt-2 text-2xl font-semibold">{pageMeta.label}</h1>
             <p className="mt-1 text-sm text-muted-foreground">{pageMeta.description}</p>
           </div>
           <div className="flex items-center gap-3">
-            <Badge variant={runtimeStatus?.shell === 'tauri' ? 'success' : 'outline'}>{shellLabel}</Badge>
+            <Badge variant={runtimeStatus?.shell === 'tauri' ? 'success' : 'outline'}>
+              {shellLabel}
+            </Badge>
             <Button variant="outline">
               {runtimeStatus ? `平台 ${runtimeStatus.platformAdapters.length}` : '打开 CLI 预览'}
             </Button>

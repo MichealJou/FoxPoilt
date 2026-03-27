@@ -16,7 +16,9 @@ import type { InstallIndexEntry, InstallManifest } from '@foxpilot/infra/install
  * 第一版采用“来源 + 平台 + 架构 + 安装根目录”的组合，
  * 用来保证同一安装根目录重复登记时会走更新而不是重复新增。
  */
-export function createInstallId(manifest: Pick<InstallManifest, 'installMethod' | 'platform' | 'arch' | 'installRoot'>): string {
+export function createInstallId(
+  manifest: Pick<InstallManifest, 'installMethod' | 'platform' | 'arch' | 'installRoot'>,
+): string {
   return [manifest.installMethod, manifest.platform, manifest.arch, manifest.installRoot].join(':')
 }
 

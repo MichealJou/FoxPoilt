@@ -124,8 +124,12 @@ function buildInitOutput(input: {
   dryRun: boolean
   results: InitRepositoryResult[]
 }): string {
-  const plannedRepositories = input.results.filter((item) => item.status === 'planned' || item.status === 'initialized').length
-  const initializedRepositories = input.results.filter((item) => item.status === 'initialized').length
+  const plannedRepositories = input.results.filter(
+    (item) => item.status === 'planned' || item.status === 'initialized',
+  ).length
+  const initializedRepositories = input.results.filter(
+    (item) => item.status === 'initialized',
+  ).length
   const skippedRepositories = input.results.filter((item) => item.status === 'skipped').length
   const errorRepositories = input.results.filter((item) => item.status === 'error').length
 
@@ -146,7 +150,9 @@ function buildInitOutput(input: {
       `- status: ${item.status}`,
       '',
     ]),
-  ].join('\n').trimEnd()
+  ]
+    .join('\n')
+    .trimEnd()
 }
 
 /**
@@ -211,7 +217,10 @@ export async function runTaskInitBeadsCommand(
     repositoryPaths = managedProject.projectConfig.repositories.map((repository) => repository.path)
   } else {
     try {
-      const repositoryTarget = resolveRepositoryTarget(managedProject.projectConfig, args.repository)
+      const repositoryTarget = resolveRepositoryTarget(
+        managedProject.projectConfig,
+        args.repository,
+      )
 
       if (!repositoryTarget) {
         return {
@@ -247,13 +256,15 @@ export async function runTaskInitBeadsCommand(
   }
 
   const results = await Promise.all(
-    repositoryPaths.map(async (repositoryPath) => initializeRepository({
-      projectRoot: managedProject.projectRoot,
-      repositoryPath,
-      dryRun: args.dryRun,
-      hasLocalBeadsRepository: dependencies.hasLocalBeadsRepository,
-      runBdInit: dependencies.runBdInit,
-    })),
+    repositoryPaths.map(async (repositoryPath) =>
+      initializeRepository({
+        projectRoot: managedProject.projectRoot,
+        repositoryPath,
+        dryRun: args.dryRun,
+        hasLocalBeadsRepository: dependencies.hasLocalBeadsRepository,
+        runBdInit: dependencies.runBdInit,
+      }),
+    ),
   )
 
   const hasErrors = results.some((item) => item.status === 'error')
@@ -263,7 +274,9 @@ export async function runTaskInitBeadsCommand(
     mode: args.allRepositories ? 'all-repositories' : 'single-repository',
     dryRun: args.dryRun,
     checkedRepositories: results.length,
-    plannedRepositories: results.filter((item) => item.status === 'planned' || item.status === 'initialized').length,
+    plannedRepositories: results.filter(
+      (item) => item.status === 'planned' || item.status === 'initialized',
+    ).length,
     initializedRepositories: results.filter((item) => item.status === 'initialized').length,
     skippedRepositories: results.filter((item) => item.status === 'skipped').length,
     errorRepositories: results.filter((item) => item.status === 'error').length,

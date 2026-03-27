@@ -24,11 +24,7 @@ function getDependencies(
 }
 
 function buildHelpText(binName: 'foxpilot' | 'fp'): string {
-  return [
-    '显示当前命令实例的安装来源和已登记安装列表。',
-    '',
-    `${binName} install-info`,
-  ].join('\n')
+  return ['显示当前命令实例的安装来源和已登记安装列表。', '', `${binName} install-info`].join('\n')
 }
 
 /**

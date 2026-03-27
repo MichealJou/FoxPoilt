@@ -191,7 +191,11 @@ export async function runTaskExportBeadsCommand(
       `- exported: ${snapshot.exported.length}`,
       `- rejected: ${snapshot.rejected.length}`,
       ...(snapshot.rejected.length > 0
-        ? ['', messages.taskExportBeads.rejectedTitle, ...snapshot.rejected.map((item) => `- ${item}`)]
+        ? [
+            '',
+            messages.taskExportBeads.rejectedTitle,
+            ...snapshot.rejected.map((item) => `- ${item}`),
+          ]
         : []),
     ].join('\n'),
   }

@@ -1,4 +1,4 @@
-import { mkdir, readFile } from 'node:fs/promises'
+import { mkdir } from 'node:fs/promises'
 import path from 'node:path'
 
 import Database from 'better-sqlite3'
@@ -25,7 +25,15 @@ async function createManagedProjectFixture(): Promise<{
   await mkdir(path.join(projectRoot, 'frontend', '.git'), { recursive: true })
 
   const initResult = await runCli(
-    ['init', '--path', projectRoot, '--workspace-root', path.dirname(projectRoot), '--mode', 'non-interactive'],
+    [
+      'init',
+      '--path',
+      projectRoot,
+      '--workspace-root',
+      path.dirname(projectRoot),
+      '--mode',
+      'non-interactive',
+    ],
     { homeDir },
   )
 
@@ -38,10 +46,10 @@ describe('task create CLI', () => {
   it('creates a manual task for the current managed project', async () => {
     const { homeDir, projectRoot } = await createManagedProjectFixture()
 
-    const result = await runCli(
-      ['task', 'create', '--title', '整理 init 后续工作'],
-      { cwd: projectRoot, homeDir },
-    )
+    const result = await runCli(['task', 'create', '--title', '整理 init 后续工作'], {
+      cwd: projectRoot,
+      homeDir,
+    })
 
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('[FoxPilot] 已创建任务')
@@ -119,20 +127,17 @@ describe('task create CLI', () => {
     const projectRoot = await createTempDir('foxpilot-project-')
     tempDirs.push(homeDir, projectRoot)
 
-    const result = await runCli(
-      ['task', 'create', '--title', '未初始化项目任务'],
-      { cwd: projectRoot, homeDir },
-    )
+    const result = await runCli(['task', 'create', '--title', '未初始化项目任务'], {
+      cwd: projectRoot,
+      homeDir,
+    })
 
     expect(result.exitCode).toBe(1)
     expect(result.stdout).toContain('项目尚未初始化')
   })
 
   it('prints usage for task create help and accepts fp alias', async () => {
-    const result = await runCli(
-      ['task', 'create', '--help'],
-      { binName: 'fp' },
-    )
+    const result = await runCli(['task', 'create', '--help'], { binName: 'fp' })
 
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('foxpilot task create')
@@ -150,7 +155,9 @@ describe('task create CLI', () => {
     expect(result.exitCode).toBe(0)
 
     const db = new Database(path.join(homeDir, '.foxpilot', 'foxpilot.db'))
-    const row = db.prepare('SELECT description FROM task ORDER BY created_at DESC LIMIT 1').get() as {
+    const row = db
+      .prepare('SELECT description FROM task ORDER BY created_at DESC LIMIT 1')
+      .get() as {
       description: string
     }
 
@@ -162,10 +169,11 @@ describe('task create CLI', () => {
   it('returns exit code 4 when sqlite bootstrap fails', async () => {
     const { homeDir, projectRoot } = await createManagedProjectFixture()
 
-    const result = await runCli(
-      ['task', 'create', '--title', '数据库失败任务'],
-      { cwd: projectRoot, homeDir, failBootstrap: true },
-    )
+    const result = await runCli(['task', 'create', '--title', '数据库失败任务'], {
+      cwd: projectRoot,
+      homeDir,
+      failBootstrap: true,
+    })
 
     expect(result.exitCode).toBe(4)
     expect(result.stdout).toContain('foxpilot.db 初始化失败')

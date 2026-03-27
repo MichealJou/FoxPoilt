@@ -96,7 +96,10 @@ export type ProjectCatalogInput = {
   repositories: RepositoryRow[]
 }
 
-function countRows(db: SqliteDatabase, tableName: 'workspace_root' | 'project' | 'repository'): number {
+function countRows(
+  db: SqliteDatabase,
+  tableName: 'workspace_root' | 'project' | 'repository',
+): number {
   const row = db.prepare(`SELECT COUNT(*) AS count FROM ${tableName}`).get() as { count: number }
   return row.count
 }
@@ -169,13 +172,15 @@ export function createCatalogStore(db: SqliteDatabase) {
     )
   `)
 
-  const replaceProjectRepositoriesTx = db.transaction((projectId: string, repositories: RepositoryRow[]) => {
-    deleteProjectRepositoriesStmt.run(projectId)
+  const replaceProjectRepositoriesTx = db.transaction(
+    (projectId: string, repositories: RepositoryRow[]) => {
+      deleteProjectRepositoriesStmt.run(projectId)
 
-    for (const repository of repositories) {
-      insertRepositoryStmt.run(repository)
-    }
-  })
+      for (const repository of repositories) {
+        insertRepositoryStmt.run(repository)
+      }
+    },
+  )
 
   /**
    * 设计逻辑：

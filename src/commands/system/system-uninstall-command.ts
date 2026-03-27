@@ -11,7 +11,11 @@ import { toJsonErrorOutput, toJsonSuccessOutput } from '@/cli/json-output.js'
 import { dispatchUninstall } from '@foxpilot/infra/install/uninstall-dispatcher.js'
 import { readInstallManifest } from '@foxpilot/infra/install/install-manifest.js'
 import { unregisterCurrentInstallation } from '@foxpilot/infra/install/install-index.js'
-import { runBrewUninstall, runNpmUninstall, runReleaseUninstall } from '@foxpilot/infra/install/uninstall-runner.js'
+import {
+  runBrewUninstall,
+  runNpmUninstall,
+  runReleaseUninstall,
+} from '@foxpilot/infra/install/uninstall-runner.js'
 
 import type {
   SystemUninstallArgs,
@@ -38,9 +42,7 @@ async function purgeUserData({ homeDir }: { homeDir: string }): Promise<void> {
   })
 }
 
-function getDependencies(
-  context: SystemUninstallContext,
-): SystemUninstallDependencies {
+function getDependencies(context: SystemUninstallContext): SystemUninstallDependencies {
   return {
     readInstallManifest,
     dispatchUninstall: (manifest) =>
@@ -55,7 +57,7 @@ function getDependencies(
       }),
     unregisterCurrentInstallation,
     purgeUserData,
-    ...(context.dependencies ?? {}),
+    ...context.dependencies,
   }
 }
 
@@ -81,7 +83,9 @@ export async function runSystemUninstallCommand(
   }
 
   const dependencies = getDependencies(context)
-  const manifest = await dependencies.readInstallManifest({ executablePath: context.executablePath })
+  const manifest = await dependencies.readInstallManifest({
+    executablePath: context.executablePath,
+  })
 
   if (!manifest) {
     return {
@@ -94,10 +98,9 @@ export async function runSystemUninstallCommand(
               executablePath: context.executablePath,
             },
           })
-        : [
-            '[FoxPilot] 无法识别当前安装来源',
-            `- executablePath: ${context.executablePath}`,
-          ].join('\n'),
+        : ['[FoxPilot] 无法识别当前安装来源', `- executablePath: ${context.executablePath}`].join(
+            '\n',
+          ),
     }
   }
 
@@ -147,11 +150,7 @@ export async function runSystemUninstallCommand(
               detail,
             },
           })
-        : [
-            '[FoxPilot] 卸载失败',
-            `- installMethod: ${manifest.installMethod}`,
-            detail,
-          ].join('\n'),
+        : ['[FoxPilot] 卸载失败', `- installMethod: ${manifest.installMethod}`, detail].join('\n'),
     }
   }
 }

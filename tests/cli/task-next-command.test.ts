@@ -24,21 +24,30 @@ async function createManagedProjectWithTasks(): Promise<{
   await mkdir(path.join(projectRoot, '.git'), { recursive: true })
 
   const initResult = await runCli(
-    ['init', '--path', projectRoot, '--workspace-root', path.dirname(projectRoot), '--mode', 'non-interactive', '--no-scan'],
+    [
+      'init',
+      '--path',
+      projectRoot,
+      '--workspace-root',
+      path.dirname(projectRoot),
+      '--mode',
+      'non-interactive',
+      '--no-scan',
+    ],
     { homeDir },
   )
   expect(initResult.exitCode).toBe(0)
 
-  const firstTask = await runCli(
-    ['task', 'create', '--title', '先补任务列表过滤'],
-    { cwd: projectRoot, homeDir },
-  )
+  const firstTask = await runCli(['task', 'create', '--title', '先补任务列表过滤'], {
+    cwd: projectRoot,
+    homeDir,
+  })
   expect(firstTask.exitCode).toBe(0)
 
-  const secondTask = await runCli(
-    ['task', 'create', '--title', '继续补任务状态流转'],
-    { cwd: projectRoot, homeDir },
-  )
+  const secondTask = await runCli(['task', 'create', '--title', '继续补任务状态流转'], {
+    cwd: projectRoot,
+    homeDir,
+  })
   expect(secondTask.exitCode).toBe(0)
 
   return { homeDir, projectRoot }
@@ -70,10 +79,7 @@ describe('task next CLI', () => {
     )
     expect(updateStatus.exitCode).toBe(0)
 
-    const result = await runCli(
-      ['task', 'next'],
-      { cwd: projectRoot, homeDir },
-    )
+    const result = await runCli(['task', 'next'], { cwd: projectRoot, homeDir })
 
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('[FoxPilot] 下一条任务')
@@ -94,10 +100,10 @@ describe('task next CLI', () => {
     )
     expect(updateExecutor.exitCode).toBe(0)
 
-    const result = await runCli(
-      ['task', 'next', '--executor', 'beads'],
-      { cwd: projectRoot, homeDir },
-    )
+    const result = await runCli(['task', 'next', '--executor', 'beads'], {
+      cwd: projectRoot,
+      homeDir,
+    })
 
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain(`taskId: ${firstTask!.id}`)
@@ -108,16 +114,13 @@ describe('task next CLI', () => {
   it('supports filtering by source', async () => {
     const { homeDir, projectRoot } = await createManagedProjectWithTasks()
 
-    const suggestScan = await runCli(
-      ['task', 'suggest-scan'],
-      { cwd: projectRoot, homeDir },
-    )
+    const suggestScan = await runCli(['task', 'suggest-scan'], { cwd: projectRoot, homeDir })
     expect(suggestScan.exitCode).toBe(0)
 
-    const result = await runCli(
-      ['task', 'next', '--source', 'scan_suggestion'],
-      { cwd: projectRoot, homeDir },
-    )
+    const result = await runCli(['task', 'next', '--source', 'scan_suggestion'], {
+      cwd: projectRoot,
+      homeDir,
+    })
 
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('source: scan_suggestion')
@@ -128,26 +131,34 @@ describe('task next CLI', () => {
     const { homeDir, projectRoot } = await createManagedProjectWithTasks()
     const snapshotPath = path.join(projectRoot, 'beads.json')
 
-    await writeFile(snapshotPath, `${JSON.stringify([
-      {
-        externalTaskId: 'BEADS-901',
-        title: '下一条外部任务',
-        status: 'doing',
-        priority: 'P0',
-        repository: '.',
-      },
-    ], null, 2)}\n`, 'utf8')
-
-    const importResult = await runCli(
-      ['task', 'import-beads', '--file', snapshotPath],
-      { cwd: projectRoot, homeDir },
+    await writeFile(
+      snapshotPath,
+      `${JSON.stringify(
+        [
+          {
+            externalTaskId: 'BEADS-901',
+            title: '下一条外部任务',
+            status: 'doing',
+            priority: 'P0',
+            repository: '.',
+          },
+        ],
+        null,
+        2,
+      )}\n`,
+      'utf8',
     )
+
+    const importResult = await runCli(['task', 'import-beads', '--file', snapshotPath], {
+      cwd: projectRoot,
+      homeDir,
+    })
     expect(importResult.exitCode).toBe(0)
 
-    const result = await runCli(
-      ['task', 'next', '--source', 'beads_sync'],
-      { cwd: projectRoot, homeDir },
-    )
+    const result = await runCli(['task', 'next', '--source', 'beads_sync'], {
+      cwd: projectRoot,
+      homeDir,
+    })
 
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('title: 下一条外部任务')
@@ -161,15 +172,12 @@ describe('task next CLI', () => {
     const secondTask = rows.find((row) => row.title === '继续补任务状态流转')
     expect(secondTask).toBeDefined()
 
-    await runCli(
-      ['task', 'update-status', '--id', secondTask!.id, '--status', 'analyzing'],
-      { cwd: projectRoot, homeDir },
-    )
+    await runCli(['task', 'update-status', '--id', secondTask!.id, '--status', 'analyzing'], {
+      cwd: projectRoot,
+      homeDir,
+    })
 
-    const result = await runCli(
-      ['task', 'next', '--json'],
-      { cwd: projectRoot, homeDir },
-    )
+    const result = await runCli(['task', 'next', '--json'], { cwd: projectRoot, homeDir })
 
     const payload = JSON.parse(result.stdout) as {
       ok: boolean
@@ -191,10 +199,7 @@ describe('task next CLI', () => {
   })
 
   it('prints help and accepts fp alias', async () => {
-    const result = await runCli(
-      ['task', 'next', '--help'],
-      { binName: 'fp' },
-    )
+    const result = await runCli(['task', 'next', '--help'], { binName: 'fp' })
 
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('foxpilot task next')
@@ -207,16 +212,10 @@ describe('task next CLI', () => {
     const homeDir = await createTempDir('foxpilot-home-')
     tempDirs.push(homeDir)
 
-    const setLanguage = await runCli(
-      ['config', 'set-language', '--lang', 'en-US'],
-      { homeDir },
-    )
+    const setLanguage = await runCli(['config', 'set-language', '--lang', 'en-US'], { homeDir })
     expect(setLanguage.exitCode).toBe(0)
 
-    const result = await runCli(
-      ['task', 'next', '--help'],
-      { homeDir },
-    )
+    const result = await runCli(['task', 'next', '--help'], { homeDir })
 
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('Show the next actionable task')
@@ -230,15 +229,21 @@ describe('task next CLI', () => {
     await mkdir(path.join(projectRoot, '.git'), { recursive: true })
 
     const initResult = await runCli(
-      ['init', '--path', projectRoot, '--workspace-root', path.dirname(projectRoot), '--mode', 'non-interactive', '--no-scan'],
+      [
+        'init',
+        '--path',
+        projectRoot,
+        '--workspace-root',
+        path.dirname(projectRoot),
+        '--mode',
+        'non-interactive',
+        '--no-scan',
+      ],
       { homeDir },
     )
     expect(initResult.exitCode).toBe(0)
 
-    const result = await runCli(
-      ['task', 'next'],
-      { cwd: projectRoot, homeDir },
-    )
+    const result = await runCli(['task', 'next'], { cwd: projectRoot, homeDir })
 
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('[FoxPilot] 当前没有可推进任务')
@@ -249,10 +254,7 @@ describe('task next CLI', () => {
     const projectRoot = await createTempDir('foxpilot-project-')
     tempDirs.push(homeDir, projectRoot)
 
-    const result = await runCli(
-      ['task', 'next'],
-      { cwd: projectRoot, homeDir },
-    )
+    const result = await runCli(['task', 'next'], { cwd: projectRoot, homeDir })
 
     expect(result.exitCode).toBe(1)
     expect(result.stdout).toContain('项目尚未初始化')
@@ -261,10 +263,11 @@ describe('task next CLI', () => {
   it('returns exit code 4 when sqlite bootstrap fails', async () => {
     const { homeDir, projectRoot } = await createManagedProjectWithTasks()
 
-    const result = await runCli(
-      ['task', 'next'],
-      { cwd: projectRoot, homeDir, failBootstrap: true },
-    )
+    const result = await runCli(['task', 'next'], {
+      cwd: projectRoot,
+      homeDir,
+      failBootstrap: true,
+    })
 
     expect(result.exitCode).toBe(4)
     expect(result.stdout).toContain('foxpilot.db 初始化失败')

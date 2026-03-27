@@ -49,9 +49,7 @@ function shouldSkipFoundationSetup(): boolean {
 type PostinstallDependencies = {
   registerCurrentInstallation: typeof registerCurrentInstallation
   readPackageMetadata: typeof readPackageMetadata
-  setupFoundationPack: (
-    context: { homeDir: string; platform: NodeJS.Platform },
-  ) => Promise<{
+  setupFoundationPack: (context: { homeDir: string; platform: NodeJS.Platform }) => Promise<{
     items: Array<{ tool: string }>
     ready: string[]
     installed: string[]
@@ -91,10 +89,10 @@ export async function runPostinstall(
     packageRoot?: string
   } = {},
 ): Promise<void> {
-  const cwd = input.cwd ?? process.cwd()
   const homeDir = input.homeDir ?? os.homedir()
   const packageRoot = input.packageRoot ?? resolvePackageRoot()
-  const executablePath = input.executablePath ?? path.join(packageRoot, 'dist', 'src', 'cli', 'run.js')
+  const executablePath =
+    input.executablePath ?? path.join(packageRoot, 'dist', 'src', 'cli', 'run.js')
 
   if (shouldSkipRegistration(packageRoot)) {
     return

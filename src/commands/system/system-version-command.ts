@@ -7,14 +7,13 @@ import type { CliResult } from '@/commands/init/init-types.js'
 import { toJsonSuccessOutput } from '@/cli/json-output.js'
 import { readPackageVersion } from '@foxpilot/infra/install/package-info.js'
 
-import type { SystemVersionArgs, SystemVersionContext } from '@/commands/system/system-version-types.js'
+import type {
+  SystemVersionArgs,
+  SystemVersionContext,
+} from '@/commands/system/system-version-types.js'
 
 function buildHelpText(binName: 'foxpilot' | 'fp'): string {
-  return [
-    '显示当前 FoxPilot CLI 版本信息。',
-    '',
-    `${binName} version`,
-  ].join('\n')
+  return ['显示当前 FoxPilot CLI 版本信息。', '', `${binName} version`].join('\n')
 }
 
 /**

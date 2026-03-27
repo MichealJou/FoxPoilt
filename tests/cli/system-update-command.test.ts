@@ -53,7 +53,8 @@ describe('update CLI', () => {
       homeDir,
       executablePath,
       dependencies: {
-        dispatchUpdate: async () => 'strategy: npm\ncommand: npm install -g foxpilot@latest\nexitCode: 0',
+        dispatchUpdate: async () =>
+          'strategy: npm\ncommand: npm install -g foxpilot@latest\nexitCode: 0',
       },
     })
 
@@ -115,7 +116,8 @@ describe('update CLI', () => {
       homeDir,
       executablePath,
       dependencies: {
-        dispatchUpdate: async () => 'strategy: npm\ncommand: npm install -g foxpilot@latest\nexitCode: 0',
+        dispatchUpdate: async () =>
+          'strategy: npm\ncommand: npm install -g foxpilot@latest\nexitCode: 0',
       },
     })
 

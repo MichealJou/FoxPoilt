@@ -17,10 +17,7 @@ describe('config set-language CLI', () => {
     const homeDir = await createTempDir('foxpilot-home-')
     tempDirs.push(homeDir)
 
-    const result = await runCli(
-      ['config', 'set-language', '--lang', 'en-US'],
-      { homeDir },
-    )
+    const result = await runCli(['config', 'set-language', '--lang', 'en-US'], { homeDir })
 
     expect(result.exitCode).toBe(0)
 
@@ -39,16 +36,10 @@ describe('config set-language CLI', () => {
 
     await mkdir(path.join(projectRoot, '.git'), { recursive: true })
 
-    const setLanguage = await runCli(
-      ['config', 'set-language', '--lang', 'en-US'],
-      { homeDir },
-    )
+    const setLanguage = await runCli(['config', 'set-language', '--lang', 'en-US'], { homeDir })
     expect(setLanguage.exitCode).toBe(0)
 
-    const result = await runCli(
-      ['task', 'list'],
-      { cwd: projectRoot, homeDir },
-    )
+    const result = await runCli(['task', 'list'], { cwd: projectRoot, homeDir })
 
     expect(result.exitCode).toBe(1)
     expect(result.stdout).toContain('Project is not initialized')
@@ -58,16 +49,10 @@ describe('config set-language CLI', () => {
     const homeDir = await createTempDir('foxpilot-home-')
     tempDirs.push(homeDir)
 
-    const setLanguage = await runCli(
-      ['config', 'set-language', '--lang', 'en-US'],
-      { homeDir },
-    )
+    const setLanguage = await runCli(['config', 'set-language', '--lang', 'en-US'], { homeDir })
     expect(setLanguage.exitCode).toBe(0)
 
-    const result = await runCli(
-      ['config', 'set-language', '--help'],
-      { homeDir },
-    )
+    const result = await runCli(['config', 'set-language', '--help'], { homeDir })
 
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('Set the CLI interface language')
@@ -77,10 +62,9 @@ describe('config set-language CLI', () => {
     const homeDir = await createTempDir('foxpilot-home-')
     tempDirs.push(homeDir)
 
-    const result = await runCli(
-      ['config', 'set-language', '--lang', 'ja-JP', '--json'],
-      { homeDir },
-    )
+    const result = await runCli(['config', 'set-language', '--lang', 'ja-JP', '--json'], {
+      homeDir,
+    })
 
     const payload = JSON.parse(result.stdout) as {
       ok: boolean

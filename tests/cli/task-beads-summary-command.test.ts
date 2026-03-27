@@ -24,40 +24,56 @@ async function createManagedProjectWithImportedBeadsTasks(): Promise<{
   await mkdir(path.join(projectRoot, 'frontend', '.git'), { recursive: true })
 
   const initResult = await runCli(
-    ['init', '--path', projectRoot, '--workspace-root', path.dirname(projectRoot), '--mode', 'non-interactive'],
+    [
+      'init',
+      '--path',
+      projectRoot,
+      '--workspace-root',
+      path.dirname(projectRoot),
+      '--mode',
+      'non-interactive',
+    ],
     { homeDir },
   )
   expect(initResult.exitCode).toBe(0)
 
   const snapshotPath = path.join(projectRoot, 'beads.json')
-  await writeFile(snapshotPath, `${JSON.stringify([
-    {
-      externalTaskId: 'BEADS-1101',
-      title: '主仓待办',
-      status: 'ready',
-      priority: 'P1',
-      repository: '.',
-    },
-    {
-      externalTaskId: 'BEADS-1102',
-      title: '前端执行中',
-      status: 'doing',
-      priority: 'P2',
-      repository: 'frontend',
-    },
-    {
-      externalTaskId: 'BEADS-1103',
-      title: '主仓阻塞',
-      status: 'blocked',
-      priority: 'P0',
-      repository: '.',
-    },
-  ], null, 2)}\n`, 'utf8')
-
-  const importResult = await runCli(
-    ['task', 'import-beads', '--file', snapshotPath],
-    { cwd: projectRoot, homeDir },
+  await writeFile(
+    snapshotPath,
+    `${JSON.stringify(
+      [
+        {
+          externalTaskId: 'BEADS-1101',
+          title: '主仓待办',
+          status: 'ready',
+          priority: 'P1',
+          repository: '.',
+        },
+        {
+          externalTaskId: 'BEADS-1102',
+          title: '前端执行中',
+          status: 'doing',
+          priority: 'P2',
+          repository: 'frontend',
+        },
+        {
+          externalTaskId: 'BEADS-1103',
+          title: '主仓阻塞',
+          status: 'blocked',
+          priority: 'P0',
+          repository: '.',
+        },
+      ],
+      null,
+      2,
+    )}\n`,
+    'utf8',
   )
+
+  const importResult = await runCli(['task', 'import-beads', '--file', snapshotPath], {
+    cwd: projectRoot,
+    homeDir,
+  })
   expect(importResult.exitCode).toBe(0)
 
   return {
@@ -70,10 +86,7 @@ describe('task beads-summary CLI', () => {
   it('shows aggregated summary for imported beads tasks in the current project', async () => {
     const { homeDir, projectRoot } = await createManagedProjectWithImportedBeadsTasks()
 
-    const result = await runCli(
-      ['task', 'beads-summary'],
-      { cwd: projectRoot, homeDir },
-    )
+    const result = await runCli(['task', 'beads-summary'], { cwd: projectRoot, homeDir })
 
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('[FoxPilot] Beads 任务摘要')
@@ -93,15 +106,21 @@ describe('task beads-summary CLI', () => {
     await mkdir(path.join(projectRoot, '.git'), { recursive: true })
 
     const initResult = await runCli(
-      ['init', '--path', projectRoot, '--workspace-root', path.dirname(projectRoot), '--mode', 'non-interactive', '--no-scan'],
+      [
+        'init',
+        '--path',
+        projectRoot,
+        '--workspace-root',
+        path.dirname(projectRoot),
+        '--mode',
+        'non-interactive',
+        '--no-scan',
+      ],
       { homeDir },
     )
     expect(initResult.exitCode).toBe(0)
 
-    const result = await runCli(
-      ['task', 'beads-summary'],
-      { cwd: projectRoot, homeDir },
-    )
+    const result = await runCli(['task', 'beads-summary'], { cwd: projectRoot, homeDir })
 
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('[FoxPilot] 当前项目没有 Beads 同步任务')
@@ -110,10 +129,7 @@ describe('task beads-summary CLI', () => {
   it('returns structured json beads summary output', async () => {
     const { homeDir, projectRoot } = await createManagedProjectWithImportedBeadsTasks()
 
-    const result = await runCli(
-      ['task', 'beads-summary', '--json'],
-      { cwd: projectRoot, homeDir },
-    )
+    const result = await runCli(['task', 'beads-summary', '--json'], { cwd: projectRoot, homeDir })
 
     const payload = JSON.parse(result.stdout) as {
       ok: boolean
@@ -138,10 +154,7 @@ describe('task beads-summary CLI', () => {
   })
 
   it('prints help and accepts fp alias', async () => {
-    const result = await runCli(
-      ['task', 'beads-summary', '--help'],
-      { binName: 'fp' },
-    )
+    const result = await runCli(['task', 'beads-summary', '--help'], { binName: 'fp' })
 
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('foxpilot task beads-summary')
@@ -153,10 +166,7 @@ describe('task beads-summary CLI', () => {
     const projectRoot = await createTempDir('foxpilot-project-')
     tempDirs.push(homeDir, projectRoot)
 
-    const result = await runCli(
-      ['task', 'beads-summary'],
-      { cwd: projectRoot, homeDir },
-    )
+    const result = await runCli(['task', 'beads-summary'], { cwd: projectRoot, homeDir })
 
     expect(result.exitCode).toBe(1)
     expect(result.stdout).toContain('项目尚未初始化')
@@ -165,10 +175,11 @@ describe('task beads-summary CLI', () => {
   it('returns exit code 4 when sqlite bootstrap fails', async () => {
     const { homeDir, projectRoot } = await createManagedProjectWithImportedBeadsTasks()
 
-    const result = await runCli(
-      ['task', 'beads-summary'],
-      { cwd: projectRoot, homeDir, failBootstrap: true },
-    )
+    const result = await runCli(['task', 'beads-summary'], {
+      cwd: projectRoot,
+      homeDir,
+      failBootstrap: true,
+    })
 
     expect(result.exitCode).toBe(4)
     expect(result.stdout).toContain('foxpilot.db 初始化失败')

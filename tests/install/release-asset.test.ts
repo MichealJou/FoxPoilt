@@ -1,11 +1,18 @@
 import { describe, expect, it } from 'vitest'
 
-import { buildReleaseAssetName, buildReleaseDownloadUrl } from '@foxpilot/infra/install/release-asset.js'
+import {
+  buildReleaseAssetName,
+  buildReleaseDownloadUrl,
+} from '@foxpilot/infra/install/release-asset.js'
 
 describe('release asset helpers', () => {
   it('builds tar.gz asset names for unix platforms', () => {
-    expect(buildReleaseAssetName({ platform: 'darwin', arch: 'arm64' })).toBe('foxpilot-darwin-arm64.tar.gz')
-    expect(buildReleaseAssetName({ platform: 'linux', arch: 'x64' })).toBe('foxpilot-linux-x64.tar.gz')
+    expect(buildReleaseAssetName({ platform: 'darwin', arch: 'arm64' })).toBe(
+      'foxpilot-darwin-arm64.tar.gz',
+    )
+    expect(buildReleaseAssetName({ platform: 'linux', arch: 'x64' })).toBe(
+      'foxpilot-linux-x64.tar.gz',
+    )
   })
 
   it('builds zip asset names for windows', () => {

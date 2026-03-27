@@ -284,7 +284,11 @@ export async function runTaskSyncBeadsCommand(
           `- closed: ${result.closed}`,
           `- rejected: ${result.rejected.length}`,
           ...(result.rejected.length > 0
-            ? ['', messages.taskSyncBeads.rejectedTitle, ...result.rejected.map((item) => `- ${item}`)]
+            ? [
+                '',
+                messages.taskSyncBeads.rejectedTitle,
+                ...result.rejected.map((item) => `- ${item}`),
+              ]
             : []),
         ].join('\n'),
       }

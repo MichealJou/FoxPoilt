@@ -16,7 +16,7 @@ async function createManagedProjectWithRepositories(homeDir?: string): Promise<{
   homeDir: string
   projectRoot: string
 }> {
-  const resolvedHomeDir = homeDir ?? await createTempDir('foxpilot-home-')
+  const resolvedHomeDir = homeDir ?? (await createTempDir('foxpilot-home-'))
   const projectRoot = await createTempDir('foxpilot-project-')
 
   if (!homeDir) {
@@ -29,7 +29,15 @@ async function createManagedProjectWithRepositories(homeDir?: string): Promise<{
   await mkdir(path.join(projectRoot, 'frontend', '.git'), { recursive: true })
 
   const initResult = await runCli(
-    ['init', '--path', projectRoot, '--workspace-root', path.dirname(projectRoot), '--mode', 'non-interactive'],
+    [
+      'init',
+      '--path',
+      projectRoot,
+      '--workspace-root',
+      path.dirname(projectRoot),
+      '--mode',
+      'non-interactive',
+    ],
     { homeDir: resolvedHomeDir },
   )
   expect(initResult.exitCode).toBe(0)
@@ -70,10 +78,14 @@ describe('task diff-beads CLI', () => {
       },
     ])
 
-    expect((await runCli(
-      ['task', 'import-beads', '--file', initialSnapshotPath],
-      { cwd: projectRoot, homeDir },
-    )).exitCode).toBe(0)
+    expect(
+      (
+        await runCli(['task', 'import-beads', '--file', initialSnapshotPath], {
+          cwd: projectRoot,
+          homeDir,
+        })
+      ).exitCode,
+    ).toBe(0)
 
     const previewSnapshotPath = await writeSnapshotFile(projectRoot, 'beads-preview.json', [
       {
@@ -99,10 +111,10 @@ describe('task diff-beads CLI', () => {
       },
     ])
 
-    const result = await runCli(
-      ['task', 'diff-beads', '--file', previewSnapshotPath],
-      { cwd: projectRoot, homeDir },
-    )
+    const result = await runCli(['task', 'diff-beads', '--file', previewSnapshotPath], {
+      cwd: projectRoot,
+      homeDir,
+    })
 
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('[FoxPilot] Beads 快照差异预览')
@@ -116,10 +128,10 @@ describe('task diff-beads CLI', () => {
     expect(result.stdout).toContain('差异: title,status,priority,repository')
     expect(result.stdout).toContain('[skip] BEADS-9001')
 
-    const listResult = await runCli(
-      ['task', 'list', '--source', 'beads_sync'],
-      { cwd: projectRoot, homeDir },
-    )
+    const listResult = await runCli(['task', 'list', '--source', 'beads_sync'], {
+      cwd: projectRoot,
+      homeDir,
+    })
     expect(listResult.exitCode).toBe(0)
     expect(listResult.stdout).not.toContain('新增任务')
     expect(listResult.stdout).toContain('旧标题')
@@ -144,10 +156,14 @@ describe('task diff-beads CLI', () => {
       },
     ])
 
-    expect((await runCli(
-      ['task', 'import-beads', '--file', initialSnapshotPath],
-      { cwd: projectRoot, homeDir },
-    )).exitCode).toBe(0)
+    expect(
+      (
+        await runCli(['task', 'import-beads', '--file', initialSnapshotPath], {
+          cwd: projectRoot,
+          homeDir,
+        })
+      ).exitCode,
+    ).toBe(0)
 
     const previewSnapshotPath = await writeSnapshotFile(projectRoot, 'beads-close-preview.json', [
       {
@@ -188,10 +204,10 @@ describe('task diff-beads CLI', () => {
       },
     ])
 
-    const result = await runCli(
-      ['task', 'diff-beads', '--file', snapshotPath],
-      { cwd: projectRoot, homeDir },
-    )
+    const result = await runCli(['task', 'diff-beads', '--file', snapshotPath], {
+      cwd: projectRoot,
+      homeDir,
+    })
 
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('- created: 1')
@@ -201,10 +217,7 @@ describe('task diff-beads CLI', () => {
   })
 
   it('prints help and accepts fp alias', async () => {
-    const result = await runCli(
-      ['task', 'diff-beads', '--help'],
-      { binName: 'fp' },
-    )
+    const result = await runCli(['task', 'diff-beads', '--help'], { binName: 'fp' })
 
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('foxpilot task diff-beads')
@@ -217,10 +230,7 @@ describe('task diff-beads CLI', () => {
   it('returns a clear error when no preview source is provided', async () => {
     const { homeDir, projectRoot } = await createManagedProjectWithRepositories()
 
-    const result = await runCli(
-      ['task', 'diff-beads'],
-      { cwd: projectRoot, homeDir },
-    )
+    const result = await runCli(['task', 'diff-beads'], { cwd: projectRoot, homeDir })
 
     expect(result.exitCode).toBe(1)
     expect(result.stdout).toContain('file、repository 或 --all-repositories 必须提供其一')
@@ -239,18 +249,21 @@ describe('task diff-beads CLI', () => {
       },
     ])
 
-    expect((await runCli(
-      ['task', 'import-beads', '--file', initialSnapshotPath],
-      { cwd: projectRoot, homeDir },
-    )).exitCode).toBe(0)
+    expect(
+      (
+        await runCli(['task', 'import-beads', '--file', initialSnapshotPath], {
+          cwd: projectRoot,
+          homeDir,
+        })
+      ).exitCode,
+    ).toBe(0)
 
-    const result = await runCli(
-      ['task', 'diff-beads', '--repository', 'frontend'],
-      {
-        cwd: projectRoot,
-        homeDir,
-        dependencies: {
-          runBdList: async () => JSON.stringify([
+    const result = await runCli(['task', 'diff-beads', '--repository', 'frontend'], {
+      cwd: projectRoot,
+      homeDir,
+      dependencies: {
+        runBdList: async () =>
+          JSON.stringify([
             {
               id: 'BD-FE-1',
               title: '新标题',
@@ -264,9 +277,8 @@ describe('task diff-beads CLI', () => {
               priority: 2,
             },
           ]),
-        },
       },
-    )
+    })
 
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('- mode: single-repository')
@@ -281,16 +293,15 @@ describe('task diff-beads CLI', () => {
     const { homeDir, projectRoot } = await createManagedProjectWithRepositories()
     const frontendRepository = path.join(projectRoot, 'frontend')
 
-    const result = await runCli(
-      ['task', 'diff-beads', '--all-repositories'],
-      {
-        cwd: projectRoot,
-        homeDir,
-        dependencies: {
-          hasLocalBeadsRepository: async (input: { repositoryRoot: string }) => {
-            return input.repositoryRoot === frontendRepository
-          },
-          runBdList: async () => JSON.stringify([
+    const result = await runCli(['task', 'diff-beads', '--all-repositories'], {
+      cwd: projectRoot,
+      homeDir,
+      dependencies: {
+        hasLocalBeadsRepository: async (input: { repositoryRoot: string }) => {
+          return input.repositoryRoot === frontendRepository
+        },
+        runBdList: async () =>
+          JSON.stringify([
             {
               id: 'BD-FE-3',
               title: '跨仓库预览',
@@ -298,9 +309,8 @@ describe('task diff-beads CLI', () => {
               priority: 2,
             },
           ]),
-        },
       },
-    )
+    })
 
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('- mode: all-repositories')
@@ -315,10 +325,11 @@ describe('task diff-beads CLI', () => {
     const { homeDir, projectRoot } = await createManagedProjectWithRepositories()
     const snapshotPath = await writeSnapshotFile(projectRoot, 'beads-bootstrap-fail.json', [])
 
-    const result = await runCli(
-      ['task', 'diff-beads', '--file', snapshotPath],
-      { cwd: projectRoot, homeDir, failBootstrap: true },
-    )
+    const result = await runCli(['task', 'diff-beads', '--file', snapshotPath], {
+      cwd: projectRoot,
+      homeDir,
+      failBootstrap: true,
+    })
 
     expect(result.exitCode).toBe(4)
     expect(result.stdout).toContain('foxpilot.db 初始化失败')
@@ -336,10 +347,10 @@ describe('task diff-beads CLI', () => {
       },
     ])
 
-    const result = await runCli(
-      ['task', 'diff-beads', '--file', snapshotPath, '--json'],
-      { cwd: projectRoot, homeDir },
-    )
+    const result = await runCli(['task', 'diff-beads', '--file', snapshotPath, '--json'], {
+      cwd: projectRoot,
+      homeDir,
+    })
 
     expect(result.exitCode).toBe(0)
 

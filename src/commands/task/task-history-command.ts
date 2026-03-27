@@ -10,7 +10,10 @@ import { createTaskStore } from '@foxpilot/infra/db/task-store.js'
 import { resolveGlobalDatabasePath } from '@foxpilot/infra/core/paths.js'
 import { getMessages } from '@/i18n/messages.js'
 import { resolveTaskReference } from '@/commands/task/task-reference.js'
-import { ProjectNotInitializedError, resolveManagedProject } from '@foxpilot/infra/project/resolve-project.js'
+import {
+  ProjectNotInitializedError,
+  resolveManagedProject,
+} from '@foxpilot/infra/project/resolve-project.js'
 
 import type {
   TaskHistoryArgs,

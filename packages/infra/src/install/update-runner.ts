@@ -61,11 +61,9 @@ export async function runNpmUpdate(
   const args = ['install', '-g', `${packageName}@latest`]
   const result = await runner('npm', args)
 
-  return [
-    'strategy: npm',
-    `command: npm ${args.join(' ')}`,
-    `exitCode: ${result.exitCode}`,
-  ].join('\n')
+  return ['strategy: npm', `command: npm ${args.join(' ')}`, `exitCode: ${result.exitCode}`].join(
+    '\n',
+  )
 }
 
 /**
@@ -80,11 +78,9 @@ export async function runBrewUpdate(
   const args = ['upgrade', formula]
   const result = await runner('brew', args)
 
-  return [
-    'strategy: brew',
-    `command: brew ${args.join(' ')}`,
-    `exitCode: ${result.exitCode}`,
-  ].join('\n')
+  return ['strategy: brew', `command: brew ${args.join(' ')}`, `exitCode: ${result.exitCode}`].join(
+    '\n',
+  )
 }
 
 /**

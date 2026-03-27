@@ -111,7 +111,9 @@ function buildPushSnapshot(input: {
     return null
   }
 
-  const repositoryTarget = input.detail.targets.find((target) => target.target_type === 'repository')
+  const repositoryTarget = input.detail.targets.find(
+    (target) => target.target_type === 'repository',
+  )
   const repositoryPath = repositoryTarget?.repository_path ?? '.'
 
   return {
@@ -142,7 +144,9 @@ async function pushSingleSnapshot(input: {
   })
 
   if (!hasLocalBeads) {
-    throw new Error(`repository-not-initialized:${input.snapshot.repositoryPath}:${input.snapshot.repositoryRoot}`)
+    throw new Error(
+      `repository-not-initialized:${input.snapshot.repositoryPath}:${input.snapshot.repositoryRoot}`,
+    )
   }
 
   if (input.dryRun) {
@@ -173,22 +177,24 @@ function loadRepositorySnapshots(input: {
 }): PushSnapshot[] {
   const repositoryId = buildRepositoryId(input.projectRoot, input.repositoryPath)
 
-  return input.taskStore.listImportedTaskReferences({
-    projectId: input.projectId,
-    externalSource: 'beads',
-    repositoryId,
-  }).flatMap((reference) => {
-    const detail = input.taskStore.getTaskDetail({
+  return input.taskStore
+    .listImportedTaskReferences({
       projectId: input.projectId,
-      taskId: reference.id,
+      externalSource: 'beads',
+      repositoryId,
     })
-    const snapshot = buildPushSnapshot({
-      projectRoot: input.projectRoot,
-      detail,
-    })
+    .flatMap((reference) => {
+      const detail = input.taskStore.getTaskDetail({
+        projectId: input.projectId,
+        taskId: reference.id,
+      })
+      const snapshot = buildPushSnapshot({
+        projectRoot: input.projectRoot,
+        detail,
+      })
 
-    return snapshot ? [snapshot] : []
-  })
+      return snapshot ? [snapshot] : []
+    })
 }
 
 /**
@@ -298,7 +304,9 @@ export async function runTaskPushBeadsCommand(
         stdout: args.json
           ? toJsonErrorOutput(commandName, {
               code: args.externalId ? 'TASK_NOT_FOUND' : 'TASK_REFERENCE_REQUIRED',
-              message: args.externalId ? messages.taskPushBeads.taskNotFound : messages.taskPushBeads.idRequired,
+              message: args.externalId
+                ? messages.taskPushBeads.taskNotFound
+                : messages.taskPushBeads.idRequired,
               details: args.externalId
                 ? {
                     externalSource: args.externalSource ?? 'beads',

@@ -8,9 +8,7 @@ import type {
   McpInspectDependencies,
 } from '@/commands/mcp/mcp-inspect-types.js'
 
-function getDependencies(
-  overrides: Partial<McpInspectDependencies> = {},
-): McpInspectDependencies {
+function getDependencies(overrides: Partial<McpInspectDependencies> = {}): McpInspectDependencies {
   return {
     collectMcpRegistry,
     ...overrides,

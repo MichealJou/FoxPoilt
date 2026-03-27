@@ -7,7 +7,10 @@ import type { CliRuntimeContext } from '@/cli/runtime-context.js'
 import type { bootstrapDatabase } from '@foxpilot/infra/db/bootstrap.js'
 import type { createTaskStore } from '@foxpilot/infra/db/task-store.js'
 import type { resolveManagedProject } from '@foxpilot/infra/project/resolve-project.js'
-import type { hasLocalBeadsRepository, runBdUpdate } from '@foxpilot/integrations/sync/beads-bd-service.js'
+import type {
+  hasLocalBeadsRepository,
+  runBdUpdate,
+} from '@foxpilot/integrations/sync/beads-bd-service.js'
 
 /**
  * `task push-beads` 的标准化参数。

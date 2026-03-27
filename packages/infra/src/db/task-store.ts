@@ -351,17 +351,19 @@ export function createTaskStore(db: SqliteDatabase) {
    * 1. 任务主记录和目标记录要么一起成功，要么一起失败。
    * 2. 否则会出现“有任务没目标”或“有目标没任务”的脏状态。
    */
-  const createTaskTx = db.transaction((input: { task: TaskCreateInputRow; targets: TaskTargetRow[] }) => {
-    insertTaskStmt.run({
-      ...input.task,
-      external_source: input.task.external_source ?? null,
-      external_id: input.task.external_id ?? null,
-    })
+  const createTaskTx = db.transaction(
+    (input: { task: TaskCreateInputRow; targets: TaskTargetRow[] }) => {
+      insertTaskStmt.run({
+        ...input.task,
+        external_source: input.task.external_source ?? null,
+        external_id: input.task.external_id ?? null,
+      })
 
-    for (const target of input.targets) {
-      insertTaskTargetStmt.run(target)
-    }
-  })
+      for (const target of input.targets) {
+        insertTaskTargetStmt.run(target)
+      }
+    },
+  )
 
   /**
    * 把外部快照覆盖到现有任务，并同步替换仓库目标。
@@ -371,47 +373,49 @@ export function createTaskStore(db: SqliteDatabase) {
    * - 仓库目标也必须同步成功；
    * - 不能留下“任务已经更新，但目标还是旧仓库”的半同步状态。
    */
-  const syncImportedTaskTx = db.transaction((input: {
-    projectId: string
-    taskId: string
-    task: Pick<
-      TaskRow,
-      | 'title'
-      | 'source_type'
-      | 'status'
-      | 'priority'
-      | 'task_type'
-      | 'execution_mode'
-      | 'requires_plan_confirm'
-      | 'current_executor'
-      | 'external_source'
-      | 'external_id'
-    >
-    repositoryTarget: TaskTargetRow
-    updatedAt: string
-  }) => {
-    updateImportedTaskSnapshotStmt.run({
-      project_id: input.projectId,
-      id: input.taskId,
-      title: input.task.title,
-      source_type: input.task.source_type,
-      status: input.task.status,
-      priority: input.task.priority,
-      task_type: input.task.task_type,
-      execution_mode: input.task.execution_mode,
-      requires_plan_confirm: input.task.requires_plan_confirm,
-      current_executor: input.task.current_executor,
-      external_source: input.task.external_source,
-      external_id: input.task.external_id,
-      updated_at: input.updatedAt,
-    })
+  const syncImportedTaskTx = db.transaction(
+    (input: {
+      projectId: string
+      taskId: string
+      task: Pick<
+        TaskRow,
+        | 'title'
+        | 'source_type'
+        | 'status'
+        | 'priority'
+        | 'task_type'
+        | 'execution_mode'
+        | 'requires_plan_confirm'
+        | 'current_executor'
+        | 'external_source'
+        | 'external_id'
+      >
+      repositoryTarget: TaskTargetRow
+      updatedAt: string
+    }) => {
+      updateImportedTaskSnapshotStmt.run({
+        project_id: input.projectId,
+        id: input.taskId,
+        title: input.task.title,
+        source_type: input.task.source_type,
+        status: input.task.status,
+        priority: input.task.priority,
+        task_type: input.task.task_type,
+        execution_mode: input.task.execution_mode,
+        requires_plan_confirm: input.task.requires_plan_confirm,
+        current_executor: input.task.current_executor,
+        external_source: input.task.external_source,
+        external_id: input.task.external_id,
+        updated_at: input.updatedAt,
+      })
 
-    deleteTaskTargetsStmt.run({
-      task_id: input.taskId,
-    })
+      deleteTaskTargetsStmt.run({
+        task_id: input.taskId,
+      })
 
-    insertTaskTargetStmt.run(input.repositoryTarget)
-  })
+      insertTaskTargetStmt.run(input.repositoryTarget)
+    },
+  )
 
   const listTasksStmt = db.prepare(`
     SELECT id, title, source_type, status, priority, task_type, current_executor, external_source, external_id, updated_at
@@ -748,10 +752,7 @@ export function createTaskStore(db: SqliteDatabase) {
      *
      * 主要用于 `task update-status` 读取旧状态，再生成差异输出。
      */
-    getTaskById(input: {
-      projectId: string
-      taskId: string
-    }): TaskSummaryRow | null {
+    getTaskById(input: { projectId: string; taskId: string }): TaskSummaryRow | null {
       return (
         (getTaskByIdStmt.get({
           project_id: input.projectId,
@@ -926,9 +927,7 @@ export function createTaskStore(db: SqliteDatabase) {
      * 这一层只负责持久化，不主动推断状态映射；
      * 映射策略由上层命令或编排逻辑决定后，再把明确的行模型传进来。
      */
-    startTaskRun(input: {
-      run: TaskRunRow
-    }): void {
+    startTaskRun(input: { run: TaskRunRow }): void {
       insertTaskRunStmt.run(input.run)
     },
     /**
@@ -971,9 +970,7 @@ export function createTaskStore(db: SqliteDatabase) {
      *
      * 详情页和后续历史页都应直接复用这里的排序，避免不同命令各自定义展示顺序。
      */
-    listTaskRuns(input: {
-      taskId: string
-    }): TaskRunRow[] {
+    listTaskRuns(input: { taskId: string }): TaskRunRow[] {
       return listTaskRunsStmt.all({
         task_id: input.taskId,
       }) as TaskRunRow[]
@@ -986,12 +983,12 @@ export function createTaskStore(db: SqliteDatabase) {
      * - 只关注仓库级目标；
      * - 已完成或已取消的建议不会阻止重新生成。
      */
-    listOpenScanSuggestionRepositoryIds(input: {
-      projectId: string
-    }): string[] {
-      return (listOpenScanSuggestionRepositoryIdsStmt.all({
-        project_id: input.projectId,
-      }) as OpenScanSuggestionRepositoryRow[]).map((row) => row.repository_id)
+    listOpenScanSuggestionRepositoryIds(input: { projectId: string }): string[] {
+      return (
+        listOpenScanSuggestionRepositoryIdsStmt.all({
+          project_id: input.projectId,
+        }) as OpenScanSuggestionRepositoryRow[]
+      ).map((row) => row.repository_id)
     },
     /**
      * 读取当前项目的 Beads 同步任务聚合摘要。
@@ -999,9 +996,7 @@ export function createTaskStore(db: SqliteDatabase) {
      * 这里返回的永远是一条聚合记录，即使当前没有任何 Beads 任务，
      * 也会返回各项为 `0` 的稳定结构，避免命令层再处理空值分支。
      */
-    getBeadsTaskSummary(input: {
-      projectId: string
-    }): BeadsTaskSummaryRow {
+    getBeadsTaskSummary(input: { projectId: string }): BeadsTaskSummaryRow {
       return getBeadsTaskSummaryStmt.get({
         project_id: input.projectId,
       }) as BeadsTaskSummaryRow
@@ -1053,9 +1048,7 @@ export function createTaskStore(db: SqliteDatabase) {
      * 2. 已取消任务视为“当前快照中已消失”，因此不导出；
      * 3. 仓库路径在查询层直接反查出来，避免命令层再拼仓库映射。
      */
-    listExportableBeadsTasks(input: {
-      projectId: string
-    }): ExportableBeadsTaskRow[] {
+    listExportableBeadsTasks(input: { projectId: string }): ExportableBeadsTaskRow[] {
       return listExportableBeadsTasksStmt.all({
         project_id: input.projectId,
       }) as ExportableBeadsTaskRow[]
@@ -1065,10 +1058,7 @@ export function createTaskStore(db: SqliteDatabase) {
      *
      * 详情查询会把仓库路径一并查出，避免命令层再做额外 join。
      */
-    getTaskDetail(input: {
-      projectId: string
-      taskId: string
-    }): TaskDetail | null {
+    getTaskDetail(input: { projectId: string; taskId: string }): TaskDetail | null {
       const task = getTaskDetailStmt.get({
         project_id: input.projectId,
         id: input.taskId,

@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest'
 
 describe('foundation doctor', () => {
   it('reports doctor result for missing and ready tools', async () => {
-    const { runFoundationDoctor } = await import('@foxpilot/integrations/foundation/foundation-doctor.js')
+    const { runFoundationDoctor } =
+      await import('@foxpilot/integrations/foundation/foundation-doctor.js')
 
     const result = await runFoundationDoctor({
       detectTool: async (tool) =>

@@ -26,7 +26,16 @@ async function createManagedProjectWithTask(): Promise<{
   await mkdir(path.join(projectRoot, '.git'), { recursive: true })
 
   const initResult = await runCli(
-    ['init', '--path', projectRoot, '--workspace-root', path.dirname(projectRoot), '--mode', 'non-interactive', '--no-scan'],
+    [
+      'init',
+      '--path',
+      projectRoot,
+      '--workspace-root',
+      path.dirname(projectRoot),
+      '--mode',
+      'non-interactive',
+      '--no-scan',
+    ],
     { homeDir },
   )
   expect(initResult.exitCode).toBe(0)
@@ -49,7 +58,18 @@ describe('task edit CLI', () => {
     const { homeDir, projectRoot, taskId } = await createManagedProjectWithTask()
 
     const result = await runCli(
-      ['task', 'edit', '--id', taskId, '--title', '更新后标题', '--description', '更新后描述', '--task-type', 'backend'],
+      [
+        'task',
+        'edit',
+        '--id',
+        taskId,
+        '--title',
+        '更新后标题',
+        '--description',
+        '更新后描述',
+        '--task-type',
+        'backend',
+      ],
       { cwd: projectRoot, homeDir },
     )
 
@@ -59,7 +79,9 @@ describe('task edit CLI', () => {
     expect(result.stdout).toContain('taskType: backend')
 
     const db = new Database(path.join(homeDir, '.foxpilot', 'foxpilot.db'))
-    const row = db.prepare('SELECT title, description, task_type FROM task WHERE id = ?').get(taskId) as {
+    const row = db
+      .prepare('SELECT title, description, task_type FROM task WHERE id = ?')
+      .get(taskId) as {
       title: string
       description: string | null
       task_type: string
@@ -75,10 +97,10 @@ describe('task edit CLI', () => {
   it('clears description when --clear-description is passed', async () => {
     const { homeDir, projectRoot, taskId } = await createManagedProjectWithTask()
 
-    const result = await runCli(
-      ['task', 'edit', '--id', taskId, '--clear-description'],
-      { cwd: projectRoot, homeDir },
-    )
+    const result = await runCli(['task', 'edit', '--id', taskId, '--clear-description'], {
+      cwd: projectRoot,
+      homeDir,
+    })
 
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('description: (cleared)')
@@ -92,10 +114,7 @@ describe('task edit CLI', () => {
   })
 
   it('prints help and accepts fp alias', async () => {
-    const result = await runCli(
-      ['task', 'edit', '--help'],
-      { binName: 'fp' },
-    )
+    const result = await runCli(['task', 'edit', '--help'], { binName: 'fp' })
 
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('foxpilot task edit')
@@ -106,10 +125,7 @@ describe('task edit CLI', () => {
   it('fails when no editable field is provided', async () => {
     const { homeDir, projectRoot, taskId } = await createManagedProjectWithTask()
 
-    const result = await runCli(
-      ['task', 'edit', '--id', taskId],
-      { cwd: projectRoot, homeDir },
-    )
+    const result = await runCli(['task', 'edit', '--id', taskId], { cwd: projectRoot, homeDir })
 
     expect(result.exitCode).toBe(1)
     expect(result.stdout).toContain('至少指定一个可编辑字段')
@@ -132,10 +148,10 @@ describe('task edit CLI', () => {
     const projectRoot = await createTempDir('foxpilot-project-')
     tempDirs.push(homeDir, projectRoot)
 
-    const result = await runCli(
-      ['task', 'edit', '--id', 'task:missing', '--title', '新标题'],
-      { cwd: projectRoot, homeDir },
-    )
+    const result = await runCli(['task', 'edit', '--id', 'task:missing', '--title', '新标题'], {
+      cwd: projectRoot,
+      homeDir,
+    })
 
     expect(result.exitCode).toBe(1)
     expect(result.stdout).toContain('项目尚未初始化')
@@ -145,10 +161,10 @@ describe('task edit CLI', () => {
     const first = await createManagedProjectWithTask()
     const second = await createManagedProjectWithTask()
 
-    const result = await runCli(
-      ['task', 'edit', '--id', second.taskId, '--title', '串项目修改'],
-      { cwd: first.projectRoot, homeDir: first.homeDir },
-    )
+    const result = await runCli(['task', 'edit', '--id', second.taskId, '--title', '串项目修改'], {
+      cwd: first.projectRoot,
+      homeDir: first.homeDir,
+    })
 
     expect(result.exitCode).toBe(1)
     expect(result.stdout).toContain('未找到任务')
@@ -157,10 +173,11 @@ describe('task edit CLI', () => {
   it('returns exit code 4 when sqlite bootstrap fails', async () => {
     const { homeDir, projectRoot, taskId } = await createManagedProjectWithTask()
 
-    const result = await runCli(
-      ['task', 'edit', '--id', taskId, '--title', '新标题'],
-      { cwd: projectRoot, homeDir, failBootstrap: true },
-    )
+    const result = await runCli(['task', 'edit', '--id', taskId, '--title', '新标题'], {
+      cwd: projectRoot,
+      homeDir,
+      failBootstrap: true,
+    })
 
     expect(result.exitCode).toBe(4)
     expect(result.stdout).toContain('foxpilot.db 初始化失败')
@@ -170,7 +187,18 @@ describe('task edit CLI', () => {
     const { homeDir, projectRoot, taskId } = await createManagedProjectWithTask()
 
     const result = await runCli(
-      ['task', 'edit', '--id', taskId, '--title', '初始标题', '--description', '初始描述', '--task-type', 'docs'],
+      [
+        'task',
+        'edit',
+        '--id',
+        taskId,
+        '--title',
+        '初始标题',
+        '--description',
+        '初始描述',
+        '--task-type',
+        'docs',
+      ],
       { cwd: projectRoot, homeDir },
     )
 
@@ -179,15 +207,25 @@ describe('task edit CLI', () => {
   })
 
   it('supports editing imported tasks by external task id', async () => {
-    const { homeDir, projectRoot, taskId, externalId } = await createManagedProjectWithImportedBeadsTask({
-      tempDirs,
-      externalTaskId: 'BEADS-901',
-      title: '原始外部标题',
-      priority: 'P2',
-    })
+    const { homeDir, projectRoot, taskId, externalId } =
+      await createManagedProjectWithImportedBeadsTask({
+        tempDirs,
+        externalTaskId: 'BEADS-901',
+        title: '原始外部标题',
+        priority: 'P2',
+      })
 
     const result = await runCli(
-      ['task', 'edit', '--external-id', externalId, '--title', '更新后的外部标题', '--task-type', 'backend'],
+      [
+        'task',
+        'edit',
+        '--external-id',
+        externalId,
+        '--title',
+        '更新后的外部标题',
+        '--task-type',
+        'backend',
+      ],
       { cwd: projectRoot, homeDir },
     )
 

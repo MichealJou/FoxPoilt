@@ -54,7 +54,9 @@ export async function runPlatformsListCommand(
     exitCode: 0,
     stdout: [
       '[FoxPilot] Platforms',
-      ...items.map((item) => `- ${item.platformId}: ${item.status}${item.command ? ` (${item.command})` : ''}`),
+      ...items.map(
+        (item) => `- ${item.platformId}: ${item.status}${item.command ? ` (${item.command})` : ''}`,
+      ),
     ].join('\n'),
   }
 }

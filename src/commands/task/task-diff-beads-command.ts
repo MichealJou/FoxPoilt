@@ -79,7 +79,9 @@ type SingleDiffPreviewResult = {
   rejected: string[]
 }
 
-function formatDiffEntry(entry: ReturnType<typeof buildBeadsDiffPreview>['entries'][number]): string {
+function formatDiffEntry(
+  entry: ReturnType<typeof buildBeadsDiffPreview>['entries'][number],
+): string {
   if (entry.action === 'close') {
     return `- [close] ${entry.externalTaskId} ${entry.detail}`
   }
@@ -287,9 +289,10 @@ export async function runTaskDiffBeadsCommand(
       }
     }
 
-    const detailLines = preview.entries.length === 0
-      ? [messages.taskDiffBeads.noChanges]
-      : preview.entries.map(formatDiffEntry)
+    const detailLines =
+      preview.entries.length === 0
+        ? [messages.taskDiffBeads.noChanges]
+        : preview.entries.map(formatDiffEntry)
 
     return {
       exitCode: 0,
@@ -308,7 +311,11 @@ export async function runTaskDiffBeadsCommand(
         messages.taskDiffBeads.detailsTitle,
         ...detailLines,
         ...(normalized.rejected.length > 0
-          ? ['', messages.taskDiffBeads.rejectedTitle, ...normalized.rejected.map((item) => `- ${item}`)]
+          ? [
+              '',
+              messages.taskDiffBeads.rejectedTitle,
+              ...normalized.rejected.map((item) => `- ${item}`),
+            ]
           : []),
       ].join('\n'),
     }
@@ -380,9 +387,10 @@ export async function runTaskDiffBeadsCommand(
         }
       }
 
-      const detailLines = result.preview.entries.length === 0
-        ? [messages.taskDiffBeads.noChanges]
-        : result.preview.entries.map(formatDiffEntry)
+      const detailLines =
+        result.preview.entries.length === 0
+          ? [messages.taskDiffBeads.noChanges]
+          : result.preview.entries.map(formatDiffEntry)
 
       return {
         exitCode: 0,
@@ -402,7 +410,11 @@ export async function runTaskDiffBeadsCommand(
           messages.taskDiffBeads.detailsTitle,
           ...detailLines,
           ...(result.rejected.length > 0
-            ? ['', messages.taskDiffBeads.rejectedTitle, ...result.rejected.map((item) => `- ${item}`)]
+            ? [
+                '',
+                messages.taskDiffBeads.rejectedTitle,
+                ...result.rejected.map((item) => `- ${item}`),
+              ]
             : []),
         ].join('\n'),
       }

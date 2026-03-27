@@ -99,7 +99,20 @@ async function readPackageJsonFrameworkHints(projectRoot: string): Promise<strin
 export async function collectProjectScanSignals(
   input: CollectProjectScanSignalsInput,
 ): Promise<ProjectScanSignals> {
-  const [hasPnpmWorkspace, hasTurboJson, hasDocsDir, hasTestsDir, hasGithubWorkflows, hasPackageJson, hasPnpmLock, hasPyproject, hasCargoToml, hasGoMod, hasProjectConfig, frameworkHints] = await Promise.all([
+  const [
+    hasPnpmWorkspace,
+    hasTurboJson,
+    hasDocsDir,
+    hasTestsDir,
+    hasGithubWorkflows,
+    hasPackageJson,
+    hasPnpmLock,
+    hasPyproject,
+    hasCargoToml,
+    hasGoMod,
+    hasProjectConfig,
+    frameworkHints,
+  ] = await Promise.all([
     fileExists(path.join(input.projectRoot, 'pnpm-workspace.yaml')),
     fileExists(path.join(input.projectRoot, 'turbo.json')),
     fileExists(path.join(input.projectRoot, 'docs')),
@@ -128,13 +141,14 @@ export async function collectProjectScanSignals(
   ].filter((item): item is string => Boolean(item))
 
   const hasNestedRepositories = input.repositories.some((repository) => repository.path !== '.')
-  const repositoryLayout = hasDocsDir && input.repositories.length === 1 && !hasPackageJson
-    ? 'docs-heavy'
-    : input.repositories.length > 1
-      ? 'multi-repo'
-      : hasDocsDir && hasPackageJson
-        ? 'mixed'
-        : 'single-repo'
+  const repositoryLayout =
+    hasDocsDir && input.repositories.length === 1 && !hasPackageJson
+      ? 'docs-heavy'
+      : input.repositories.length > 1
+        ? 'multi-repo'
+        : hasDocsDir && hasPackageJson
+          ? 'mixed'
+          : 'single-repo'
 
   const languages = [
     hasPackageJson ? 'typescript' : null,
@@ -155,13 +169,14 @@ export async function collectProjectScanSignals(
     hasGoMod ? 'go' : null,
   ].filter((item): item is string => Boolean(item))
 
-  const likelyProjectType = hasDocsDir && !hasTestsDir && !hasPackageJson
-    ? 'docs-heavy'
-    : hasTestsDir && input.repositories.length === 1
-      ? 'standard-software'
-      : input.repositories.length > 1
-        ? 'mixed'
-        : 'fast-bugfix'
+  const likelyProjectType =
+    hasDocsDir && !hasTestsDir && !hasPackageJson
+      ? 'docs-heavy'
+      : hasTestsDir && input.repositories.length === 1
+        ? 'standard-software'
+        : input.repositories.length > 1
+          ? 'mixed'
+          : 'fast-bugfix'
 
   return {
     projectPath: input.projectRoot,

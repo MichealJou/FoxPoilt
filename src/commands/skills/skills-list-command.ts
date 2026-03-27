@@ -8,9 +8,7 @@ import type {
   SkillsListDependencies,
 } from '@/commands/skills/skills-list-types.js'
 
-function getDependencies(
-  overrides: Partial<SkillsListDependencies> = {},
-): SkillsListDependencies {
+function getDependencies(overrides: Partial<SkillsListDependencies> = {}): SkillsListDependencies {
   return {
     collectSkillRegistry,
     ...overrides,
@@ -56,7 +54,9 @@ export async function runSkillsListCommand(
     exitCode: 0,
     stdout: [
       '[FoxPilot] Skills',
-      ...items.map((item) => `- ${item.skillId}: ${item.status}${item.version ? ` (${item.version})` : ''}`),
+      ...items.map(
+        (item) => `- ${item.skillId}: ${item.status}${item.version ? ` (${item.version})` : ''}`,
+      ),
     ].join('\n'),
   }
 }

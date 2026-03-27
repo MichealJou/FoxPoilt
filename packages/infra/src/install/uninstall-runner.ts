@@ -20,11 +20,15 @@ export type UninstallRunnerDependencies = {
   platform?: NodeJS.Platform
   homeDir?: string
   runCommand?: (command: string, args: string[]) => Promise<UninstallCommandResult>
-  removePath?: (targetPath: string, options?: { recursive?: boolean; force?: boolean }) => Promise<void>
-  removeUnixShellPath?: (args: { homeDir: string; binDir: string }) => Promise<{ updatedProfiles: string[] }>
-  removeWindowsPathEntry?: (
+  removePath?: (
     targetPath: string,
-  ) => Promise<void | boolean | { updated: boolean }>
+    options?: { recursive?: boolean; force?: boolean },
+  ) => Promise<void>
+  removeUnixShellPath?: (args: {
+    homeDir: string
+    binDir: string
+  }) => Promise<{ updatedProfiles: string[] }>
+  removeWindowsPathEntry?: (targetPath: string) => Promise<void | boolean | { updated: boolean }>
 }
 
 async function runCommand(command: string, args: string[]): Promise<UninstallCommandResult> {
@@ -139,17 +143,11 @@ export async function runNpmUninstall(
   const args = ['uninstall', '-g', packageName]
   const result = await runner('npm', args)
   const npmBinDir = resolveNpmBinDir(manifest.installRoot, platform)
-  const lines = [
-    'strategy: npm',
-    `command: npm ${args.join(' ')}`,
-    `exitCode: ${result.exitCode}`,
-  ]
+  const lines = ['strategy: npm', `command: npm ${args.join(' ')}`, `exitCode: ${result.exitCode}`]
 
   if (platform === 'win32') {
     const pathCleanupUserEntry = npmBinDir
-      ? resolveWindowsPathCleanupState(
-          await getWindowsPathEntryRemover(dependencies)(npmBinDir),
-        )
+      ? resolveWindowsPathCleanupState(await getWindowsPathEntryRemover(dependencies)(npmBinDir))
       : false
 
     lines.push(`pathCleanupUserEntry: ${pathCleanupUserEntry}`)
@@ -180,11 +178,9 @@ export async function runBrewUninstall(
   const args = ['uninstall', formula]
   const result = await runner('brew', args)
 
-  return [
-    'strategy: brew',
-    `command: brew ${args.join(' ')}`,
-    `exitCode: ${result.exitCode}`,
-  ].join('\n')
+  return ['strategy: brew', `command: brew ${args.join(' ')}`, `exitCode: ${result.exitCode}`].join(
+    '\n',
+  )
 }
 
 /**
@@ -228,20 +224,17 @@ export async function runReleaseUninstall(
   ]
 
   if (platform === 'win32') {
-    const pathCleanupUserEntry = resolveWindowsPathCleanupState(
-      await windowsPathRemover(binDir),
-    )
+    const pathCleanupUserEntry = resolveWindowsPathCleanupState(await windowsPathRemover(binDir))
     lines.push(`pathCleanupUserEntry: ${pathCleanupUserEntry}`)
     return lines.join('\n')
   }
 
-  const cleanedProfiles =
-    !homeDir
-      ? { updatedProfiles: [] }
-      : await shellPathRemover({
-          homeDir,
-          binDir,
-        })
+  const cleanedProfiles = !homeDir
+    ? { updatedProfiles: [] }
+    : await shellPathRemover({
+        homeDir,
+        binDir,
+      })
 
   lines.push(`pathCleanupProfiles: ${cleanedProfiles.updatedProfiles.length}`)
   return lines.join('\n')

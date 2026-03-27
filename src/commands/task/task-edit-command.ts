@@ -10,7 +10,10 @@ import { bootstrapDatabase } from '@foxpilot/infra/db/bootstrap.js'
 import { createTaskStore } from '@foxpilot/infra/db/task-store.js'
 import { getMessages } from '@/i18n/messages.js'
 import { resolveTaskReference } from '@/commands/task/task-reference.js'
-import { ProjectNotInitializedError, resolveManagedProject } from '@foxpilot/infra/project/resolve-project.js'
+import {
+  ProjectNotInitializedError,
+  resolveManagedProject,
+} from '@foxpilot/infra/project/resolve-project.js'
 
 import type {
   TaskEditArgs,
@@ -21,9 +24,7 @@ import type {
 /**
  * 解析任务元数据编辑命令使用的默认依赖集合。
  */
-function getDependencies(
-  overrides: Partial<TaskEditDependencies> = {},
-): TaskEditDependencies {
+function getDependencies(overrides: Partial<TaskEditDependencies> = {}): TaskEditDependencies {
   return {
     resolveManagedProject,
     bootstrapDatabase,
@@ -196,7 +197,9 @@ export async function runTaskEditCommand(
       stdout: args.json
         ? toJsonErrorOutput(commandName, {
             code: args.externalId ? 'TASK_NOT_FOUND' : 'TASK_REFERENCE_REQUIRED',
-            message: args.externalId ? messages.taskEdit.taskNotFound : messages.taskEdit.idRequired,
+            message: args.externalId
+              ? messages.taskEdit.taskNotFound
+              : messages.taskEdit.idRequired,
             details: args.externalId
               ? {
                   externalSource: args.externalSource ?? 'beads',

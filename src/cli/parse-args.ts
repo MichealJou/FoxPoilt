@@ -55,7 +55,15 @@ export type CliArgs = {
   /** 用于限定任务作用范围的可选仓库选择器。 */
   repository?: string
   /** 可选的状态过滤条件或目标状态。 */
-  status?: 'todo' | 'analyzing' | 'awaiting_plan_confirm' | 'executing' | 'awaiting_result_confirm' | 'done' | 'blocked' | 'cancelled'
+  status?:
+    | 'todo'
+    | 'analyzing'
+    | 'awaiting_plan_confirm'
+    | 'executing'
+    | 'awaiting_result_confirm'
+    | 'done'
+    | 'blocked'
+    | 'cancelled'
   /** 可选的任务来源过滤条件。 */
   source?: 'manual' | 'beads_sync' | 'scan_suggestion'
   /** 详情和状态更新命令使用的可选任务标识。 */

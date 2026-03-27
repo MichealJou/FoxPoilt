@@ -3,7 +3,12 @@
  * @author michaeljou
  */
 
-import type { DetectablePlatformId, ProjectProfileId, ProjectRoleId, ProjectStageId } from '@foxpilot/contracts/orchestration-contract.js'
+import type {
+  DetectablePlatformId,
+  ProjectProfileId,
+  ProjectRoleId,
+  ProjectStageId,
+} from '@foxpilot/contracts/orchestration-contract.js'
 import { DEFAULT_STAGE_PLATFORM_SEEDS } from '@foxpilot/runtime/orchestrators/platform-resolver.js'
 import type { ProjectScanSignals } from '@foxpilot/runtime/init/project-scan-signals.js'
 
@@ -52,7 +57,9 @@ function recommendProfile(signals: ProjectScanSignals): InitRecommendationResult
   }
 }
 
-function recommendWorkflowTemplate(signals: ProjectScanSignals): InitRecommendationResult['workflowTemplate'] {
+function recommendWorkflowTemplate(
+  signals: ProjectScanSignals,
+): InitRecommendationResult['workflowTemplate'] {
   if (signals.workflow.likelyProjectType === 'docs-heavy') {
     return {
       recommended: 'docs-heavy',

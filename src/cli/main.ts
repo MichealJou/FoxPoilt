@@ -71,7 +71,8 @@ export async function main(
    * - 所有命令默认共享同一份当前语言；
    * - 测试可以通过 context 直接覆盖，无需真的写全局配置文件。
    */
-  const interfaceLanguage = context.interfaceLanguage ?? await resolveInterfaceLanguage({ homeDir })
+  const interfaceLanguage =
+    context.interfaceLanguage ?? (await resolveInterfaceLanguage({ homeDir }))
   const messages = getMessages(interfaceLanguage)
   /**
    * 运行时公共上下文统一在入口层构造，避免每个路由分支重复拼接同一组字段。

@@ -27,14 +27,17 @@ describe('project scan signals', () => {
     await mkdir(path.join(projectRoot, 'docs'), { recursive: true })
     await mkdir(path.join(projectRoot, 'tests'), { recursive: true })
     await mkdir(path.join(projectRoot, '.github', 'workflows'), { recursive: true })
-    await writeFile(path.join(projectRoot, 'package.json'), JSON.stringify({
-      dependencies: {
-        react: '^19.0.0',
-      },
-      devDependencies: {
-        vite: '^7.0.0',
-      },
-    }))
+    await writeFile(
+      path.join(projectRoot, 'package.json'),
+      JSON.stringify({
+        dependencies: {
+          react: '^19.0.0',
+        },
+        devDependencies: {
+          vite: '^7.0.0',
+        },
+      }),
+    )
     await writeFile(path.join(projectRoot, 'pnpm-workspace.yaml'), 'packages:\n  - apps/*\n')
 
     const result = await collectProjectScanSignals({

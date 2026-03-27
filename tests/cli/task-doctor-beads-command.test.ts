@@ -16,7 +16,7 @@ async function createManagedProjectWithRepositories(homeDir?: string): Promise<{
   homeDir: string
   projectRoot: string
 }> {
-  const resolvedHomeDir = homeDir ?? await createTempDir('foxpilot-home-')
+  const resolvedHomeDir = homeDir ?? (await createTempDir('foxpilot-home-'))
   const projectRoot = await createTempDir('foxpilot-project-')
 
   if (!homeDir) {
@@ -29,7 +29,15 @@ async function createManagedProjectWithRepositories(homeDir?: string): Promise<{
   await mkdir(path.join(projectRoot, 'frontend', '.git'), { recursive: true })
 
   const initResult = await runCli(
-    ['init', '--path', projectRoot, '--workspace-root', path.dirname(projectRoot), '--mode', 'non-interactive'],
+    [
+      'init',
+      '--path',
+      projectRoot,
+      '--workspace-root',
+      path.dirname(projectRoot),
+      '--mode',
+      'non-interactive',
+    ],
     { homeDir: resolvedHomeDir },
   )
   expect(initResult.exitCode).toBe(0)
@@ -45,27 +53,24 @@ describe('task doctor-beads CLI', () => {
     const { homeDir, projectRoot } = await createManagedProjectWithRepositories()
     const repositoryRoot = path.join(projectRoot, 'frontend')
 
-    const result = await runCli(
-      ['task', 'doctor-beads', '--repository', 'frontend'],
-      {
-        cwd: projectRoot,
-        homeDir,
-        dependencies: {
-          hasLocalBeadsRepository: async (input: { repositoryRoot: string }) => {
-            expect(input.repositoryRoot).toBe(repositoryRoot)
-            return true
-          },
-          runBdList: async (input: { repositoryRoot: string }) => {
-            expect(input.repositoryRoot).toBe(repositoryRoot)
+    const result = await runCli(['task', 'doctor-beads', '--repository', 'frontend'], {
+      cwd: projectRoot,
+      homeDir,
+      dependencies: {
+        hasLocalBeadsRepository: async (input: { repositoryRoot: string }) => {
+          expect(input.repositoryRoot).toBe(repositoryRoot)
+          return true
+        },
+        runBdList: async (input: { repositoryRoot: string }) => {
+          expect(input.repositoryRoot).toBe(repositoryRoot)
 
-            return JSON.stringify([
-              { id: 'BEADS-FE-1', title: '前端任务', status: 'open', priority: 1 },
-              { id: 'BEADS-FE-2', title: '联调任务', status: 'blocked', priority: 2 },
-            ])
-          },
+          return JSON.stringify([
+            { id: 'BEADS-FE-1', title: '前端任务', status: 'open', priority: 1 },
+            { id: 'BEADS-FE-2', title: '联调任务', status: 'blocked', priority: 2 },
+          ])
         },
       },
-    )
+    })
 
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('[FoxPilot] 已完成 Beads 环境诊断')
@@ -82,19 +87,16 @@ describe('task doctor-beads CLI', () => {
   it('支持按 all-repositories 诊断全部仓库并汇总 warning', async () => {
     const { homeDir, projectRoot } = await createManagedProjectWithRepositories()
 
-    const result = await runCli(
-      ['task', 'doctor-beads', '--all-repositories'],
-      {
-        cwd: projectRoot,
-        homeDir,
-        dependencies: {
-          hasLocalBeadsRepository: async (input: { repositoryRoot: string }) => input.repositoryRoot.endsWith('/frontend'),
-          runBdList: async () => JSON.stringify([
-            { id: 'BEADS-FE-1', title: '前端任务', status: 'open', priority: 1 },
-          ]),
-        },
+    const result = await runCli(['task', 'doctor-beads', '--all-repositories'], {
+      cwd: projectRoot,
+      homeDir,
+      dependencies: {
+        hasLocalBeadsRepository: async (input: { repositoryRoot: string }) =>
+          input.repositoryRoot.endsWith('/frontend'),
+        runBdList: async () =>
+          JSON.stringify([{ id: 'BEADS-FE-1', title: '前端任务', status: 'open', priority: 1 }]),
       },
-    )
+    })
 
     expect(result.exitCode).toBe(1)
     expect(result.stdout).toContain('- mode: all-repositories')
@@ -111,19 +113,16 @@ describe('task doctor-beads CLI', () => {
   it('返回结构化 json beads 环境诊断结果', async () => {
     const { homeDir, projectRoot } = await createManagedProjectWithRepositories()
 
-    const result = await runCli(
-      ['task', 'doctor-beads', '--all-repositories', '--json'],
-      {
-        cwd: projectRoot,
-        homeDir,
-        dependencies: {
-          hasLocalBeadsRepository: async (input: { repositoryRoot: string }) => input.repositoryRoot.endsWith('/frontend'),
-          runBdList: async () => JSON.stringify([
-            { id: 'BEADS-FE-1', title: '前端任务', status: 'open', priority: 1 },
-          ]),
-        },
+    const result = await runCli(['task', 'doctor-beads', '--all-repositories', '--json'], {
+      cwd: projectRoot,
+      homeDir,
+      dependencies: {
+        hasLocalBeadsRepository: async (input: { repositoryRoot: string }) =>
+          input.repositoryRoot.endsWith('/frontend'),
+        runBdList: async () =>
+          JSON.stringify([{ id: 'BEADS-FE-1', title: '前端任务', status: 'open', priority: 1 }]),
       },
-    )
+    })
 
     const payload = JSON.parse(result.stdout) as {
       ok: boolean
@@ -145,23 +144,24 @@ describe('task doctor-beads CLI', () => {
     expect(payload.data.mode).toBe('all-repositories')
     expect(payload.data.checkedRepositories).toBe(2)
     expect(payload.data.warningRepositories).toBe(1)
-    expect(payload.data.diagnoses.some((item) => item.repositoryPath === '.' && item.status === 'warning')).toBe(true)
+    expect(
+      payload.data.diagnoses.some(
+        (item) => item.repositoryPath === '.' && item.status === 'warning',
+      ),
+    ).toBe(true)
   })
 
   it('仓库存在但 bd 输出非法时标记为 error', async () => {
     const { homeDir, projectRoot } = await createManagedProjectWithRepositories()
 
-    const result = await runCli(
-      ['task', 'doctor-beads', '--repository', 'frontend'],
-      {
-        cwd: projectRoot,
-        homeDir,
-        dependencies: {
-          hasLocalBeadsRepository: async () => true,
-          runBdList: async () => 'not-json',
-        },
+    const result = await runCli(['task', 'doctor-beads', '--repository', 'frontend'], {
+      cwd: projectRoot,
+      homeDir,
+      dependencies: {
+        hasLocalBeadsRepository: async () => true,
+        runBdList: async () => 'not-json',
       },
-    )
+    })
 
     expect(result.exitCode).toBe(1)
     expect(result.stdout).toContain('- errorRepositories: 1')
@@ -172,20 +172,16 @@ describe('task doctor-beads CLI', () => {
   it('在多仓库项目里未传 repository 或 --all-repositories 时返回错误', async () => {
     const { homeDir, projectRoot } = await createManagedProjectWithRepositories()
 
-    const result = await runCli(
-      ['task', 'doctor-beads'],
-      { cwd: projectRoot, homeDir },
-    )
+    const result = await runCli(['task', 'doctor-beads'], { cwd: projectRoot, homeDir })
 
     expect(result.exitCode).toBe(1)
-    expect(result.stdout).toContain('[FoxPilot] Beads 环境诊断失败: repository 或 --all-repositories 必须提供其一')
+    expect(result.stdout).toContain(
+      '[FoxPilot] Beads 环境诊断失败: repository 或 --all-repositories 必须提供其一',
+    )
   })
 
   it('支持帮助输出与 fp 简写入口', async () => {
-    const result = await runCli(
-      ['task', 'doctor-beads', '--help'],
-      { binName: 'fp' },
-    )
+    const result = await runCli(['task', 'doctor-beads', '--help'], { binName: 'fp' })
 
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('fp task doctor-beads')

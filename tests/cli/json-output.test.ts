@@ -8,7 +8,11 @@ describe('cli json output', () => {
   })
 
   it('builds success envelopes for structured cli consumers', () => {
-    const output = toJsonSuccessOutput('init.preview', { profile: 'default' }, '2026-03-27T10:00:00.000Z')
+    const output = toJsonSuccessOutput(
+      'init.preview',
+      { profile: 'default' },
+      '2026-03-27T10:00:00.000Z',
+    )
 
     expect(output).toContain('"command": "init.preview"')
     expect(output).toContain('"profile": "default"')

@@ -10,9 +10,16 @@ import { createTaskStore } from '@foxpilot/infra/db/task-store.js'
 import { resolveGlobalDatabasePath } from '@foxpilot/infra/core/paths.js'
 import { getMessages } from '@/i18n/messages.js'
 import { resolveTaskReference } from '@/commands/task/task-reference.js'
-import { ProjectNotInitializedError, resolveManagedProject } from '@foxpilot/infra/project/resolve-project.js'
+import {
+  ProjectNotInitializedError,
+  resolveManagedProject,
+} from '@foxpilot/infra/project/resolve-project.js'
 
-import type { TaskShowArgs, TaskShowContext, TaskShowDependencies } from '@/commands/task/task-show-types.js'
+import type {
+  TaskShowArgs,
+  TaskShowContext,
+  TaskShowDependencies,
+} from '@/commands/task/task-show-types.js'
 
 /**
  * 解析任务详情命令使用的默认依赖集合。
@@ -20,9 +27,7 @@ import type { TaskShowArgs, TaskShowContext, TaskShowDependencies } from '@/comm
  * `task show` 需要同时读任务主记录和目标列表，
  * 但仍然保持“命令层不直接写 SQL”这一约束，因此把所有持久化能力都收敛到 store。
  */
-function getDependencies(
-  overrides: Partial<TaskShowDependencies> = {},
-): TaskShowDependencies {
+function getDependencies(overrides: Partial<TaskShowDependencies> = {}): TaskShowDependencies {
   return {
     resolveManagedProject,
     bootstrapDatabase,
@@ -212,12 +217,13 @@ export async function runTaskShowCommand(
       stdout: toJsonSuccessOutput(commandName, {
         projectRoot: managedProject.projectRoot,
         taskId: detail.task.id,
-        externalRef: detail.task.external_source && detail.task.external_id
-          ? {
-              externalSource: detail.task.external_source,
-              externalId: detail.task.external_id,
-            }
-          : null,
+        externalRef:
+          detail.task.external_source && detail.task.external_id
+            ? {
+                externalSource: detail.task.external_source,
+                externalId: detail.task.external_id,
+              }
+            : null,
         task: {
           taskId: detail.task.id,
           title: detail.task.title,

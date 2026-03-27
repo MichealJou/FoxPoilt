@@ -17,7 +17,7 @@ async function createManagedProjectWithRepositories(homeDir?: string): Promise<{
   homeDir: string
   projectRoot: string
 }> {
-  const resolvedHomeDir = homeDir ?? await createTempDir('foxpilot-home-')
+  const resolvedHomeDir = homeDir ?? (await createTempDir('foxpilot-home-'))
   const projectRoot = await createTempDir('foxpilot-project-')
 
   if (!homeDir) {
@@ -30,7 +30,15 @@ async function createManagedProjectWithRepositories(homeDir?: string): Promise<{
   await mkdir(path.join(projectRoot, 'frontend', '.git'), { recursive: true })
 
   const initResult = await runCli(
-    ['init', '--path', projectRoot, '--workspace-root', path.dirname(projectRoot), '--mode', 'non-interactive'],
+    [
+      'init',
+      '--path',
+      projectRoot,
+      '--workspace-root',
+      path.dirname(projectRoot),
+      '--mode',
+      'non-interactive',
+    ],
     { homeDir: resolvedHomeDir },
   )
   expect(initResult.exitCode).toBe(0)
@@ -56,33 +64,30 @@ describe('task sync-beads CLI', () => {
     const { homeDir, projectRoot } = await createManagedProjectWithRepositories()
     const repositoryRoot = path.join(projectRoot, 'frontend')
 
-    const result = await runCli(
-      ['task', 'sync-beads', '--repository', 'frontend'],
-      {
-        cwd: projectRoot,
-        homeDir,
-        dependencies: {
-          runBdList: async (input: { repositoryRoot: string }) => {
-            expect(input.repositoryRoot).toBe(repositoryRoot)
+    const result = await runCli(['task', 'sync-beads', '--repository', 'frontend'], {
+      cwd: projectRoot,
+      homeDir,
+      dependencies: {
+        runBdList: async (input: { repositoryRoot: string }) => {
+          expect(input.repositoryRoot).toBe(repositoryRoot)
 
-            return JSON.stringify([
-              {
-                id: 'bd-fe-101',
-                title: '补齐前端提交流程',
-                status: 'open',
-                priority: 1,
-              },
-              {
-                id: 'bd-fe-102',
-                title: '联调发布回归',
-                status: 'in_progress',
-                priority: 4,
-              },
-            ])
-          },
+          return JSON.stringify([
+            {
+              id: 'bd-fe-101',
+              title: '补齐前端提交流程',
+              status: 'open',
+              priority: 1,
+            },
+            {
+              id: 'bd-fe-102',
+              title: '联调发布回归',
+              status: 'in_progress',
+              priority: 4,
+            },
+          ])
         },
       },
-    )
+    })
 
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('[FoxPilot] 已完成本地 Beads 同步')
@@ -93,7 +98,9 @@ describe('task sync-beads CLI', () => {
     expect(result.stdout).toContain('- rejected: 0')
 
     const db = new Database(path.join(homeDir, '.foxpilot', 'foxpilot.db'))
-    const rows = db.prepare(`
+    const rows = db
+      .prepare(
+        `
       SELECT
         t.external_source,
         t.external_id,
@@ -106,7 +113,9 @@ describe('task sync-beads CLI', () => {
       JOIN repository r ON r.id = tt.repository_id
       WHERE t.source_type = 'beads_sync'
       ORDER BY t.external_id ASC
-    `).all() as Array<{
+    `,
+      )
+      .all() as Array<{
       external_source: string | null
       external_id: string | null
       title: string
@@ -139,13 +148,12 @@ describe('task sync-beads CLI', () => {
   it('支持 dry-run 且不真正写库', async () => {
     const { homeDir, projectRoot } = await createManagedProjectWithRepositories()
 
-    const result = await runCli(
-      ['task', 'sync-beads', '--repository', 'frontend', '--dry-run'],
-      {
-        cwd: projectRoot,
-        homeDir,
-        dependencies: {
-          runBdList: async () => JSON.stringify([
+    const result = await runCli(['task', 'sync-beads', '--repository', 'frontend', '--dry-run'], {
+      cwd: projectRoot,
+      homeDir,
+      dependencies: {
+        runBdList: async () =>
+          JSON.stringify([
             {
               id: 'bd-fe-201',
               title: '只预演不同步',
@@ -153,20 +161,23 @@ describe('task sync-beads CLI', () => {
               priority: 2,
             },
           ]),
-        },
       },
-    )
+    })
 
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('- dryRun: true')
     expect(result.stdout).toContain('- created: 1')
 
     const db = new Database(path.join(homeDir, '.foxpilot', 'foxpilot.db'))
-    const row = db.prepare(`
+    const row = db
+      .prepare(
+        `
       SELECT COUNT(*) AS count
       FROM task
       WHERE external_id = 'bd-fe-201'
-    `).get() as { count: number }
+    `,
+      )
+      .get() as { count: number }
     db.close()
 
     expect(row.count).toBe(0)
@@ -198,10 +209,10 @@ describe('task sync-beads CLI', () => {
       },
     ])
 
-    const importResult = await runCli(
-      ['task', 'import-beads', '--file', snapshotPath],
-      { cwd: projectRoot, homeDir },
-    )
+    const importResult = await runCli(['task', 'import-beads', '--file', snapshotPath], {
+      cwd: projectRoot,
+      homeDir,
+    })
     expect(importResult.exitCode).toBe(0)
 
     const syncResult = await runCli(
@@ -210,14 +221,15 @@ describe('task sync-beads CLI', () => {
         cwd: projectRoot,
         homeDir,
         dependencies: {
-          runBdList: async () => JSON.stringify([
-            {
-              id: 'BEADS-FE-1',
-              title: '前端保留任务',
-              status: 'open',
-              priority: 1,
-            },
-          ]),
+          runBdList: async () =>
+            JSON.stringify([
+              {
+                id: 'BEADS-FE-1',
+                title: '前端保留任务',
+                status: 'open',
+                priority: 1,
+              },
+            ]),
         },
       },
     )
@@ -226,12 +238,16 @@ describe('task sync-beads CLI', () => {
     expect(syncResult.stdout).toContain('- closed: 1')
 
     const db = new Database(path.join(homeDir, '.foxpilot', 'foxpilot.db'))
-    const rows = db.prepare(`
+    const rows = db
+      .prepare(
+        `
       SELECT external_id, status
       FROM task
       WHERE external_source = 'beads'
       ORDER BY external_id ASC
-    `).all() as Array<{ external_id: string; status: string }>
+    `,
+      )
+      .all() as Array<{ external_id: string; status: string }>
     db.close()
 
     expect(rows).toEqual([
@@ -244,20 +260,16 @@ describe('task sync-beads CLI', () => {
   it('在多仓库项目里未传 repository 时返回错误', async () => {
     const { homeDir, projectRoot } = await createManagedProjectWithRepositories()
 
-    const result = await runCli(
-      ['task', 'sync-beads'],
-      { cwd: projectRoot, homeDir },
-    )
+    const result = await runCli(['task', 'sync-beads'], { cwd: projectRoot, homeDir })
 
     expect(result.exitCode).toBe(1)
-    expect(result.stdout).toContain('[FoxPilot] 本地 Beads 同步失败: repository 或 --all-repositories 必须提供其一')
+    expect(result.stdout).toContain(
+      '[FoxPilot] 本地 Beads 同步失败: repository 或 --all-repositories 必须提供其一',
+    )
   })
 
   it('支持帮助输出与 fp 简写入口', async () => {
-    const result = await runCli(
-      ['task', 'sync-beads', '--help'],
-      { binName: 'fp' },
-    )
+    const result = await runCli(['task', 'sync-beads', '--help'], { binName: 'fp' })
 
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('foxpilot task sync-beads')
@@ -271,39 +283,38 @@ describe('task sync-beads CLI', () => {
     const rootRepository = projectRoot
     const frontendRepository = path.join(projectRoot, 'frontend')
 
-    const result = await runCli(
-      ['task', 'sync-beads', '--all-repositories'],
-      {
-        cwd: projectRoot,
-        homeDir,
-        dependencies: {
-          hasLocalBeadsRepository: async (input: { repositoryRoot: string }) => {
-            return input.repositoryRoot === rootRepository || input.repositoryRoot === frontendRepository
-          },
-          runBdList: async (input: { repositoryRoot: string }) => {
-            if (input.repositoryRoot === rootRepository) {
-              return JSON.stringify([
-                {
-                  id: 'bd-root-1',
-                  title: '根仓库 beads 任务',
-                  status: 'open',
-                  priority: 1,
-                },
-              ])
-            }
-
+    const result = await runCli(['task', 'sync-beads', '--all-repositories'], {
+      cwd: projectRoot,
+      homeDir,
+      dependencies: {
+        hasLocalBeadsRepository: async (input: { repositoryRoot: string }) => {
+          return (
+            input.repositoryRoot === rootRepository || input.repositoryRoot === frontendRepository
+          )
+        },
+        runBdList: async (input: { repositoryRoot: string }) => {
+          if (input.repositoryRoot === rootRepository) {
             return JSON.stringify([
               {
-                id: 'bd-fe-301',
-                title: '前端 beads 任务',
-                status: 'blocked',
-                priority: 2,
+                id: 'bd-root-1',
+                title: '根仓库 beads 任务',
+                status: 'open',
+                priority: 1,
               },
             ])
-          },
+          }
+
+          return JSON.stringify([
+            {
+              id: 'bd-fe-301',
+              title: '前端 beads 任务',
+              status: 'blocked',
+              priority: 2,
+            },
+          ])
         },
       },
-    )
+    })
 
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('- mode: all-repositories')
@@ -313,14 +324,18 @@ describe('task sync-beads CLI', () => {
     expect(result.stdout).toContain('- created: 2')
 
     const db = new Database(path.join(homeDir, '.foxpilot', 'foxpilot.db'))
-    const rows = db.prepare(`
+    const rows = db
+      .prepare(
+        `
       SELECT t.external_id, t.status, r.path AS repository_path
       FROM task t
       JOIN task_target tt ON tt.task_id = t.id
       JOIN repository r ON r.id = tt.repository_id
       WHERE t.external_source = 'beads'
       ORDER BY t.external_id ASC
-    `).all() as Array<{ external_id: string; status: string; repository_path: string }>
+    `,
+      )
+      .all() as Array<{ external_id: string; status: string; repository_path: string }>
     db.close()
 
     expect(rows).toEqual([
@@ -333,16 +348,15 @@ describe('task sync-beads CLI', () => {
     const { homeDir, projectRoot } = await createManagedProjectWithRepositories()
     const frontendRepository = path.join(projectRoot, 'frontend')
 
-    const result = await runCli(
-      ['task', 'sync-beads', '--all-repositories'],
-      {
-        cwd: projectRoot,
-        homeDir,
-        dependencies: {
-          hasLocalBeadsRepository: async (input: { repositoryRoot: string }) => {
-            return input.repositoryRoot === frontendRepository
-          },
-          runBdList: async () => JSON.stringify([
+    const result = await runCli(['task', 'sync-beads', '--all-repositories'], {
+      cwd: projectRoot,
+      homeDir,
+      dependencies: {
+        hasLocalBeadsRepository: async (input: { repositoryRoot: string }) => {
+          return input.repositoryRoot === frontendRepository
+        },
+        runBdList: async () =>
+          JSON.stringify([
             {
               id: 'bd-fe-401',
               title: '只有前端启用 beads',
@@ -350,9 +364,8 @@ describe('task sync-beads CLI', () => {
               priority: 1,
             },
           ]),
-        },
       },
-    )
+    })
 
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('- scannedRepositories: 2')
@@ -364,18 +377,15 @@ describe('task sync-beads CLI', () => {
   it('在调用 bd 失败时返回稳定错误', async () => {
     const { homeDir, projectRoot } = await createManagedProjectWithRepositories()
 
-    const result = await runCli(
-      ['task', 'sync-beads', '--repository', 'frontend'],
-      {
-        cwd: projectRoot,
-        homeDir,
-        dependencies: {
-          runBdList: async () => {
-            throw new Error('Injected bd list failure')
-          },
+    const result = await runCli(['task', 'sync-beads', '--repository', 'frontend'], {
+      cwd: projectRoot,
+      homeDir,
+      dependencies: {
+        runBdList: async () => {
+          throw new Error('Injected bd list failure')
         },
       },
-    )
+    })
 
     expect(result.exitCode).toBe(1)
     expect(result.stdout).toContain('[FoxPilot] 本地 Beads 同步失败: 无法读取 bd list 输出')
@@ -384,17 +394,14 @@ describe('task sync-beads CLI', () => {
   it('在 foxpilot.db 初始化失败时返回 exitCode 4', async () => {
     const { homeDir, projectRoot } = await createManagedProjectWithRepositories()
 
-    const result = await runCli(
-      ['task', 'sync-beads', '--repository', 'frontend'],
-      {
-        cwd: projectRoot,
-        homeDir,
-        failBootstrap: true,
-        dependencies: {
-          runBdList: async () => JSON.stringify([]),
-        },
+    const result = await runCli(['task', 'sync-beads', '--repository', 'frontend'], {
+      cwd: projectRoot,
+      homeDir,
+      failBootstrap: true,
+      dependencies: {
+        runBdList: async () => JSON.stringify([]),
       },
-    )
+    })
 
     expect(result.exitCode).toBe(4)
     expect(result.stdout).toContain('[FoxPilot] 本地 Beads 同步失败: foxpilot.db 初始化失败')
@@ -403,13 +410,12 @@ describe('task sync-beads CLI', () => {
   it('返回结构化 json beads 同步结果', async () => {
     const { homeDir, projectRoot } = await createManagedProjectWithRepositories()
 
-    const result = await runCli(
-      ['task', 'sync-beads', '--repository', 'frontend', '--json'],
-      {
-        cwd: projectRoot,
-        homeDir,
-        dependencies: {
-          runBdList: async () => JSON.stringify([
+    const result = await runCli(['task', 'sync-beads', '--repository', 'frontend', '--json'], {
+      cwd: projectRoot,
+      homeDir,
+      dependencies: {
+        runBdList: async () =>
+          JSON.stringify([
             {
               id: 'bd-fe-json-1',
               title: 'JSON 同步任务',
@@ -417,9 +423,8 @@ describe('task sync-beads CLI', () => {
               priority: 2,
             },
           ]),
-        },
       },
-    )
+    })
 
     expect(result.exitCode).toBe(0)
 

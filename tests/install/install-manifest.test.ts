@@ -20,7 +20,9 @@ describe('install manifest helpers', () => {
   it('resolves the default install index path for unix-style platforms', async () => {
     const { resolveInstallIndexPath } = await import('@foxpilot/infra/install/install-paths.js')
 
-    expect(resolveInstallIndexPath('/tmp/demo-home')).toBe('/tmp/demo-home/.foxpilot/installations.json')
+    expect(resolveInstallIndexPath('/tmp/demo-home')).toBe(
+      '/tmp/demo-home/.foxpilot/installations.json',
+    )
   })
 
   it('resolves the default install index path for windows', async () => {
@@ -34,7 +36,9 @@ describe('install manifest helpers', () => {
   it('resolves the sibling manifest path from the current executable path', async () => {
     const { resolveInstallManifestPath } = await import('@foxpilot/infra/install/install-paths.js')
 
-    expect(resolveInstallManifestPath('/usr/local/bin/foxpilot')).toBe('/usr/local/bin/install-manifest.json')
+    expect(resolveInstallManifestPath('/usr/local/bin/foxpilot')).toBe(
+      '/usr/local/bin/install-manifest.json',
+    )
   })
 
   it('returns undefined when the current executable has no manifest file', async () => {

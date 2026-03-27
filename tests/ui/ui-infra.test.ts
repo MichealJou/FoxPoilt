@@ -3,7 +3,9 @@ import { describe, expect, it } from 'vitest'
 describe('ui infrastructure', () => {
   it('exposes the ui build stack and jsdom test environment', async () => {
     const rootPackageJson = await import('../../package.json', { with: { type: 'json' } })
-    const desktopPackageJson = await import('../../apps/desktop/package.json', { with: { type: 'json' } })
+    const desktopPackageJson = await import('../../apps/desktop/package.json', {
+      with: { type: 'json' },
+    })
     const rootPkg = rootPackageJson.default
     const desktopPkg = desktopPackageJson.default
 

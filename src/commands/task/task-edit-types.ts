@@ -12,13 +12,7 @@ import type { resolveManagedProject } from '@foxpilot/infra/project/resolve-proj
 /**
  * `task edit` 允许写入的任务类型集合。
  */
-export type EditableTaskType =
-  | 'generic'
-  | 'frontend'
-  | 'backend'
-  | 'cross_repo'
-  | 'docs'
-  | 'init'
+export type EditableTaskType = 'generic' | 'frontend' | 'backend' | 'cross_repo' | 'docs' | 'init'
 
 /**
  * `task edit` 的标准化参数。

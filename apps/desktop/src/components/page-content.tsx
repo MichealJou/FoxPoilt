@@ -15,7 +15,13 @@ import {
 import type { DesktopPageId } from '@desktop/lib/desktop-pages.js'
 import { Badge } from '@desktop/components/ui/badge.js'
 import { Button } from '@desktop/components/ui/button.js'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@desktop/components/ui/card.js'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@desktop/components/ui/card.js'
 import { Separator } from '@desktop/components/ui/separator.js'
 
 function statusVariant(status: string): 'default' | 'success' | 'warning' | 'danger' | 'outline' {
@@ -55,7 +61,9 @@ export function PageContent({ page }: { page: DesktopPageId }) {
             <Card>
               <CardHeader>
                 <CardTitle>Focus Queue</CardTitle>
-                <CardDescription>基于优先级、阻塞性和阶段交接计算出的当前焦点列表。</CardDescription>
+                <CardDescription>
+                  基于优先级、阻塞性和阶段交接计算出的当前焦点列表。
+                </CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col gap-3">
                 {focusQueue.map((item) => (
@@ -69,7 +77,9 @@ export function PageContent({ page }: { page: DesktopPageId }) {
                         {item.stage} · {item.platform}
                       </span>
                     </div>
-                    <Badge variant={item.priority === 'P0' ? 'danger' : 'warning'}>{item.priority}</Badge>
+                    <Badge variant={item.priority === 'P0' ? 'danger' : 'warning'}>
+                      {item.priority}
+                    </Badge>
                   </div>
                 ))}
               </CardContent>
@@ -82,7 +92,10 @@ export function PageContent({ page }: { page: DesktopPageId }) {
               </CardHeader>
               <CardContent className="flex flex-col gap-3">
                 {healthIssues.map((issue) => (
-                  <div key={issue.title} className="rounded-lg border border-border/80 bg-background/40 p-4">
+                  <div
+                    key={issue.title}
+                    className="rounded-lg border border-border/80 bg-background/40 p-4"
+                  >
                     <div className="flex items-center gap-2">
                       <AlertTriangle className="size-4 text-warning" />
                       <span className="font-medium">{issue.title}</span>
@@ -107,7 +120,9 @@ export function PageContent({ page }: { page: DesktopPageId }) {
             <CardContent className="flex flex-col gap-4 text-sm">
               <div>
                 <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Root</div>
-                <div className="mt-1 break-all font-medium" data-mono="true">{workspaceSummary.root}</div>
+                <div className="mt-1 break-all font-medium" data-mono="true">
+                  {workspaceSummary.root}
+                </div>
               </div>
               <Separator />
               <div className="grid grid-cols-2 gap-4">
@@ -140,7 +155,10 @@ export function PageContent({ page }: { page: DesktopPageId }) {
                 'docs/specs',
                 'src-tauri',
               ].map((signal) => (
-                <div key={signal} className="rounded-lg border border-border/80 bg-background/50 px-4 py-3 text-sm">
+                <div
+                  key={signal}
+                  className="rounded-lg border border-border/80 bg-background/50 px-4 py-3 text-sm"
+                >
                   {signal}
                 </div>
               ))}
@@ -171,9 +189,13 @@ export function PageContent({ page }: { page: DesktopPageId }) {
               >
                 <span className="font-medium">{task.title}</span>
                 <span className="text-muted-foreground">{task.source}</span>
-                <Badge variant={task.status === 'todo' ? 'outline' : 'default'}>{task.status}</Badge>
+                <Badge variant={task.status === 'todo' ? 'outline' : 'default'}>
+                  {task.status}
+                </Badge>
                 <span className="text-muted-foreground">{task.owner}</span>
-                <Badge variant={task.priority === 'P0' ? 'danger' : 'warning'}>{task.priority}</Badge>
+                <Badge variant={task.priority === 'P0' ? 'danger' : 'warning'}>
+                  {task.priority}
+                </Badge>
               </div>
             ))}
           </CardContent>
@@ -204,7 +226,9 @@ export function PageContent({ page }: { page: DesktopPageId }) {
                   </div>
                 </div>
                 <Badge variant={statusVariant(item.status)}>{item.status}</Badge>
-                {index < runTimeline.length - 1 ? <ArrowRight className="size-4 text-muted-foreground" /> : null}
+                {index < runTimeline.length - 1 ? (
+                  <ArrowRight className="size-4 text-muted-foreground" />
+                ) : null}
               </div>
             ))}
           </CardContent>
@@ -257,7 +281,10 @@ export function PageContent({ page }: { page: DesktopPageId }) {
             </CardHeader>
             <CardContent className="flex flex-col gap-3">
               {healthIssues.map((issue) => (
-                <div key={issue.title} className="rounded-lg border border-border/80 bg-background/40 p-4">
+                <div
+                  key={issue.title}
+                  className="rounded-lg border border-border/80 bg-background/40 p-4"
+                >
                   <div className="flex items-center justify-between gap-4">
                     <span className="font-medium">{issue.title}</span>
                     <Badge variant={statusVariant(issue.severity)}>{issue.severity}</Badge>
@@ -273,12 +300,14 @@ export function PageContent({ page }: { page: DesktopPageId }) {
               <CardDescription>把修复入口压到操作面板，减少 CLI 记忆负担。</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-3">
-              {['运行 foundation doctor', '刷新 Skills 注册表', '重新探测 Trae 平台'].map((action) => (
-                <Button key={action} variant="outline" className="justify-between">
-                  {action}
-                  <ChevronRight className="size-4" />
-                </Button>
-              ))}
+              {['运行 foundation doctor', '刷新 Skills 注册表', '重新探测 Trae 平台'].map(
+                (action) => (
+                  <Button key={action} variant="outline" className="justify-between">
+                    {action}
+                    <ChevronRight className="size-4" />
+                  </Button>
+                ),
+              )}
             </CardContent>
           </Card>
         </div>
@@ -293,7 +322,13 @@ function RegistryCard({
 }: {
   title: string
   description: string
-  items: ReadonlyArray<{ name: string; role?: string; scope?: string; endpoint?: string; status: string }>
+  items: ReadonlyArray<{
+    name: string
+    role?: string
+    scope?: string
+    endpoint?: string
+    status: string
+  }>
 }) {
   return (
     <Card>

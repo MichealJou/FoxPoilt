@@ -71,7 +71,8 @@ describe('shell path helper', () => {
   })
 
   it('removes the managed foxpilot path block from shell profiles', async () => {
-    const { ensureUnixShellPath, removeUnixShellPath } = await import('@foxpilot/infra/install/shell-path.js')
+    const { ensureUnixShellPath, removeUnixShellPath } =
+      await import('@foxpilot/infra/install/shell-path.js')
     const homeDir = await createTempDir('foxpilot-shell-home-')
     const binDir = path.join(homeDir, '.foxpilot/bin')
     tempDirs.push(homeDir)

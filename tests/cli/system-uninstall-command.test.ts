@@ -81,7 +81,8 @@ describe('uninstall CLI', () => {
       homeDir,
       executablePath,
       dependencies: {
-        dispatchUninstall: async () => 'strategy: npm\ncommand: npm uninstall -g foxpilot\nexitCode: 0',
+        dispatchUninstall: async () =>
+          'strategy: npm\ncommand: npm uninstall -g foxpilot\nexitCode: 0',
       },
     })
 
@@ -136,7 +137,9 @@ describe('uninstall CLI', () => {
 
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('purge: true')
-    await expect(readFile(path.join(homeDir, '.foxpilot', 'foxpilot.config.json'), 'utf8')).rejects.toBeDefined()
+    await expect(
+      readFile(path.join(homeDir, '.foxpilot', 'foxpilot.config.json'), 'utf8'),
+    ).rejects.toBeDefined()
   })
 
   it('fails clearly when the current executable has no install manifest', async () => {

@@ -1,0 +1,11 @@
+node_modules
+.turbo
+dist
+dist-ui
+coverage
+apps/desktop/dist-ui
+apps/desktop/src-tauri/target
+apps/desktop/src-tauri/gen
+pnpm-lock.yaml
+AGENTS.md
+**/*.md

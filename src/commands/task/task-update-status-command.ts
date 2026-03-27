@@ -12,7 +12,10 @@ import { createTaskStore, type TaskRunRow } from '@foxpilot/infra/db/task-store.
 import { resolveGlobalDatabasePath } from '@foxpilot/infra/core/paths.js'
 import { getMessages } from '@/i18n/messages.js'
 import { resolveTaskReference } from '@/commands/task/task-reference.js'
-import { ProjectNotInitializedError, resolveManagedProject } from '@foxpilot/infra/project/resolve-project.js'
+import {
+  ProjectNotInitializedError,
+  resolveManagedProject,
+} from '@foxpilot/infra/project/resolve-project.js'
 
 import type {
   TaskUpdateStatusArgs,
@@ -112,9 +115,9 @@ function isAllowedTaskStatusTransition(
     cancelled: [],
   }
 
-  return allowedTransitions[currentStatus as Exclude<TaskUpdateStatusArgs['status'], undefined>].includes(
-    nextStatus,
-  )
+  return allowedTransitions[
+    currentStatus as Exclude<TaskUpdateStatusArgs['status'], undefined>
+  ].includes(nextStatus)
 }
 
 /**

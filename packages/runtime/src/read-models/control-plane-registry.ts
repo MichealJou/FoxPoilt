@@ -286,8 +286,7 @@ function parseCodexMcpServers(input: { content: string; configPath: string }): P
       if (key === 'command') {
         current.command = value
       } else if (key === 'type') {
-        current.transport =
-          value === 'stdio' || value === 'http' ? value : 'unknown'
+        current.transport = value === 'stdio' || value === 'http' ? value : 'unknown'
       } else if (key === 'url') {
         current.url = value
       }
@@ -317,7 +316,9 @@ export async function collectPlatformRegistry(
       const detection = await dependencies.detectPlatformAvailability(platformId)
       const version =
         detection.available && detection.command
-          ? parseVersionLine((await dependencies.runCommand(detection.command, ['--version'])).stdout)
+          ? parseVersionLine(
+              (await dependencies.runCommand(detection.command, ['--version'])).stdout,
+            )
           : null
 
       return {

@@ -135,9 +135,7 @@ describe('uninstall runner', () => {
       },
     )
 
-    expect(removedEntries).toEqual([
-      'C:\\Users\\tester\\AppData\\Roaming\\npm',
-    ])
+    expect(removedEntries).toEqual(['C:\\Users\\tester\\AppData\\Roaming\\npm'])
     expect(result).toContain('pathCleanupUserEntry: true')
   })
 })

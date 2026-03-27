@@ -16,7 +16,7 @@ async function createManagedProjectWithRepositories(homeDir?: string): Promise<{
   homeDir: string
   projectRoot: string
 }> {
-  const resolvedHomeDir = homeDir ?? await createTempDir('foxpilot-home-')
+  const resolvedHomeDir = homeDir ?? (await createTempDir('foxpilot-home-'))
   const projectRoot = await createTempDir('foxpilot-project-')
 
   if (!homeDir) {
@@ -29,7 +29,15 @@ async function createManagedProjectWithRepositories(homeDir?: string): Promise<{
   await mkdir(path.join(projectRoot, 'frontend', '.git'), { recursive: true })
 
   const initResult = await runCli(
-    ['init', '--path', projectRoot, '--workspace-root', path.dirname(projectRoot), '--mode', 'non-interactive'],
+    [
+      'init',
+      '--path',
+      projectRoot,
+      '--workspace-root',
+      path.dirname(projectRoot),
+      '--mode',
+      'non-interactive',
+    ],
     { homeDir: resolvedHomeDir },
   )
   expect(initResult.exitCode).toBe(0)
@@ -46,19 +54,16 @@ describe('task init-beads CLI', () => {
     const repositoryRoot = path.join(projectRoot, 'frontend')
     const calls: string[] = []
 
-    const result = await runCli(
-      ['task', 'init-beads', '--repository', 'frontend'],
-      {
-        cwd: projectRoot,
-        homeDir,
-        dependencies: {
-          hasLocalBeadsRepository: async () => false,
-          runBdInit: async (input: { repositoryRoot: string }) => {
-            calls.push(input.repositoryRoot)
-          },
+    const result = await runCli(['task', 'init-beads', '--repository', 'frontend'], {
+      cwd: projectRoot,
+      homeDir,
+      dependencies: {
+        hasLocalBeadsRepository: async () => false,
+        runBdInit: async (input: { repositoryRoot: string }) => {
+          calls.push(input.repositoryRoot)
         },
       },
-    )
+    })
 
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('[FoxPilot] 已完成本地 Beads 初始化')
@@ -74,19 +79,17 @@ describe('task init-beads CLI', () => {
     const { homeDir, projectRoot } = await createManagedProjectWithRepositories()
     let called = false
 
-    const result = await runCli(
-      ['task', 'init-beads', '--all-repositories', '--dry-run'],
-      {
-        cwd: projectRoot,
-        homeDir,
-        dependencies: {
-          hasLocalBeadsRepository: async (input: { repositoryRoot: string }) => input.repositoryRoot === projectRoot,
-          runBdInit: async () => {
-            called = true
-          },
+    const result = await runCli(['task', 'init-beads', '--all-repositories', '--dry-run'], {
+      cwd: projectRoot,
+      homeDir,
+      dependencies: {
+        hasLocalBeadsRepository: async (input: { repositoryRoot: string }) =>
+          input.repositoryRoot === projectRoot,
+        runBdInit: async () => {
+          called = true
         },
       },
-    )
+    })
 
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('- mode: all-repositories')
@@ -102,19 +105,16 @@ describe('task init-beads CLI', () => {
     const { homeDir, projectRoot } = await createManagedProjectWithRepositories()
     let called = false
 
-    const result = await runCli(
-      ['task', 'init-beads', '--repository', 'frontend'],
-      {
-        cwd: projectRoot,
-        homeDir,
-        dependencies: {
-          hasLocalBeadsRepository: async () => true,
-          runBdInit: async () => {
-            called = true
-          },
+    const result = await runCli(['task', 'init-beads', '--repository', 'frontend'], {
+      cwd: projectRoot,
+      homeDir,
+      dependencies: {
+        hasLocalBeadsRepository: async () => true,
+        runBdInit: async () => {
+          called = true
         },
       },
-    )
+    })
 
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('- plannedRepositories: 0')
@@ -126,20 +126,16 @@ describe('task init-beads CLI', () => {
   it('多仓库项目里未传 repository 或 --all-repositories 时返回错误', async () => {
     const { homeDir, projectRoot } = await createManagedProjectWithRepositories()
 
-    const result = await runCli(
-      ['task', 'init-beads'],
-      { cwd: projectRoot, homeDir },
-    )
+    const result = await runCli(['task', 'init-beads'], { cwd: projectRoot, homeDir })
 
     expect(result.exitCode).toBe(1)
-    expect(result.stdout).toContain('[FoxPilot] 本地 Beads 初始化失败: repository 或 --all-repositories 必须提供其一')
+    expect(result.stdout).toContain(
+      '[FoxPilot] 本地 Beads 初始化失败: repository 或 --all-repositories 必须提供其一',
+    )
   })
 
   it('支持帮助输出与 fp 简写入口', async () => {
-    const result = await runCli(
-      ['task', 'init-beads', '--help'],
-      { binName: 'fp' },
-    )
+    const result = await runCli(['task', 'init-beads', '--help'], { binName: 'fp' })
 
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('fp task init-beads')

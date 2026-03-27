@@ -189,13 +189,13 @@ export type MessageCatalog = {
     rejectedTitle: string
   }
   taskUpdateStatus: {
-      helpDescription: string
-      idRequired: string
-      statusRequired: string
-      projectNotInitialized: string
-      dbBootstrapFailed: string
-      taskNotFound: string
-      invalidTransition: string
+    helpDescription: string
+    idRequired: string
+    statusRequired: string
+    projectNotInitialized: string
+    dbBootstrapFailed: string
+    taskNotFound: string
+    invalidTransition: string
     unchanged: string
     updated: string
   }
@@ -242,15 +242,18 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       catalogWritten: '[FoxPilot] 已写入项目索引',
       completed: '[FoxPilot] 初始化完成',
       completedNextStep: '后续可继续执行任务登记、项目扫描建议或桌面端接管流程。',
-      projectRootPrompt: (projectRoot) => `项目根目录: ${projectRoot}\n是否使用这个目录初始化？ [Y/n]`,
+      projectRootPrompt: (projectRoot) =>
+        `项目根目录: ${projectRoot}\n是否使用这个目录初始化？ [Y/n]`,
       projectNamePrompt: (projectName) => `项目名默认为 ${projectName}，是否确认？ [Y/n]`,
-      workspaceRootPrompt: (workspaceRoot) => `推断工作区根目录为 ${workspaceRoot}，是否确认？ [Y/n]`,
+      workspaceRootPrompt: (workspaceRoot) =>
+        `推断工作区根目录为 ${workspaceRoot}，是否确认？ [Y/n]`,
       detectedRepositories: '识别到以下仓库候选:',
       writeRepositoriesPrompt: '是否按该结果写入？ [Y/n]',
       continuePrompt: '将生成项目配置并写入全局索引，是否继续？ [Y/n]',
       enterProjectName: '请输入项目名:',
       enterWorkspaceRoot: '请输入工作区根目录:',
-      selectInterfaceLanguage: '选择交互语言 / Select interface language / インターフェース言語を選択',
+      selectInterfaceLanguage:
+        '选择交互语言 / Select interface language / インターフェース言語を選択',
       languageChoices: ['1. 中文', '2. English', '3. 日本語'],
       pathNotFound: '[FoxPilot] 初始化失败: 目标路径不存在',
       pathNotDirectory: '[FoxPilot] 初始化失败: 目标路径不是目录',
@@ -281,7 +284,8 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
     },
     taskDoctorBeads: {
       helpDescription: '诊断当前项目的本地 Beads 环境是否可用于同步和回写。',
-      repositoryRequired: '[FoxPilot] Beads 环境诊断失败: repository 或 --all-repositories 必须提供其一',
+      repositoryRequired:
+        '[FoxPilot] Beads 环境诊断失败: repository 或 --all-repositories 必须提供其一',
       repositoryNotFound: '[FoxPilot] Beads 环境诊断失败: repository 不存在',
       projectNotInitialized: '[FoxPilot] Beads 环境诊断失败: 项目尚未初始化',
       dbBootstrapFailed: '[FoxPilot] Beads 环境诊断失败: foxpilot.db 初始化失败',
@@ -289,7 +293,8 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
     },
     taskInitBeads: {
       helpDescription: '为当前项目的仓库初始化本地 Beads 环境。',
-      repositoryRequired: '[FoxPilot] 本地 Beads 初始化失败: repository 或 --all-repositories 必须提供其一',
+      repositoryRequired:
+        '[FoxPilot] 本地 Beads 初始化失败: repository 或 --all-repositories 必须提供其一',
       repositoryNotFound: '[FoxPilot] 本地 Beads 初始化失败: repository 不存在',
       projectNotInitialized: '[FoxPilot] 本地 Beads 初始化失败: 项目尚未初始化',
       completed: '[FoxPilot] 已完成本地 Beads 初始化',
@@ -335,7 +340,8 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
     },
     taskPushBeads: {
       helpDescription: '把当前项目中的单条 Beads 导入任务回写到本地 bd 仓库。',
-      targetRequired: '[FoxPilot] Beads 回写失败: id、external-id、repository 或 --all-repositories 必须提供其一',
+      targetRequired:
+        '[FoxPilot] Beads 回写失败: id、external-id、repository 或 --all-repositories 必须提供其一',
       idRequired: '[FoxPilot] Beads 回写失败: id 或 external-id 不能为空',
       projectNotInitialized: '[FoxPilot] Beads 回写失败: 项目尚未初始化',
       dbBootstrapFailed: '[FoxPilot] Beads 回写失败: foxpilot.db 初始化失败',
@@ -375,7 +381,8 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
     },
     taskSyncBeads: {
       helpDescription: '直接从指定仓库的 bd list 输出同步本地 Beads 任务。',
-      repositoryRequired: '[FoxPilot] 本地 Beads 同步失败: repository 或 --all-repositories 必须提供其一',
+      repositoryRequired:
+        '[FoxPilot] 本地 Beads 同步失败: repository 或 --all-repositories 必须提供其一',
       repositoryNotFound: '[FoxPilot] 本地 Beads 同步失败: repository 不存在',
       readFailed: '[FoxPilot] 本地 Beads 同步失败: 无法读取 bd list 输出',
       invalidJson: '[FoxPilot] 本地 Beads 同步失败: bd list 输出不是合法 JSON',
@@ -387,7 +394,8 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
     },
     taskDiffBeads: {
       helpDescription: '预览本地 Beads 快照导入后会产生的差异。',
-      fileRequired: '[FoxPilot] Beads 差异预览失败: file、repository 或 --all-repositories 必须提供其一',
+      fileRequired:
+        '[FoxPilot] Beads 差异预览失败: file、repository 或 --all-repositories 必须提供其一',
       fileReadFailed: '[FoxPilot] Beads 差异预览失败: 无法读取预览来源',
       invalidJson: '[FoxPilot] Beads 差异预览失败: 预览来源 JSON 格式错误',
       invalidPayload: '[FoxPilot] Beads 差异预览失败: 预览来源必须是任务数组',
@@ -451,7 +459,8 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       unknownCommand: '[FoxPilot] Unknown command',
     },
     init: {
-      helpDescription: 'Initialize a managed project and write project config, global config, and SQLite catalog state.',
+      helpDescription:
+        'Initialize a managed project and write project config, global config, and SQLite catalog state.',
       cancelled: '[FoxPilot] Initialization cancelled',
       targetConfirmed: '[FoxPilot] Initialization target confirmed',
       projectConfigGenerated: '[FoxPilot] Project config generated',
@@ -459,22 +468,27 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       globalDatabaseConfirmed: '[FoxPilot] Global database confirmed',
       catalogWritten: '[FoxPilot] Project catalog updated',
       completed: '[FoxPilot] Initialization completed',
-      completedNextStep: 'You can continue with task registration, project scan suggestions, or desktop takeover.',
-      projectRootPrompt: (projectRoot) => `Project root: ${projectRoot}\nUse this directory for initialization? [Y/n]`,
+      completedNextStep:
+        'You can continue with task registration, project scan suggestions, or desktop takeover.',
+      projectRootPrompt: (projectRoot) =>
+        `Project root: ${projectRoot}\nUse this directory for initialization? [Y/n]`,
       projectNamePrompt: (projectName) => `Default project name is ${projectName}. Confirm? [Y/n]`,
-      workspaceRootPrompt: (workspaceRoot) => `Detected workspace root ${workspaceRoot}. Confirm? [Y/n]`,
+      workspaceRootPrompt: (workspaceRoot) =>
+        `Detected workspace root ${workspaceRoot}. Confirm? [Y/n]`,
       detectedRepositories: 'Detected repository candidates:',
       writeRepositoriesPrompt: 'Write this repository result? [Y/n]',
       continuePrompt: 'Project config and global catalog will be written. Continue? [Y/n]',
       enterProjectName: 'Enter project name:',
       enterWorkspaceRoot: 'Enter workspace root:',
-      selectInterfaceLanguage: 'Select interface language / 选择交互语言 / インターフェース言語を選択',
+      selectInterfaceLanguage:
+        'Select interface language / 选择交互语言 / インターフェース言語を選択',
       languageChoices: ['1. 中文', '2. English', '3. 日本語'],
       pathNotFound: '[FoxPilot] Initialization failed: target path does not exist',
       pathNotDirectory: '[FoxPilot] Initialization failed: target path is not a directory',
       projectConfigExists: '[FoxPilot] Initialization aborted: project config already exists',
       malformedGlobalConfig: '[FoxPilot] Initialization failed: foxpilot.config.json is malformed',
-      workspaceRootMismatch: '[FoxPilot] Initialization failed: workspace root does not contain project path',
+      workspaceRootMismatch:
+        '[FoxPilot] Initialization failed: workspace root does not contain project path',
       globalConfigWriteFailed: '[FoxPilot] Initialization failed: failed to write global config',
       dbBootstrapFailed: '[FoxPilot] Initialization failed: failed to initialize foxpilot.db',
       catalogWriteFailed: '[FoxPilot] Initialization failed: failed to write project catalog',
@@ -498,18 +512,23 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       title: '[FoxPilot] Beads task summary',
     },
     taskDoctorBeads: {
-      helpDescription: 'Diagnose whether the local Beads environment is ready for sync and push operations.',
-      repositoryRequired: '[FoxPilot] Beads doctor failed: repository or --all-repositories is required',
+      helpDescription:
+        'Diagnose whether the local Beads environment is ready for sync and push operations.',
+      repositoryRequired:
+        '[FoxPilot] Beads doctor failed: repository or --all-repositories is required',
       repositoryNotFound: '[FoxPilot] Beads doctor failed: repository was not found',
       projectNotInitialized: '[FoxPilot] Beads doctor failed: project is not initialized',
       dbBootstrapFailed: '[FoxPilot] Beads doctor failed: failed to initialize foxpilot.db',
       completed: '[FoxPilot] Beads environment diagnosis completed',
     },
     taskInitBeads: {
-      helpDescription: 'Initialize the local Beads environment for repositories in the current project.',
-      repositoryRequired: '[FoxPilot] Local Beads initialization failed: repository or --all-repositories is required',
+      helpDescription:
+        'Initialize the local Beads environment for repositories in the current project.',
+      repositoryRequired:
+        '[FoxPilot] Local Beads initialization failed: repository or --all-repositories is required',
       repositoryNotFound: '[FoxPilot] Local Beads initialization failed: repository was not found',
-      projectNotInitialized: '[FoxPilot] Local Beads initialization failed: project is not initialized',
+      projectNotInitialized:
+        '[FoxPilot] Local Beads initialization failed: project is not initialized',
       completed: '[FoxPilot] Local Beads initialization completed',
     },
     taskList: {
@@ -527,7 +546,8 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       title: '[FoxPilot] Next task',
     },
     taskEdit: {
-      helpDescription: 'Edit the title, description, or task type of one task in the current project.',
+      helpDescription:
+        'Edit the title, description, or task type of one task in the current project.',
       idRequired: '[FoxPilot] Task edit failed: id or external-id is required',
       titleRequired: '[FoxPilot] Task edit failed: title is required',
       descriptionRequired: '[FoxPilot] Task edit failed: description is required',
@@ -552,15 +572,18 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       noRuns: '- No run history yet',
     },
     taskPushBeads: {
-      helpDescription: 'Push one imported Beads task from the current project back to the local bd repository.',
-      targetRequired: '[FoxPilot] Beads push failed: id, external-id, repository, or --all-repositories is required',
+      helpDescription:
+        'Push one imported Beads task from the current project back to the local bd repository.',
+      targetRequired:
+        '[FoxPilot] Beads push failed: id, external-id, repository, or --all-repositories is required',
       idRequired: '[FoxPilot] Beads push failed: id or external-id is required',
       projectNotInitialized: '[FoxPilot] Beads push failed: project is not initialized',
       dbBootstrapFailed: '[FoxPilot] Beads push failed: failed to initialize foxpilot.db',
       taskNotFound: '[FoxPilot] Beads push failed: task was not found',
       notImportedTask: '[FoxPilot] Beads push failed: task is not an imported Beads task',
       repositoryNotFound: '[FoxPilot] Beads push failed: repository was not found',
-      repositoryNotInitialized: '[FoxPilot] Beads push failed: target repository has not initialized local Beads',
+      repositoryNotInitialized:
+        '[FoxPilot] Beads push failed: target repository has not initialized local Beads',
       pushFailed: '[FoxPilot] Beads push failed: unable to execute bd update',
       completed: '[FoxPilot] Beads push completed',
     },
@@ -593,11 +616,13 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
     },
     taskSyncBeads: {
       helpDescription: 'Sync Beads tasks directly from bd list output in a selected repository.',
-      repositoryRequired: '[FoxPilot] Local Beads sync failed: repository or --all-repositories is required',
+      repositoryRequired:
+        '[FoxPilot] Local Beads sync failed: repository or --all-repositories is required',
       repositoryNotFound: '[FoxPilot] Local Beads sync failed: repository was not found',
       readFailed: '[FoxPilot] Local Beads sync failed: unable to read bd list output',
       invalidJson: '[FoxPilot] Local Beads sync failed: bd list output is not valid JSON',
-      invalidPayload: '[FoxPilot] Local Beads sync failed: bd list output must be an array of tasks',
+      invalidPayload:
+        '[FoxPilot] Local Beads sync failed: bd list output must be an array of tasks',
       projectNotInitialized: '[FoxPilot] Local Beads sync failed: project is not initialized',
       dbBootstrapFailed: '[FoxPilot] Local Beads sync failed: failed to initialize foxpilot.db',
       completed: '[FoxPilot] Local Beads sync completed',
@@ -605,10 +630,12 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
     },
     taskDiffBeads: {
       helpDescription: 'Preview the diff that a local Beads snapshot would produce.',
-      fileRequired: '[FoxPilot] Beads diff preview failed: file, repository, or --all-repositories is required',
+      fileRequired:
+        '[FoxPilot] Beads diff preview failed: file, repository, or --all-repositories is required',
       fileReadFailed: '[FoxPilot] Beads diff preview failed: unable to read preview source',
       invalidJson: '[FoxPilot] Beads diff preview failed: preview source has invalid JSON format',
-      invalidPayload: '[FoxPilot] Beads diff preview failed: preview source must be an array of tasks',
+      invalidPayload:
+        '[FoxPilot] Beads diff preview failed: preview source must be an array of tasks',
       repositoryNotFound: '[FoxPilot] Beads diff preview failed: repository was not found',
       projectNotInitialized: '[FoxPilot] Beads diff preview failed: project is not initialized',
       dbBootstrapFailed: '[FoxPilot] Beads diff preview failed: failed to initialize foxpilot.db',
@@ -669,7 +696,8 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       unknownCommand: '[FoxPilot] 不明なコマンドです',
     },
     init: {
-      helpDescription: '管理対象プロジェクトを初期化し、プロジェクト設定・グローバル設定・SQLite 索引を作成します。',
+      helpDescription:
+        '管理対象プロジェクトを初期化し、プロジェクト設定・グローバル設定・SQLite 索引を作成します。',
       cancelled: '[FoxPilot] 初期化をキャンセルしました',
       targetConfirmed: '[FoxPilot] 初期化対象を確認しました',
       projectConfigGenerated: '[FoxPilot] プロジェクト設定を生成しました',
@@ -677,35 +705,47 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       globalDatabaseConfirmed: '[FoxPilot] グローバルデータベースを確認しました',
       catalogWritten: '[FoxPilot] プロジェクト索引を書き込みました',
       completed: '[FoxPilot] 初期化が完了しました',
-      completedNextStep: '続いてタスク登録、プロジェクト走査提案、またはデスクトップ引き継ぎを行えます。',
-      projectRootPrompt: (projectRoot) => `プロジェクトルート: ${projectRoot}\nこのディレクトリで初期化しますか？ [Y/n]`,
-      projectNamePrompt: (projectName) => `既定のプロジェクト名は ${projectName} です。確定しますか？ [Y/n]`,
-      workspaceRootPrompt: (workspaceRoot) => `推定したワークスペースルートは ${workspaceRoot} です。確定しますか？ [Y/n]`,
+      completedNextStep:
+        '続いてタスク登録、プロジェクト走査提案、またはデスクトップ引き継ぎを行えます。',
+      projectRootPrompt: (projectRoot) =>
+        `プロジェクトルート: ${projectRoot}\nこのディレクトリで初期化しますか？ [Y/n]`,
+      projectNamePrompt: (projectName) =>
+        `既定のプロジェクト名は ${projectName} です。確定しますか？ [Y/n]`,
+      workspaceRootPrompt: (workspaceRoot) =>
+        `推定したワークスペースルートは ${workspaceRoot} です。確定しますか？ [Y/n]`,
       detectedRepositories: '検出したリポジトリ候補:',
       writeRepositoriesPrompt: 'このリポジトリ結果を書き込みますか？ [Y/n]',
       continuePrompt: 'プロジェクト設定とグローバル索引を書き込みます。続行しますか？ [Y/n]',
       enterProjectName: 'プロジェクト名を入力してください:',
       enterWorkspaceRoot: 'ワークスペースルートを入力してください:',
-      selectInterfaceLanguage: 'インターフェース言語を選択 / Select interface language / 选择交互语言',
+      selectInterfaceLanguage:
+        'インターフェース言語を選択 / Select interface language / 选择交互语言',
       languageChoices: ['1. 中文', '2. English', '3. 日本語'],
       pathNotFound: '[FoxPilot] 初期化に失敗しました: 対象パスが存在しません',
       pathNotDirectory: '[FoxPilot] 初期化に失敗しました: 対象パスがディレクトリではありません',
       projectConfigExists: '[FoxPilot] 初期化を中止しました: プロジェクト設定が既に存在します',
-      malformedGlobalConfig: '[FoxPilot] 初期化に失敗しました: foxpilot.config.json の形式が不正です',
-      workspaceRootMismatch: '[FoxPilot] 初期化に失敗しました: workspace root に project path が含まれていません',
-      globalConfigWriteFailed: '[FoxPilot] 初期化に失敗しました: グローバル設定の書き込みに失敗しました',
+      malformedGlobalConfig:
+        '[FoxPilot] 初期化に失敗しました: foxpilot.config.json の形式が不正です',
+      workspaceRootMismatch:
+        '[FoxPilot] 初期化に失敗しました: workspace root に project path が含まれていません',
+      globalConfigWriteFailed:
+        '[FoxPilot] 初期化に失敗しました: グローバル設定の書き込みに失敗しました',
       dbBootstrapFailed: '[FoxPilot] 初期化に失敗しました: foxpilot.db の初期化に失敗しました',
-      catalogWriteFailed: '[FoxPilot] 初期化に失敗しました: プロジェクト索引の書き込みに失敗しました',
-      projectConfigWriteFailed: '[FoxPilot] 初期化に失敗しました: プロジェクト設定の書き込みに失敗しました',
+      catalogWriteFailed:
+        '[FoxPilot] 初期化に失敗しました: プロジェクト索引の書き込みに失敗しました',
+      projectConfigWriteFailed:
+        '[FoxPilot] 初期化に失敗しました: プロジェクト設定の書き込みに失敗しました',
     },
     taskCreate: {
       helpDescription: '現在の管理対象プロジェクトに手動タスクを作成します。',
       titleRequired: '[FoxPilot] タスク作成に失敗しました: title は必須です',
-      malformedGlobalConfig: '[FoxPilot] タスク作成に失敗しました: foxpilot.config.json の形式が不正です',
+      malformedGlobalConfig:
+        '[FoxPilot] タスク作成に失敗しました: foxpilot.config.json の形式が不正です',
       projectNotInitialized: '[FoxPilot] タスク作成に失敗しました: プロジェクトが未初期化です',
       dbBootstrapFailed: '[FoxPilot] タスク作成に失敗しました: foxpilot.db の初期化に失敗しました',
       repositoryNotFound: '[FoxPilot] タスク作成に失敗しました: リポジトリ対象が見つかりません',
-      projectNotIndexed: '[FoxPilot] タスク作成に失敗しました: プロジェクトがグローバル索引に未登録です',
+      projectNotIndexed:
+        '[FoxPilot] タスク作成に失敗しました: プロジェクトがグローバル索引に未登録です',
       created: '[FoxPilot] タスクを作成しました',
     },
     taskBeadsSummary: {
@@ -716,31 +756,39 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       title: '[FoxPilot] Beads タスク要約',
     },
     taskDoctorBeads: {
-      helpDescription: '現在のプロジェクトのローカル Beads 環境が同期と書き戻しに使えるか診断します。',
-      repositoryRequired: '[FoxPilot] Beads 環境診断に失敗しました: repository または --all-repositories のどちらかが必須です',
+      helpDescription:
+        '現在のプロジェクトのローカル Beads 環境が同期と書き戻しに使えるか診断します。',
+      repositoryRequired:
+        '[FoxPilot] Beads 環境診断に失敗しました: repository または --all-repositories のどちらかが必須です',
       repositoryNotFound: '[FoxPilot] Beads 環境診断に失敗しました: repository が見つかりません',
       projectNotInitialized: '[FoxPilot] Beads 環境診断に失敗しました: プロジェクトが未初期化です',
-      dbBootstrapFailed: '[FoxPilot] Beads 環境診断に失敗しました: foxpilot.db の初期化に失敗しました',
+      dbBootstrapFailed:
+        '[FoxPilot] Beads 環境診断に失敗しました: foxpilot.db の初期化に失敗しました',
       completed: '[FoxPilot] Beads 環境診断が完了しました',
     },
     taskInitBeads: {
       helpDescription: '現在のプロジェクトのリポジトリに対してローカル Beads 環境を初期化します。',
-      repositoryRequired: '[FoxPilot] ローカル Beads 初期化に失敗しました: repository または --all-repositories のどちらかが必須です',
-      repositoryNotFound: '[FoxPilot] ローカル Beads 初期化に失敗しました: repository が見つかりません',
-      projectNotInitialized: '[FoxPilot] ローカル Beads 初期化に失敗しました: プロジェクトが未初期化です',
+      repositoryRequired:
+        '[FoxPilot] ローカル Beads 初期化に失敗しました: repository または --all-repositories のどちらかが必須です',
+      repositoryNotFound:
+        '[FoxPilot] ローカル Beads 初期化に失敗しました: repository が見つかりません',
+      projectNotInitialized:
+        '[FoxPilot] ローカル Beads 初期化に失敗しました: プロジェクトが未初期化です',
       completed: '[FoxPilot] ローカル Beads 初期化が完了しました',
     },
     taskList: {
       helpDescription: '現在のプロジェクトのタスク一覧を表示します。',
       projectNotInitialized: '[FoxPilot] タスクリストに失敗しました: プロジェクトが未初期化です',
-      dbBootstrapFailed: '[FoxPilot] タスクリストに失敗しました: foxpilot.db の初期化に失敗しました',
+      dbBootstrapFailed:
+        '[FoxPilot] タスクリストに失敗しました: foxpilot.db の初期化に失敗しました',
       empty: '[FoxPilot] 条件に一致するタスクはありません',
       title: '[FoxPilot] タスクリスト',
     },
     taskNext: {
       helpDescription: '現在のプロジェクトで次に進めるべきタスクを 1 件表示します。',
       projectNotInitialized: '[FoxPilot] 次タスク取得に失敗しました: プロジェクトが未初期化です',
-      dbBootstrapFailed: '[FoxPilot] 次タスク取得に失敗しました: foxpilot.db の初期化に失敗しました',
+      dbBootstrapFailed:
+        '[FoxPilot] 次タスク取得に失敗しました: foxpilot.db の初期化に失敗しました',
       empty: '[FoxPilot] 現在進められるタスクはありません',
       title: '[FoxPilot] 次のタスク',
     },
@@ -749,8 +797,10 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       idRequired: '[FoxPilot] タスク編集に失敗しました: id または external-id は必須です',
       titleRequired: '[FoxPilot] タスク編集に失敗しました: title は必須です',
       descriptionRequired: '[FoxPilot] タスク編集に失敗しました: description は必須です',
-      noChangesSpecified: '[FoxPilot] タスク編集に失敗しました: 少なくとも 1 つの編集対象が必要です',
-      conflictingDescription: '[FoxPilot] タスク編集に失敗しました: description 引数が競合しています',
+      noChangesSpecified:
+        '[FoxPilot] タスク編集に失敗しました: 少なくとも 1 つの編集対象が必要です',
+      conflictingDescription:
+        '[FoxPilot] タスク編集に失敗しました: description 引数が競合しています',
       projectNotInitialized: '[FoxPilot] タスク編集に失敗しました: プロジェクトが未初期化です',
       dbBootstrapFailed: '[FoxPilot] タスク編集に失敗しました: foxpilot.db の初期化に失敗しました',
       taskNotFound: '[FoxPilot] タスク編集に失敗しました: タスクが見つかりません',
@@ -770,15 +820,20 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       noRuns: '- 実行履歴はまだありません',
     },
     taskPushBeads: {
-      helpDescription: '現在のプロジェクト内の単一 Beads 取り込みタスクをローカル bd リポジトリへ書き戻します。',
-      targetRequired: '[FoxPilot] Beads 書き戻しに失敗しました: id、external-id、repository、--all-repositories のいずれかが必須です',
+      helpDescription:
+        '現在のプロジェクト内の単一 Beads 取り込みタスクをローカル bd リポジトリへ書き戻します。',
+      targetRequired:
+        '[FoxPilot] Beads 書き戻しに失敗しました: id、external-id、repository、--all-repositories のいずれかが必須です',
       idRequired: '[FoxPilot] Beads 書き戻しに失敗しました: id または external-id は必須です',
       projectNotInitialized: '[FoxPilot] Beads 書き戻しに失敗しました: プロジェクトが未初期化です',
-      dbBootstrapFailed: '[FoxPilot] Beads 書き戻しに失敗しました: foxpilot.db の初期化に失敗しました',
+      dbBootstrapFailed:
+        '[FoxPilot] Beads 書き戻しに失敗しました: foxpilot.db の初期化に失敗しました',
       taskNotFound: '[FoxPilot] Beads 書き戻しに失敗しました: タスクが見つかりません',
-      notImportedTask: '[FoxPilot] Beads 書き戻しに失敗しました: タスクは Beads 取り込みタスクではありません',
+      notImportedTask:
+        '[FoxPilot] Beads 書き戻しに失敗しました: タスクは Beads 取り込みタスクではありません',
       repositoryNotFound: '[FoxPilot] Beads 書き戻しに失敗しました: repository が見つかりません',
-      repositoryNotInitialized: '[FoxPilot] Beads 書き戻しに失敗しました: 対象リポジトリでローカル Beads が未初期化です',
+      repositoryNotInitialized:
+        '[FoxPilot] Beads 書き戻しに失敗しました: 対象リポジトリでローカル Beads が未初期化です',
       pushFailed: '[FoxPilot] Beads 書き戻しに失敗しました: bd update を実行できません',
       completed: '[FoxPilot] Beads 書き戻しが完了しました',
     },
@@ -801,46 +856,61 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
     taskImportBeads: {
       helpDescription: 'ローカル JSON スナップショットから Beads タスクを取り込みます。',
       fileRequired: '[FoxPilot] Beads 取り込みに失敗しました: file は必須です',
-      fileReadFailed: '[FoxPilot] Beads 取り込みに失敗しました: スナップショットファイルを読み込めません',
+      fileReadFailed:
+        '[FoxPilot] Beads 取り込みに失敗しました: スナップショットファイルを読み込めません',
       invalidJson: '[FoxPilot] Beads 取り込みに失敗しました: JSON 形式が不正です',
-      invalidPayload: '[FoxPilot] Beads 取り込みに失敗しました: スナップショットはタスク配列である必要があります',
+      invalidPayload:
+        '[FoxPilot] Beads 取り込みに失敗しました: スナップショットはタスク配列である必要があります',
       projectNotInitialized: '[FoxPilot] Beads 取り込みに失敗しました: プロジェクトが未初期化です',
-      dbBootstrapFailed: '[FoxPilot] Beads 取り込みに失敗しました: foxpilot.db の初期化に失敗しました',
+      dbBootstrapFailed:
+        '[FoxPilot] Beads 取り込みに失敗しました: foxpilot.db の初期化に失敗しました',
       completed: '[FoxPilot] Beads タスクの取り込みが完了しました',
       rejectedTitle: '[FoxPilot] 以下のレコードは拒否されました',
     },
     taskSyncBeads: {
       helpDescription: '選択したリポジトリの bd list 出力から Beads タスクを直接同期します。',
-      repositoryRequired: '[FoxPilot] ローカル Beads 同期に失敗しました: repository または --all-repositories のどちらかが必須です',
-      repositoryNotFound: '[FoxPilot] ローカル Beads 同期に失敗しました: repository が見つかりません',
+      repositoryRequired:
+        '[FoxPilot] ローカル Beads 同期に失敗しました: repository または --all-repositories のどちらかが必須です',
+      repositoryNotFound:
+        '[FoxPilot] ローカル Beads 同期に失敗しました: repository が見つかりません',
       readFailed: '[FoxPilot] ローカル Beads 同期に失敗しました: bd list 出力を読み取れません',
-      invalidJson: '[FoxPilot] ローカル Beads 同期に失敗しました: bd list 出力の JSON 形式が不正です',
-      invalidPayload: '[FoxPilot] ローカル Beads 同期に失敗しました: bd list 出力はタスク配列である必要があります',
-      projectNotInitialized: '[FoxPilot] ローカル Beads 同期に失敗しました: プロジェクトが未初期化です',
-      dbBootstrapFailed: '[FoxPilot] ローカル Beads 同期に失敗しました: foxpilot.db の初期化に失敗しました',
+      invalidJson:
+        '[FoxPilot] ローカル Beads 同期に失敗しました: bd list 出力の JSON 形式が不正です',
+      invalidPayload:
+        '[FoxPilot] ローカル Beads 同期に失敗しました: bd list 出力はタスク配列である必要があります',
+      projectNotInitialized:
+        '[FoxPilot] ローカル Beads 同期に失敗しました: プロジェクトが未初期化です',
+      dbBootstrapFailed:
+        '[FoxPilot] ローカル Beads 同期に失敗しました: foxpilot.db の初期化に失敗しました',
       completed: '[FoxPilot] ローカル Beads 同期が完了しました',
       rejectedTitle: '[FoxPilot] 以下のレコードは拒否されました',
     },
     taskDiffBeads: {
       helpDescription: 'ローカル Beads スナップショットを取り込んだ場合の差分を予覧します。',
-      fileRequired: '[FoxPilot] Beads 差分予覧に失敗しました: file、repository、--all-repositories のいずれかが必須です',
+      fileRequired:
+        '[FoxPilot] Beads 差分予覧に失敗しました: file、repository、--all-repositories のいずれかが必須です',
       fileReadFailed: '[FoxPilot] Beads 差分予覧に失敗しました: 予覧元を読み込めません',
       invalidJson: '[FoxPilot] Beads 差分予覧に失敗しました: 予覧元の JSON 形式が不正です',
-      invalidPayload: '[FoxPilot] Beads 差分予覧に失敗しました: 予覧元はタスク配列である必要があります',
+      invalidPayload:
+        '[FoxPilot] Beads 差分予覧に失敗しました: 予覧元はタスク配列である必要があります',
       repositoryNotFound: '[FoxPilot] Beads 差分予覧に失敗しました: repository が見つかりません',
       projectNotInitialized: '[FoxPilot] Beads 差分予覧に失敗しました: プロジェクトが未初期化です',
-      dbBootstrapFailed: '[FoxPilot] Beads 差分予覧に失敗しました: foxpilot.db の初期化に失敗しました',
+      dbBootstrapFailed:
+        '[FoxPilot] Beads 差分予覧に失敗しました: foxpilot.db の初期化に失敗しました',
       title: '[FoxPilot] Beads スナップショット差分予覧',
       detailsTitle: '[FoxPilot] 差分詳細',
       noChanges: '- 現在表示できる差分はありません',
       rejectedTitle: '[FoxPilot] 以下のレコードは拒否されました',
     },
     taskExportBeads: {
-      helpDescription: '現在のプロジェクト内の Beads 同期タスクをローカル JSON スナップショットとして書き出します。',
+      helpDescription:
+        '現在のプロジェクト内の Beads 同期タスクをローカル JSON スナップショットとして書き出します。',
       fileRequired: '[FoxPilot] Beads 書き出しに失敗しました: file は必須です',
       projectNotInitialized: '[FoxPilot] Beads 書き出しに失敗しました: プロジェクトが未初期化です',
-      dbBootstrapFailed: '[FoxPilot] Beads 書き出しに失敗しました: foxpilot.db の初期化に失敗しました',
-      writeFailed: '[FoxPilot] Beads 書き出しに失敗しました: スナップショットファイルを書き込めません',
+      dbBootstrapFailed:
+        '[FoxPilot] Beads 書き出しに失敗しました: foxpilot.db の初期化に失敗しました',
+      writeFailed:
+        '[FoxPilot] Beads 書き出しに失敗しました: スナップショットファイルを書き込めません',
       completed: '[FoxPilot] Beads タスクの書き出しが完了しました',
       rejectedTitle: '[FoxPilot] 書き出せなかったレコード',
     },
@@ -849,7 +919,8 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
       idRequired: '[FoxPilot] タスク状態更新に失敗しました: id または external-id は必須です',
       statusRequired: '[FoxPilot] タスク状態更新に失敗しました: status が不正または不足しています',
       projectNotInitialized: '[FoxPilot] タスク状態更新に失敗しました: プロジェクトが未初期化です',
-      dbBootstrapFailed: '[FoxPilot] タスク状態更新に失敗しました: foxpilot.db の初期化に失敗しました',
+      dbBootstrapFailed:
+        '[FoxPilot] タスク状態更新に失敗しました: foxpilot.db の初期化に失敗しました',
       taskNotFound: '[FoxPilot] タスク状態更新に失敗しました: タスクが見つかりません',
       invalidTransition: '[FoxPilot] タスク状態更新に失敗しました: 状態遷移が不正です',
       unchanged: '[FoxPilot] タスク状態は変化していません',
@@ -858,9 +929,12 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
     taskUpdateExecutor: {
       helpDescription: '現在のプロジェクト内のタスク責任実行者を更新します。',
       idRequired: '[FoxPilot] タスク実行者更新に失敗しました: id または external-id は必須です',
-      executorRequired: '[FoxPilot] タスク実行者更新に失敗しました: executor が不正または不足しています',
-      projectNotInitialized: '[FoxPilot] タスク実行者更新に失敗しました: プロジェクトが未初期化です',
-      dbBootstrapFailed: '[FoxPilot] タスク実行者更新に失敗しました: foxpilot.db の初期化に失敗しました',
+      executorRequired:
+        '[FoxPilot] タスク実行者更新に失敗しました: executor が不正または不足しています',
+      projectNotInitialized:
+        '[FoxPilot] タスク実行者更新に失敗しました: プロジェクトが未初期化です',
+      dbBootstrapFailed:
+        '[FoxPilot] タスク実行者更新に失敗しました: foxpilot.db の初期化に失敗しました',
       taskNotFound: '[FoxPilot] タスク実行者更新に失敗しました: タスクが見つかりません',
       unchanged: '[FoxPilot] タスク実行者は変化していません',
       updated: '[FoxPilot] タスク実行者を更新しました',
@@ -868,9 +942,12 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
     taskUpdatePriority: {
       helpDescription: '現在のプロジェクト内のタスク優先度を更新します。',
       idRequired: '[FoxPilot] タスク優先度更新に失敗しました: id または external-id は必須です',
-      priorityRequired: '[FoxPilot] タスク優先度更新に失敗しました: priority が不正または不足しています',
-      projectNotInitialized: '[FoxPilot] タスク優先度更新に失敗しました: プロジェクトが未初期化です',
-      dbBootstrapFailed: '[FoxPilot] タスク優先度更新に失敗しました: foxpilot.db の初期化に失敗しました',
+      priorityRequired:
+        '[FoxPilot] タスク優先度更新に失敗しました: priority が不正または不足しています',
+      projectNotInitialized:
+        '[FoxPilot] タスク優先度更新に失敗しました: プロジェクトが未初期化です',
+      dbBootstrapFailed:
+        '[FoxPilot] タスク優先度更新に失敗しました: foxpilot.db の初期化に失敗しました',
       taskNotFound: '[FoxPilot] タスク優先度更新に失敗しました: タスクが見つかりません',
       unchanged: '[FoxPilot] タスク優先度は変化していません',
       updated: '[FoxPilot] タスク優先度を更新しました',
@@ -878,7 +955,8 @@ const messageCatalogs: Record<InterfaceLanguage, MessageCatalog> = {
     configSetLanguage: {
       helpDescription: 'CLI の表示言語を設定します。',
       invalidLanguage: '[FoxPilot] 言語設定に失敗しました: lang が不正または不足しています',
-      malformedGlobalConfig: '[FoxPilot] 言語設定に失敗しました: foxpilot.config.json の形式が不正です',
+      malformedGlobalConfig:
+        '[FoxPilot] 言語設定に失敗しました: foxpilot.config.json の形式が不正です',
       updated: '[FoxPilot] インターフェース言語を更新しました',
     },
   },

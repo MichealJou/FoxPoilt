@@ -26,15 +26,24 @@ async function createManagedProjectWithTask(): Promise<{
   await mkdir(path.join(projectRoot, '.git'), { recursive: true })
 
   const initResult = await runCli(
-    ['init', '--path', projectRoot, '--workspace-root', path.dirname(projectRoot), '--mode', 'non-interactive', '--no-scan'],
+    [
+      'init',
+      '--path',
+      projectRoot,
+      '--workspace-root',
+      path.dirname(projectRoot),
+      '--mode',
+      'non-interactive',
+      '--no-scan',
+    ],
     { homeDir },
   )
   expect(initResult.exitCode).toBe(0)
 
-  const createResult = await runCli(
-    ['task', 'create', '--title', '需要切换执行器'],
-    { cwd: projectRoot, homeDir },
-  )
+  const createResult = await runCli(['task', 'create', '--title', '需要切换执行器'], {
+    cwd: projectRoot,
+    homeDir,
+  })
   expect(createResult.exitCode).toBe(0)
 
   const db = new Database(path.join(homeDir, '.foxpilot', 'foxpilot.db'))
@@ -67,10 +76,7 @@ describe('task update-executor CLI', () => {
   })
 
   it('prints help and accepts fp alias', async () => {
-    const result = await runCli(
-      ['task', 'update-executor', '--help'],
-      { binName: 'fp' },
-    )
+    const result = await runCli(['task', 'update-executor', '--help'], { binName: 'fp' })
 
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('foxpilot task update-executor')
@@ -148,11 +154,12 @@ describe('task update-executor CLI', () => {
   })
 
   it('supports updating imported tasks by external task id', async () => {
-    const { homeDir, projectRoot, taskId, externalId } = await createManagedProjectWithImportedBeadsTask({
-      tempDirs,
-      externalTaskId: 'BEADS-1101',
-      title: '外部号切执行器',
-    })
+    const { homeDir, projectRoot, taskId, externalId } =
+      await createManagedProjectWithImportedBeadsTask({
+        tempDirs,
+        externalTaskId: 'BEADS-1101',
+        title: '外部号切执行器',
+      })
 
     const result = await runCli(
       ['task', 'update-executor', '--external-id', externalId, '--executor', 'codex'],

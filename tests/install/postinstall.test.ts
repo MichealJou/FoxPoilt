@@ -37,26 +37,28 @@ describe('postinstall integration', () => {
       name: 'foxpilot',
       version: '0.1.4',
     }))
-    const setupFoundationPack = vi.fn(async (): Promise<FoundationSetupResult> => ({
-      packId: 'default-foundation',
-      items: [
-        {
-          tool: 'beads',
-          status: 'ready',
-          version: '1.0.0',
-          checkTarget: 'bd',
-        },
-        {
-          tool: 'superpowers',
-          status: 'ready',
-          version: null,
-          checkTarget: '/Users/demo/.agents/skills/superpowers',
-        },
-      ],
-      ready: ['beads', 'superpowers'],
-      missing: [],
-      installed: [],
-    }))
+    const setupFoundationPack = vi.fn(
+      async (): Promise<FoundationSetupResult> => ({
+        packId: 'default-foundation',
+        items: [
+          {
+            tool: 'beads',
+            status: 'ready',
+            version: '1.0.0',
+            checkTarget: 'bd',
+          },
+          {
+            tool: 'superpowers',
+            status: 'ready',
+            version: null,
+            checkTarget: '/Users/demo/.agents/skills/superpowers',
+          },
+        ],
+        ready: ['beads', 'superpowers'],
+        missing: [],
+        installed: [],
+      }),
+    )
 
     const output: string[] = []
     const write = vi.fn((chunk: string | Uint8Array) => {
@@ -113,13 +115,15 @@ describe('postinstall integration', () => {
       name: 'foxpilot',
       version: '0.1.4',
     }))
-    const setupFoundationPack = vi.fn(async (): Promise<FoundationSetupResult> => ({
-      packId: 'default-foundation',
-      items: [],
-      ready: [],
-      missing: [],
-      installed: [],
-    }))
+    const setupFoundationPack = vi.fn(
+      async (): Promise<FoundationSetupResult> => ({
+        packId: 'default-foundation',
+        items: [],
+        ready: [],
+        missing: [],
+        installed: [],
+      }),
+    )
 
     await runPostinstall({
       cwd: '/tmp/consumer-root',
@@ -170,13 +174,15 @@ describe('postinstall integration', () => {
       name: 'foxpilot',
       version: '0.1.4',
     }))
-    const setupFoundationPack = vi.fn(async (): Promise<FoundationSetupResult> => ({
-      packId: 'default-foundation',
-      items: [],
-      ready: [],
-      missing: [],
-      installed: [],
-    }))
+    const setupFoundationPack = vi.fn(
+      async (): Promise<FoundationSetupResult> => ({
+        packId: 'default-foundation',
+        items: [],
+        ready: [],
+        missing: [],
+        installed: [],
+      }),
+    )
 
     const output: string[] = []
     const write = vi.fn((chunk: string | Uint8Array) => {

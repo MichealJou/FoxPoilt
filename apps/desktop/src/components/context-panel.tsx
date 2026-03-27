@@ -2,7 +2,13 @@ import { Command, FileStack, ShieldCheck } from 'lucide-react'
 
 import { Badge } from '@desktop/components/ui/badge.js'
 import { Button } from '@desktop/components/ui/button.js'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@desktop/components/ui/card.js'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@desktop/components/ui/card.js'
 import { desktopPageMeta, workspaceSummary } from '@desktop/lib/mock-data.js'
 import type { DesktopPageId } from '@desktop/lib/desktop-pages.js'
 

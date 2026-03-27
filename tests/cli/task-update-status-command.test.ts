@@ -26,15 +26,24 @@ async function createManagedProjectWithTask(): Promise<{
   await mkdir(path.join(projectRoot, '.git'), { recursive: true })
 
   const initResult = await runCli(
-    ['init', '--path', projectRoot, '--workspace-root', path.dirname(projectRoot), '--mode', 'non-interactive', '--no-scan'],
+    [
+      'init',
+      '--path',
+      projectRoot,
+      '--workspace-root',
+      path.dirname(projectRoot),
+      '--mode',
+      'non-interactive',
+      '--no-scan',
+    ],
     { homeDir },
   )
   expect(initResult.exitCode).toBe(0)
 
-  const createResult = await runCli(
-    ['task', 'create', '--title', '需要推进状态'],
-    { cwd: projectRoot, homeDir },
-  )
+  const createResult = await runCli(['task', 'create', '--title', '需要推进状态'], {
+    cwd: projectRoot,
+    homeDir,
+  })
   expect(createResult.exitCode).toBe(0)
 
   const db = new Database(path.join(homeDir, '.foxpilot', 'foxpilot.db'))
@@ -60,13 +69,17 @@ describe('task update-status CLI', () => {
     const db = new Database(path.join(homeDir, '.foxpilot', 'foxpilot.db'))
     const row = db.prepare('SELECT status FROM task WHERE id = ?').get(taskId) as { status: string }
     expect(row.status).toBe('analyzing')
-    const taskRun = db.prepare(`
+    const taskRun = db
+      .prepare(
+        `
       SELECT run_type, executor, status, ended_at
       FROM task_run
       WHERE task_id = ?
       ORDER BY started_at DESC
       LIMIT 1
-    `).get(taskId) as {
+    `,
+      )
+      .get(taskId) as {
       run_type: string
       executor: string
       status: string
@@ -97,13 +110,17 @@ describe('task update-status CLI', () => {
     expect(confirmResult.exitCode).toBe(0)
 
     const db = new Database(path.join(homeDir, '.foxpilot', 'foxpilot.db'))
-    const taskRun = db.prepare(`
+    const taskRun = db
+      .prepare(
+        `
       SELECT run_type, status, ended_at
       FROM task_run
       WHERE task_id = ?
       ORDER BY started_at DESC
       LIMIT 1
-    `).get(taskId) as {
+    `,
+      )
+      .get(taskId) as {
       run_type: string
       status: string
       ended_at: string | null
@@ -115,10 +132,7 @@ describe('task update-status CLI', () => {
   })
 
   it('prints help and accepts fp alias', async () => {
-    const result = await runCli(
-      ['task', 'update-status', '--help'],
-      { binName: 'fp' },
-    )
+    const result = await runCli(['task', 'update-status', '--help'], { binName: 'fp' })
 
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('foxpilot task update-status')
@@ -167,10 +181,11 @@ describe('task update-status CLI', () => {
   it('returns exit code 4 when sqlite bootstrap fails', async () => {
     const { homeDir, projectRoot, taskId } = await createManagedProjectWithTask()
 
-    const result = await runCli(
-      ['task', 'update-status', '--id', taskId, '--status', 'done'],
-      { cwd: projectRoot, homeDir, failBootstrap: true },
-    )
+    const result = await runCli(['task', 'update-status', '--id', taskId, '--status', 'done'], {
+      cwd: projectRoot,
+      homeDir,
+      failBootstrap: true,
+    })
 
     expect(result.exitCode).toBe(4)
     expect(result.stdout).toContain('foxpilot.db 初始化失败')
@@ -179,10 +194,10 @@ describe('task update-status CLI', () => {
   it('rejects an invalid direct transition from todo to done', async () => {
     const { homeDir, projectRoot, taskId } = await createManagedProjectWithTask()
 
-    const result = await runCli(
-      ['task', 'update-status', '--id', taskId, '--status', 'done'],
-      { cwd: projectRoot, homeDir },
-    )
+    const result = await runCli(['task', 'update-status', '--id', taskId, '--status', 'done'], {
+      cwd: projectRoot,
+      homeDir,
+    })
 
     expect(result.exitCode).toBe(1)
     expect(result.stdout).toContain('状态流转不合法')
@@ -198,26 +213,46 @@ describe('task update-status CLI', () => {
   it('rejects any transition after the task is done', async () => {
     const { homeDir, projectRoot, taskId } = await createManagedProjectWithTask()
 
-    expect((await runCli(
-      ['task', 'update-status', '--id', taskId, '--status', 'analyzing'],
-      { cwd: projectRoot, homeDir },
-    )).exitCode).toBe(0)
-    expect((await runCli(
-      ['task', 'update-status', '--id', taskId, '--status', 'awaiting_plan_confirm'],
-      { cwd: projectRoot, homeDir },
-    )).exitCode).toBe(0)
-    expect((await runCli(
-      ['task', 'update-status', '--id', taskId, '--status', 'executing'],
-      { cwd: projectRoot, homeDir },
-    )).exitCode).toBe(0)
-    expect((await runCli(
-      ['task', 'update-status', '--id', taskId, '--status', 'awaiting_result_confirm'],
-      { cwd: projectRoot, homeDir },
-    )).exitCode).toBe(0)
-    expect((await runCli(
-      ['task', 'update-status', '--id', taskId, '--status', 'done'],
-      { cwd: projectRoot, homeDir },
-    )).exitCode).toBe(0)
+    expect(
+      (
+        await runCli(['task', 'update-status', '--id', taskId, '--status', 'analyzing'], {
+          cwd: projectRoot,
+          homeDir,
+        })
+      ).exitCode,
+    ).toBe(0)
+    expect(
+      (
+        await runCli(
+          ['task', 'update-status', '--id', taskId, '--status', 'awaiting_plan_confirm'],
+          { cwd: projectRoot, homeDir },
+        )
+      ).exitCode,
+    ).toBe(0)
+    expect(
+      (
+        await runCli(['task', 'update-status', '--id', taskId, '--status', 'executing'], {
+          cwd: projectRoot,
+          homeDir,
+        })
+      ).exitCode,
+    ).toBe(0)
+    expect(
+      (
+        await runCli(
+          ['task', 'update-status', '--id', taskId, '--status', 'awaiting_result_confirm'],
+          { cwd: projectRoot, homeDir },
+        )
+      ).exitCode,
+    ).toBe(0)
+    expect(
+      (
+        await runCli(['task', 'update-status', '--id', taskId, '--status', 'done'], {
+          cwd: projectRoot,
+          homeDir,
+        })
+      ).exitCode,
+    ).toBe(0)
 
     const result = await runCli(
       ['task', 'update-status', '--id', taskId, '--status', 'analyzing'],
@@ -233,10 +268,14 @@ describe('task update-status CLI', () => {
   it('allows blocked tasks to return to analyzing', async () => {
     const { homeDir, projectRoot, taskId } = await createManagedProjectWithTask()
 
-    expect((await runCli(
-      ['task', 'update-status', '--id', taskId, '--status', 'blocked'],
-      { cwd: projectRoot, homeDir },
-    )).exitCode).toBe(0)
+    expect(
+      (
+        await runCli(['task', 'update-status', '--id', taskId, '--status', 'blocked'], {
+          cwd: projectRoot,
+          homeDir,
+        })
+      ).exitCode,
+    ).toBe(0)
 
     const result = await runCli(
       ['task', 'update-status', '--id', taskId, '--status', 'analyzing'],
@@ -251,10 +290,14 @@ describe('task update-status CLI', () => {
   it('does not create duplicate task runs when the status is unchanged', async () => {
     const { homeDir, projectRoot, taskId } = await createManagedProjectWithTask()
 
-    expect((await runCli(
-      ['task', 'update-status', '--id', taskId, '--status', 'analyzing'],
-      { cwd: projectRoot, homeDir },
-    )).exitCode).toBe(0)
+    expect(
+      (
+        await runCli(['task', 'update-status', '--id', taskId, '--status', 'analyzing'], {
+          cwd: projectRoot,
+          homeDir,
+        })
+      ).exitCode,
+    ).toBe(0)
 
     const result = await runCli(
       ['task', 'update-status', '--id', taskId, '--status', 'analyzing'],
@@ -265,7 +308,9 @@ describe('task update-status CLI', () => {
     expect(result.stdout).toContain('任务状态未变化')
 
     const db = new Database(path.join(homeDir, '.foxpilot', 'foxpilot.db'))
-    const taskRunCountRow = db.prepare('SELECT COUNT(*) AS count FROM task_run WHERE task_id = ?').get(taskId) as {
+    const taskRunCountRow = db
+      .prepare('SELECT COUNT(*) AS count FROM task_run WHERE task_id = ?')
+      .get(taskId) as {
       count: number
     }
     expect(taskRunCountRow.count).toBe(1)
@@ -273,11 +318,12 @@ describe('task update-status CLI', () => {
   })
 
   it('supports updating imported tasks by external task id', async () => {
-    const { homeDir, projectRoot, taskId, externalId } = await createManagedProjectWithImportedBeadsTask({
-      tempDirs,
-      externalTaskId: 'BEADS-1001',
-      title: '外部号推进状态',
-    })
+    const { homeDir, projectRoot, taskId, externalId } =
+      await createManagedProjectWithImportedBeadsTask({
+        tempDirs,
+        externalTaskId: 'BEADS-1001',
+        title: '外部号推进状态',
+      })
 
     const result = await runCli(
       ['task', 'update-status', '--external-id', externalId, '--status', 'analyzing'],

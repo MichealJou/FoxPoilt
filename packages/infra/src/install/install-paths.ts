@@ -21,7 +21,10 @@ export const INSTALL_INDEX_FILE_NAME = 'installations.json'
  * 这里显式区分 Windows 和类 Unix 平台，是为了让文档、测试和实现都使用同一套路径规则，
  * 避免继续把 `~/.foxpilot` 这种 Unix 写法混用到 Windows 设计里。
  */
-export function resolveInstallIndexPath(homeDir: string, platform: NodeJS.Platform = process.platform): string {
+export function resolveInstallIndexPath(
+  homeDir: string,
+  platform: NodeJS.Platform = process.platform,
+): string {
   if (platform === 'win32') {
     return path.win32.join(homeDir, '.foxpilot', INSTALL_INDEX_FILE_NAME)
   }

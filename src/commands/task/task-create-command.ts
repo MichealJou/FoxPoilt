@@ -20,7 +20,11 @@ import {
   resolveRepositoryTarget,
 } from '@foxpilot/infra/project/resolve-project.js'
 
-import type { TaskCreateArgs, TaskCreateContext, TaskCreateDependencies } from '@/commands/task/task-create-types.js'
+import type {
+  TaskCreateArgs,
+  TaskCreateContext,
+  TaskCreateDependencies,
+} from '@/commands/task/task-create-types.js'
 
 /**
  * 解析任务创建命令使用的默认依赖集合。
@@ -30,9 +34,7 @@ import type { TaskCreateArgs, TaskCreateContext, TaskCreateDependencies } from '
  * 2. 测试环境可以替换为故障注入或内存桩；
  * 3. 命令文件本身只负责参数校验、错误映射和输出格式。
  */
-function getDependencies(
-  overrides: Partial<TaskCreateDependencies> = {},
-): TaskCreateDependencies {
+function getDependencies(overrides: Partial<TaskCreateDependencies> = {}): TaskCreateDependencies {
   return {
     readGlobalConfig,
     resolveManagedProject,
@@ -149,9 +151,7 @@ export async function runTaskCreateCommand(
                 configPath: error.configPath,
               },
             })
-          : buildErrorOutput(messages.taskCreate.malformedGlobalConfig, [
-              `- ${error.configPath}`,
-            ]),
+          : buildErrorOutput(messages.taskCreate.malformedGlobalConfig, [`- ${error.configPath}`]),
       }
     }
 

@@ -8,9 +8,7 @@ import type {
   McpListDependencies,
 } from '@/commands/mcp/mcp-list-types.js'
 
-function getDependencies(
-  overrides: Partial<McpListDependencies> = {},
-): McpListDependencies {
+function getDependencies(overrides: Partial<McpListDependencies> = {}): McpListDependencies {
   return {
     collectMcpRegistry,
     ...overrides,
@@ -56,8 +54,9 @@ export async function runMcpListCommand(
     exitCode: 0,
     stdout: [
       '[FoxPilot] MCP',
-      ...items.map((item) =>
-        `- ${item.serverId}: ${item.status}${item.command ? ` (${item.command})` : item.url ? ` (${item.url})` : ''}`,
+      ...items.map(
+        (item) =>
+          `- ${item.serverId}: ${item.status}${item.command ? ` (${item.command})` : item.url ? ` (${item.url})` : ''}`,
       ),
     ].join('\n'),
   }

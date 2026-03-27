@@ -85,7 +85,7 @@ describe('db bootstrap', () => {
 
     const { bootstrapDatabase } = await loadBootstrapModule()
     const db = await bootstrapDatabase(dbPath)
-    const columns = db.prepare("PRAGMA table_info(task)").all() as Array<{ name: string }>
+    const columns = db.prepare('PRAGMA table_info(task)').all() as Array<{ name: string }>
 
     expect(columns.map((item) => item.name)).toContain('external_source')
     expect(columns.map((item) => item.name)).toContain('external_id')

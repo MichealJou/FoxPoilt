@@ -117,10 +117,9 @@ export async function runConfigSetLanguageCommand(
                 configPath: error.configPath,
               },
             })
-          : [
-              currentMessages.configSetLanguage.malformedGlobalConfig,
-              `- ${error.configPath}`,
-            ].join('\n'),
+          : [currentMessages.configSetLanguage.malformedGlobalConfig, `- ${error.configPath}`].join(
+              '\n',
+            ),
       }
     }
 

@@ -2,7 +2,10 @@
 
 import { existsSync } from 'node:fs'
 
-const runtimePostinstallUrl = new URL('../dist/packages/infra/src/install/postinstall.js', import.meta.url)
+const runtimePostinstallUrl = new URL(
+  '../dist/packages/infra/src/install/postinstall.js',
+  import.meta.url,
+)
 const foundationInstallerUrl = new URL(
   '../dist/packages/integrations/src/foundation/foundation-installer.js',
   import.meta.url,

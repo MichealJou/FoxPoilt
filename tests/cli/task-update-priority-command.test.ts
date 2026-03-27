@@ -26,15 +26,24 @@ async function createManagedProjectWithTask(): Promise<{
   await mkdir(path.join(projectRoot, '.git'), { recursive: true })
 
   const initResult = await runCli(
-    ['init', '--path', projectRoot, '--workspace-root', path.dirname(projectRoot), '--mode', 'non-interactive', '--no-scan'],
+    [
+      'init',
+      '--path',
+      projectRoot,
+      '--workspace-root',
+      path.dirname(projectRoot),
+      '--mode',
+      'non-interactive',
+      '--no-scan',
+    ],
     { homeDir },
   )
   expect(initResult.exitCode).toBe(0)
 
-  const createResult = await runCli(
-    ['task', 'create', '--title', '需要调高优先级'],
-    { cwd: projectRoot, homeDir },
-  )
+  const createResult = await runCli(['task', 'create', '--title', '需要调高优先级'], {
+    cwd: projectRoot,
+    homeDir,
+  })
   expect(createResult.exitCode).toBe(0)
 
   const db = new Database(path.join(homeDir, '.foxpilot', 'foxpilot.db'))
@@ -48,10 +57,10 @@ describe('task update-priority CLI', () => {
   it('updates a task priority in the current managed project', async () => {
     const { homeDir, projectRoot, taskId } = await createManagedProjectWithTask()
 
-    const result = await runCli(
-      ['task', 'update-priority', '--id', taskId, '--priority', 'P0'],
-      { cwd: projectRoot, homeDir },
-    )
+    const result = await runCli(['task', 'update-priority', '--id', taskId, '--priority', 'P0'], {
+      cwd: projectRoot,
+      homeDir,
+    })
 
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('[FoxPilot] 已更新任务优先级')
@@ -67,10 +76,7 @@ describe('task update-priority CLI', () => {
   })
 
   it('prints help and accepts fp alias', async () => {
-    const result = await runCli(
-      ['task', 'update-priority', '--help'],
-      { binName: 'fp' },
-    )
+    const result = await runCli(['task', 'update-priority', '--help'], { binName: 'fp' })
 
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('foxpilot task update-priority')
@@ -80,10 +86,10 @@ describe('task update-priority CLI', () => {
   it('fails fast when priority is invalid', async () => {
     const { homeDir, projectRoot, taskId } = await createManagedProjectWithTask()
 
-    const result = await runCli(
-      ['task', 'update-priority', '--id', taskId, '--priority', 'PX'],
-      { cwd: projectRoot, homeDir },
-    )
+    const result = await runCli(['task', 'update-priority', '--id', taskId, '--priority', 'PX'], {
+      cwd: projectRoot,
+      homeDir,
+    })
 
     expect(result.exitCode).toBe(1)
     expect(result.stdout).toContain('priority 非法或缺失')
@@ -119,10 +125,11 @@ describe('task update-priority CLI', () => {
   it('returns exit code 4 when sqlite bootstrap fails', async () => {
     const { homeDir, projectRoot, taskId } = await createManagedProjectWithTask()
 
-    const result = await runCli(
-      ['task', 'update-priority', '--id', taskId, '--priority', 'P0'],
-      { cwd: projectRoot, homeDir, failBootstrap: true },
-    )
+    const result = await runCli(['task', 'update-priority', '--id', taskId, '--priority', 'P0'], {
+      cwd: projectRoot,
+      homeDir,
+      failBootstrap: true,
+    })
 
     expect(result.exitCode).toBe(4)
     expect(result.stdout).toContain('foxpilot.db 初始化失败')
@@ -131,10 +138,10 @@ describe('task update-priority CLI', () => {
   it('does not rewrite the task when priority is unchanged', async () => {
     const { homeDir, projectRoot, taskId } = await createManagedProjectWithTask()
 
-    const result = await runCli(
-      ['task', 'update-priority', '--id', taskId, '--priority', 'P2'],
-      { cwd: projectRoot, homeDir },
-    )
+    const result = await runCli(['task', 'update-priority', '--id', taskId, '--priority', 'P2'], {
+      cwd: projectRoot,
+      homeDir,
+    })
 
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('任务优先级未变化')
@@ -148,12 +155,13 @@ describe('task update-priority CLI', () => {
   })
 
   it('supports updating imported tasks by external task id', async () => {
-    const { homeDir, projectRoot, taskId, externalId } = await createManagedProjectWithImportedBeadsTask({
-      tempDirs,
-      externalTaskId: 'BEADS-1201',
-      title: '外部号提优先级',
-      priority: 'P2',
-    })
+    const { homeDir, projectRoot, taskId, externalId } =
+      await createManagedProjectWithImportedBeadsTask({
+        tempDirs,
+        externalTaskId: 'BEADS-1201',
+        title: '外部号提优先级',
+        priority: 'P2',
+      })
 
     const result = await runCli(
       ['task', 'update-priority', '--external-id', externalId, '--priority', 'P0'],

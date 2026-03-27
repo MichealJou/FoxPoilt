@@ -7,7 +7,10 @@ import { readFile, realpath } from 'node:fs/promises'
 import path from 'node:path'
 
 import type { InstallIndexEntry, InstallManifest } from '@foxpilot/infra/install/install-types.js'
-import { resolveInstallIndexPath, resolveInstallManifestPath } from '@foxpilot/infra/install/install-paths.js'
+import {
+  resolveInstallIndexPath,
+  resolveInstallManifestPath,
+} from '@foxpilot/infra/install/install-paths.js'
 
 /**
  * 读取与当前可执行实例绑定的安装清单。

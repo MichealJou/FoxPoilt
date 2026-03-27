@@ -46,21 +46,25 @@ type TableColumnInfoRow = {
 }
 
 function tableExists(db: SqliteDatabase, tableName: string): boolean {
-  const row = db.prepare(`
+  const row = db
+    .prepare(
+      `
     SELECT name
     FROM sqlite_master
     WHERE type = 'table'
       AND name = ?
     LIMIT 1
-  `).get(tableName) as { name: string } | undefined
+  `,
+    )
+    .get(tableName) as { name: string } | undefined
 
   return row !== undefined
 }
 
 function listTableColumns(db: SqliteDatabase, tableName: string): string[] {
-  return (
-    db.prepare(`PRAGMA table_info(${tableName})`).all() as TableColumnInfoRow[]
-  ).map((row) => row.name)
+  return (db.prepare(`PRAGMA table_info(${tableName})`).all() as TableColumnInfoRow[]).map(
+    (row) => row.name,
+  )
 }
 
 /**

@@ -14,7 +14,9 @@ describe('homebrew formula renderer', () => {
 
     expect(formula).toContain('class Foxpilot < Formula')
     expect(formula).toContain('version "0.1.0"')
-    expect(formula).toContain('https://github.com/MichealJou/FoxPoilt/releases/download/v0.1.0/foxpilot-darwin-arm64.tar.gz')
+    expect(formula).toContain(
+      'https://github.com/MichealJou/FoxPoilt/releases/download/v0.1.0/foxpilot-darwin-arm64.tar.gz',
+    )
     expect(formula).toContain('sha256 "aaa"')
     expect(formula).toContain('sha256 "bbb"')
     expect(formula).toContain('sha256 "ccc"')

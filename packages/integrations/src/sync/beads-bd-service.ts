@@ -49,9 +49,7 @@ export type NormalizeBdIssueListResult = {
  * - 测试中也更容易注入替代实现；
  * - 后续若需要加更多 flag，不必担心 shell 转义问题。
  */
-export async function runBdList(input: {
-  repositoryRoot: string
-}): Promise<string> {
+export async function runBdList(input: { repositoryRoot: string }): Promise<string> {
   const result = await execFileAsync('bd', ['list', '--json', '--all'], {
     cwd: input.repositoryRoot,
     maxBuffer: 10 * 1024 * 1024,
@@ -66,9 +64,7 @@ export async function runBdList(input: {
  * 这条操作只负责初始化本地 `.beads` 结构，不做任何 FoxPilot 落库。
  * 命令层会先自行判断仓库是否已初始化，避免重复执行。
  */
-export async function runBdInit(input: {
-  repositoryRoot: string
-}): Promise<void> {
+export async function runBdInit(input: { repositoryRoot: string }): Promise<void> {
   await execFileAsync('bd', ['init'], {
     cwd: input.repositoryRoot,
     maxBuffer: 10 * 1024 * 1024,
@@ -82,9 +78,7 @@ export async function runBdInit(input: {
  * 这样可以在“同步全部仓库”时提前跳过未启用 Beads 的仓库，
  * 避免把正常的“没接入”误判成同步失败。
  */
-export async function hasLocalBeadsRepository(input: {
-  repositoryRoot: string
-}): Promise<boolean> {
+export async function hasLocalBeadsRepository(input: { repositoryRoot: string }): Promise<boolean> {
   try {
     await access(path.join(input.repositoryRoot, '.beads'))
     return true
@@ -277,17 +271,15 @@ export function normalizeBdIssueList(input: {
       continue
     }
 
-    const status = typeof item.status === 'string'
-      ? mapBdStatusToTaskStatus(item.status.trim())
-      : null
+    const status =
+      typeof item.status === 'string' ? mapBdStatusToTaskStatus(item.status.trim()) : null
     if (!status) {
       rejected.push(`${prefix}: status 非法或缺失`)
       continue
     }
 
-    const priority = typeof item.priority === 'number'
-      ? mapBdPriorityToTaskPriority(item.priority)
-      : null
+    const priority =
+      typeof item.priority === 'number' ? mapBdPriorityToTaskPriority(item.priority) : null
     if (!priority) {
       rejected.push(`${prefix}: priority 非法或缺失`)
       continue

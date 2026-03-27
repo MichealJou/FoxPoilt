@@ -19,7 +19,7 @@ async function createManagedProject(input?: {
   homeDir: string
   projectRoot: string
 }> {
-  const homeDir = input?.homeDir ?? await createTempDir('foxpilot-home-')
+  const homeDir = input?.homeDir ?? (await createTempDir('foxpilot-home-'))
   const projectRoot = await createTempDir('foxpilot-project-')
 
   if (!input?.homeDir) {
@@ -29,15 +29,24 @@ async function createManagedProject(input?: {
   tempDirs.push(projectRoot)
 
   const repositories = input?.repositories ?? ['.']
-  await Promise.all(repositories.map(async (repositoryPath) => {
-    const repositoryRoot = repositoryPath === '.'
-      ? projectRoot
-      : path.join(projectRoot, repositoryPath)
-    await mkdir(path.join(repositoryRoot, '.git'), { recursive: true })
-  }))
+  await Promise.all(
+    repositories.map(async (repositoryPath) => {
+      const repositoryRoot =
+        repositoryPath === '.' ? projectRoot : path.join(projectRoot, repositoryPath)
+      await mkdir(path.join(repositoryRoot, '.git'), { recursive: true })
+    }),
+  )
 
   const initResult = await runCli(
-    ['init', '--path', projectRoot, '--workspace-root', path.dirname(projectRoot), '--mode', 'non-interactive'],
+    [
+      'init',
+      '--path',
+      projectRoot,
+      '--workspace-root',
+      path.dirname(projectRoot),
+      '--mode',
+      'non-interactive',
+    ],
     { homeDir },
   )
   expect(initResult.exitCode).toBe(0)
@@ -57,10 +66,10 @@ async function importBeadsSnapshot(input: {
   const snapshotPath = path.join(input.projectRoot, input.fileName)
   await writeFile(snapshotPath, `${JSON.stringify(input.records, null, 2)}\n`, 'utf8')
 
-  const importResult = await runCli(
-    ['task', 'import-beads', '--file', snapshotPath],
-    { cwd: input.projectRoot, homeDir: input.homeDir },
-  )
+  const importResult = await runCli(['task', 'import-beads', '--file', snapshotPath], {
+    cwd: input.projectRoot,
+    homeDir: input.homeDir,
+  })
   expect(importResult.exitCode).toBe(0)
 }
 
@@ -100,23 +109,16 @@ describe('task export-beads CLI', () => {
     })
 
     const manualTaskResult = await runCli(
-      [
-        'task',
-        'create',
-        '--path',
-        projectRoot,
-        '--title',
-        '这是手动任务，不应出现在导出快照里',
-      ],
+      ['task', 'create', '--path', projectRoot, '--title', '这是手动任务，不应出现在导出快照里'],
       { cwd: projectRoot, homeDir },
     )
     expect(manualTaskResult.exitCode).toBe(0)
 
     const exportPath = path.join(projectRoot, 'out', 'beads-export.json')
-    const result = await runCli(
-      ['task', 'export-beads', '--file', exportPath],
-      { cwd: projectRoot, homeDir },
-    )
+    const result = await runCli(['task', 'export-beads', '--file', exportPath], {
+      cwd: projectRoot,
+      homeDir,
+    })
 
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('[FoxPilot] 已完成 Beads 任务导出')
@@ -160,10 +162,10 @@ describe('task export-beads CLI', () => {
     const { homeDir, projectRoot } = await createManagedProject()
     const exportPath = path.join(projectRoot, 'empty-beads.json')
 
-    const result = await runCli(
-      ['task', 'export-beads', '--file', exportPath],
-      { cwd: projectRoot, homeDir },
-    )
+    const result = await runCli(['task', 'export-beads', '--file', exportPath], {
+      cwd: projectRoot,
+      homeDir,
+    })
 
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('- exported: 0')
@@ -243,10 +245,7 @@ describe('task export-beads CLI', () => {
   })
 
   it('prints help and accepts fp alias', async () => {
-    const result = await runCli(
-      ['task', 'export-beads', '--help'],
-      { binName: 'fp' },
-    )
+    const result = await runCli(['task', 'export-beads', '--help'], { binName: 'fp' })
 
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('foxpilot task export-beads')
@@ -256,10 +255,7 @@ describe('task export-beads CLI', () => {
   it('returns a clear error when file is missing', async () => {
     const { homeDir, projectRoot } = await createManagedProject()
 
-    const result = await runCli(
-      ['task', 'export-beads'],
-      { cwd: projectRoot, homeDir },
-    )
+    const result = await runCli(['task', 'export-beads'], { cwd: projectRoot, homeDir })
 
     expect(result.exitCode).toBe(1)
     expect(result.stdout).toContain('file 不能为空')
@@ -298,10 +294,10 @@ describe('task export-beads CLI', () => {
     })
 
     const exportPath = path.join(projectRoot, 'json-export.json')
-    const result = await runCli(
-      ['task', 'export-beads', '--file', exportPath, '--json'],
-      { cwd: projectRoot, homeDir },
-    )
+    const result = await runCli(['task', 'export-beads', '--file', exportPath, '--json'], {
+      cwd: projectRoot,
+      homeDir,
+    })
 
     expect(result.exitCode).toBe(0)
 
