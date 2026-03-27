@@ -15,6 +15,10 @@
 - `docs/specs/foxpilot-phase2-runtime-directory-structure.md`
 - `docs/specs/foxpilot-phase2-platform-adapter-contract.md`
 - `docs/specs/foxpilot-phase2-skills-mcp-management-model.md`
+- `docs/specs/foxpilot-phase2-agent-control-plane-spec.md`
+- `docs/specs/foxpilot-phase2-control-plane-information-architecture.md`
+- `docs/specs/foxpilot-phase2-control-plane-commands.md`
+- `docs/specs/foxpilot-phase2-control-plane-registry-model.md`
 
 ---
 
@@ -47,6 +51,8 @@
   - Foundation / Init / Task / Run / Event 等运行时服务
 - `src/runtime/orchestrators`
   - Stage / Role / Platform 编排器
+- `src/runtime/read-models`
+  - Control Plane / Dashboard / Tasks / Runs 读模型聚合
 - `src/integrations`
   - 协作集成层与执行平台集成层
 - `src/platforms`
@@ -112,6 +118,8 @@
   - `Qoder` 平台适配预留
 - `src/platforms/trae-adapter.ts`
   - `Trae` 平台适配预留
+- `src/runtime/read-models/control-plane-read-model.ts`
+  - Platforms / Skills / MCP 统一中控读模型
 - `src/contracts/runtime-contract.ts`
   - Desktop / CLI / Runtime 之间的结构化契约
 - `src/cli/json-output.ts`
@@ -148,6 +156,8 @@
   - 阶段 / 角色 编排测试
 - `tests/platforms/platform-contract.test.ts`
   - 多平台契约测试
+- `tests/runtime/control-plane-read-model.test.ts`
+  - 中控注册表与中控读模型测试
 - `tests/contracts/runtime-contract.test.ts`
   - 共享契约测试
 - `tests/cli/json-output.test.ts`
@@ -172,6 +182,7 @@
 - `CLI --json` 只承担脚本化与调试接口，不承担桌面端正式主通道
 - 阶段 / 角色 / 平台 必须拆开，不能再把平台当单一执行器
 - 执行平台集成必须按统一契约接入，避免后续接入 Claude Code / Qoder / Trae 时返工
+- 桌面端必须按“中控平台”设计，不只停留在任务面板
 - 保持 TDD：先写失败测试，再补最小实现
 
 ### Task 0: 双入口与 Shared Runtime 基线

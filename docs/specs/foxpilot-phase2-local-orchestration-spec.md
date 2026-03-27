@@ -82,6 +82,36 @@ FoxPilot 第一阶段已经完成本地 CLI 主线：
 - 业务承接：共用 `FoxPilot Runtime Core`
 - `CLI --json`：保留为脚本化与调试接口
 
+### 2.5 中控平台能力
+
+第二阶段的 FoxPilot 不再只是“有桌面端的 CLI”，而是升级为：
+
+> 本地 AI 协作中控平台
+
+这个中控平台统一管理：
+
+- agent 平台
+- skills
+- mcp
+- 项目 / 仓库 / 任务 / 运行 / 事件
+
+## 6.5 中控平台入口
+
+第二阶段桌面端不应只停留在任务与运行页面。
+
+它还必须承接中控入口，用于统一管理：
+
+- `Platforms`
+- `Skills`
+- `MCP`
+
+推荐信息架构是：
+
+- `Control Plane`
+  - `Platforms`
+  - `Skills`
+  - `MCP`
+
 ## 3. 安装阶段模型
 
 ### 3.1 Foundation Pack
@@ -374,6 +404,10 @@ repair     -> fixer    -> trae
 - Runtime Core 目录结构
 - 平台适配器契约
 - Skills / MCP 管理模型
+- 中控平台规格
+- 中控平台信息架构
+- 中控命令族设计
+- 中控注册表模型
 
 ## 9. 当前结论
 

@@ -25,6 +25,7 @@ flowchart TD
   Layout --> Tasks["Tasks"]
   Layout --> Runs["Run Detail"]
   Layout --> Events["Event Timeline"]
+  Layout --> Control["Control Plane<br/>Platforms / Skills / MCP"]
   Layout --> Settings["Settings / Health"]
   Layout --> Wizard["Project Init Wizard"]
 
@@ -33,6 +34,7 @@ flowchart TD
   Tasks --> ReadModel
   Runs --> ReadModel
   Events --> ReadModel
+  Control --> ReadModel
   Settings --> ReadModel
   Wizard --> ReadModel
 
@@ -105,6 +107,7 @@ Projects / Repos      看项目与仓库结构
 Tasks                 看任务列表与任务筛选
 Run Detail            看单次运行上下文
 Event Timeline        看事件 -> 动作 -> 结果链路
+Control Plane         看平台、Skills、MCP 的统一管理视图
 Settings / Health     看安装方式、环境、doctor 结果
 Project Init Wizard   做项目级初始化接管
 ```
@@ -149,7 +152,8 @@ Project Init Wizard   做项目级初始化接管
 3  Tasks
 4  Run Detail
 5  Project Init Wizard
-6  Settings / Health
+6  Control Plane
+7  Settings / Health
 ```
 
 原因：

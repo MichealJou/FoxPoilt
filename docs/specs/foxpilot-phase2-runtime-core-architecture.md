@@ -48,6 +48,7 @@ flowchart TD
   AppService --> Run["Run Service"]
   AppService --> Event["Event Service"]
   AppService --> Health["Health Service"]
+  AppService --> ControlPlane["Control Plane Read Model Service"]
 
   Foundation --> Repos["Repository Layer"]
   Init --> Repos
@@ -59,6 +60,7 @@ flowchart TD
   Run --> Repos
   Event --> Repos
   Health --> Repos
+  ControlPlane --> Repos
 
   AppService --> Integrations["Integration Facade"]
 ```
@@ -217,6 +219,15 @@ repair     -> fixer    -> trae
 - doctor
 - 环境健康摘要
 - 可恢复项提示
+
+### 5.12 Control Plane Read Model Service
+
+负责：
+
+- 聚合平台注册表
+- 聚合技能注册表
+- 聚合 MCP 注册表
+- 向 Desktop 和 CLI 提供统一中控读模型
 
 ## 6. Repository Layer
 
