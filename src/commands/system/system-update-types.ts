@@ -12,6 +12,7 @@ import type { InstallManifest } from '@/install/install-types.js'
 export type SystemUpdateArgs = {
   command: 'update'
   help: boolean
+  json: boolean
 }
 
 /**

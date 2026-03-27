@@ -72,4 +72,29 @@ describe('config set-language CLI', () => {
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('Set the CLI interface language')
   })
+
+  it('returns structured json language config metadata when called with --json', async () => {
+    const homeDir = await createTempDir('foxpilot-home-')
+    tempDirs.push(homeDir)
+
+    const result = await runCli(
+      ['config', 'set-language', '--lang', 'ja-JP', '--json'],
+      { homeDir },
+    )
+
+    const payload = JSON.parse(result.stdout) as {
+      ok: boolean
+      command: string
+      data: {
+        interfaceLanguage: string
+        configPath: string
+      }
+    }
+
+    expect(result.exitCode).toBe(0)
+    expect(payload.ok).toBe(true)
+    expect(payload.command).toBe('config.set-language')
+    expect(payload.data.interfaceLanguage).toBe('ja-JP')
+    expect(payload.data.configPath).toContain('.foxpilot/foxpilot.config.json')
+  })
 })

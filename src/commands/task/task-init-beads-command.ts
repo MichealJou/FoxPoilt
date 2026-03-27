@@ -5,6 +5,7 @@
 
 import path from 'node:path'
 
+import { toJsonErrorOutput, toJsonSuccessOutput } from '@/cli/json-output.js'
 import type { CliResult } from '@/commands/init/init-types.js'
 import { getMessages } from '@/i18n/messages.js'
 import {
@@ -156,6 +157,7 @@ export async function runTaskInitBeadsCommand(
   context: TaskInitBeadsContext,
 ): Promise<CliResult> {
   const messages = getMessages(context.interfaceLanguage)
+  const commandName = 'task init-beads'
 
   if (args.help) {
     return {
@@ -167,7 +169,12 @@ export async function runTaskInitBeadsCommand(
   if (!args.allRepositories && !args.repository?.trim()) {
     return {
       exitCode: 1,
-      stdout: messages.taskInitBeads.repositoryRequired,
+      stdout: args.json
+        ? toJsonErrorOutput(commandName, {
+            code: 'REPOSITORY_REQUIRED',
+            message: messages.taskInitBeads.repositoryRequired,
+          })
+        : messages.taskInitBeads.repositoryRequired,
     }
   }
 
@@ -183,7 +190,15 @@ export async function runTaskInitBeadsCommand(
     if (error instanceof ProjectNotInitializedError) {
       return {
         exitCode: 1,
-        stdout: `${messages.taskInitBeads.projectNotInitialized}\n- projectRoot: ${error.projectRoot}`,
+        stdout: args.json
+          ? toJsonErrorOutput(commandName, {
+              code: 'PROJECT_NOT_INITIALIZED',
+              message: messages.taskInitBeads.projectNotInitialized,
+              details: {
+                projectRoot: error.projectRoot,
+              },
+            })
+          : `${messages.taskInitBeads.projectNotInitialized}\n- projectRoot: ${error.projectRoot}`,
       }
     }
 
@@ -201,7 +216,12 @@ export async function runTaskInitBeadsCommand(
       if (!repositoryTarget) {
         return {
           exitCode: 1,
-          stdout: messages.taskInitBeads.repositoryRequired,
+          stdout: args.json
+            ? toJsonErrorOutput(commandName, {
+                code: 'REPOSITORY_REQUIRED',
+                message: messages.taskInitBeads.repositoryRequired,
+              })
+            : messages.taskInitBeads.repositoryRequired,
         }
       }
 
@@ -210,7 +230,15 @@ export async function runTaskInitBeadsCommand(
       if (error instanceof RepositoryTargetNotFoundError) {
         return {
           exitCode: 1,
-          stdout: `${messages.taskInitBeads.repositoryNotFound}\n- repository: ${error.repositorySelector}`,
+          stdout: args.json
+            ? toJsonErrorOutput(commandName, {
+                code: 'REPOSITORY_NOT_FOUND',
+                message: messages.taskInitBeads.repositoryNotFound,
+                details: {
+                  repository: error.repositorySelector,
+                },
+              })
+            : `${messages.taskInitBeads.repositoryNotFound}\n- repository: ${error.repositorySelector}`,
         }
       }
 
@@ -229,6 +257,25 @@ export async function runTaskInitBeadsCommand(
   )
 
   const hasErrors = results.some((item) => item.status === 'error')
+
+  const data = {
+    projectRoot: managedProject.projectRoot,
+    mode: args.allRepositories ? 'all-repositories' : 'single-repository',
+    dryRun: args.dryRun,
+    checkedRepositories: results.length,
+    plannedRepositories: results.filter((item) => item.status === 'planned' || item.status === 'initialized').length,
+    initializedRepositories: results.filter((item) => item.status === 'initialized').length,
+    skippedRepositories: results.filter((item) => item.status === 'skipped').length,
+    errorRepositories: results.filter((item) => item.status === 'error').length,
+    results,
+  }
+
+  if (args.json) {
+    return {
+      exitCode: hasErrors ? 1 : 0,
+      stdout: toJsonSuccessOutput(commandName, data),
+    }
+  }
 
   return {
     exitCode: hasErrors ? 1 : 0,

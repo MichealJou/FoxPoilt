@@ -5,6 +5,7 @@
 
 import path from 'node:path'
 
+import { toJsonErrorOutput, toJsonSuccessOutput } from '@/cli/json-output.js'
 import type { CliResult } from '@/commands/init/init-types.js'
 import { resolveGlobalDatabasePath } from '@/core/paths.js'
 import { bootstrapDatabase } from '@/db/bootstrap.js'
@@ -127,6 +128,7 @@ export async function runTaskSyncBeadsCommand(
   context: TaskSyncBeadsContext,
 ): Promise<CliResult> {
   const messages = getMessages(context.interfaceLanguage)
+  const commandName = 'task sync-beads'
 
   if (args.help) {
     return {
@@ -138,7 +140,12 @@ export async function runTaskSyncBeadsCommand(
   if (!args.allRepositories && !args.repository?.trim()) {
     return {
       exitCode: 1,
-      stdout: messages.taskSyncBeads.repositoryRequired,
+      stdout: args.json
+        ? toJsonErrorOutput(commandName, {
+            code: 'REPOSITORY_REQUIRED',
+            message: messages.taskSyncBeads.repositoryRequired,
+          })
+        : messages.taskSyncBeads.repositoryRequired,
     }
   }
 
@@ -154,7 +161,15 @@ export async function runTaskSyncBeadsCommand(
     if (error instanceof ProjectNotInitializedError) {
       return {
         exitCode: 1,
-        stdout: `${messages.taskSyncBeads.projectNotInitialized}\n- projectRoot: ${error.projectRoot}`,
+        stdout: args.json
+          ? toJsonErrorOutput(commandName, {
+              code: 'PROJECT_NOT_INITIALIZED',
+              message: messages.taskSyncBeads.projectNotInitialized,
+              details: {
+                projectRoot: error.projectRoot,
+              },
+            })
+          : `${messages.taskSyncBeads.projectNotInitialized}\n- projectRoot: ${error.projectRoot}`,
       }
     }
 
@@ -168,7 +183,15 @@ export async function runTaskSyncBeadsCommand(
   } catch {
     return {
       exitCode: 4,
-      stdout: `${messages.taskSyncBeads.dbBootstrapFailed}\n- ${dbPath}`,
+      stdout: args.json
+        ? toJsonErrorOutput(commandName, {
+            code: 'DATABASE_BOOTSTRAP_FAILED',
+            message: messages.taskSyncBeads.dbBootstrapFailed,
+            details: {
+              dbPath,
+            },
+          })
+        : `${messages.taskSyncBeads.dbBootstrapFailed}\n- ${dbPath}`,
     }
   }
 
@@ -185,7 +208,15 @@ export async function runTaskSyncBeadsCommand(
       if (error instanceof RepositoryTargetNotFoundError) {
         return {
           exitCode: 1,
-          stdout: `${messages.taskSyncBeads.repositoryNotFound}\n- repository: ${error.repositorySelector}`,
+          stdout: args.json
+            ? toJsonErrorOutput(commandName, {
+                code: 'REPOSITORY_NOT_FOUND',
+                message: messages.taskSyncBeads.repositoryNotFound,
+                details: {
+                  repository: error.repositorySelector,
+                },
+              })
+            : `${messages.taskSyncBeads.repositoryNotFound}\n- repository: ${error.repositorySelector}`,
         }
       }
 
@@ -196,7 +227,12 @@ export async function runTaskSyncBeadsCommand(
       db.close()
       return {
         exitCode: 1,
-        stdout: messages.taskSyncBeads.repositoryRequired,
+        stdout: args.json
+          ? toJsonErrorOutput(commandName, {
+              code: 'REPOSITORY_REQUIRED',
+              message: messages.taskSyncBeads.repositoryRequired,
+            })
+          : messages.taskSyncBeads.repositoryRequired,
       }
     }
 
@@ -212,6 +248,26 @@ export async function runTaskSyncBeadsCommand(
       })
 
       db.close()
+
+      const data = {
+        projectRoot: managedProject.projectRoot,
+        mode: 'single-repository' as const,
+        repositoryPath: result.repositoryPath,
+        repositoryRoot: result.repositoryRoot,
+        dryRun: args.dryRun,
+        created: result.created,
+        updated: result.updated,
+        skipped: result.skipped,
+        closed: result.closed,
+        rejected: result.rejected,
+      }
+
+      if (args.json) {
+        return {
+          exitCode: 0,
+          stdout: toJsonSuccessOutput(commandName, data),
+        }
+      }
 
       return {
         exitCode: 0,
@@ -238,20 +294,44 @@ export async function runTaskSyncBeadsCommand(
       if (error instanceof SyntaxError) {
         return {
           exitCode: 1,
-          stdout: `${messages.taskSyncBeads.invalidJson}\n- repositoryRoot: ${path.resolve(managedProject.projectRoot, repositoryTarget.path)}`,
+          stdout: args.json
+            ? toJsonErrorOutput(commandName, {
+                code: 'INVALID_JSON',
+                message: messages.taskSyncBeads.invalidJson,
+                details: {
+                  repositoryRoot: path.resolve(managedProject.projectRoot, repositoryTarget.path),
+                },
+              })
+            : `${messages.taskSyncBeads.invalidJson}\n- repositoryRoot: ${path.resolve(managedProject.projectRoot, repositoryTarget.path)}`,
         }
       }
 
       if (error instanceof TypeError) {
         return {
           exitCode: 1,
-          stdout: `${messages.taskSyncBeads.invalidPayload}\n- repositoryRoot: ${path.resolve(managedProject.projectRoot, repositoryTarget.path)}`,
+          stdout: args.json
+            ? toJsonErrorOutput(commandName, {
+                code: 'INVALID_PAYLOAD',
+                message: messages.taskSyncBeads.invalidPayload,
+                details: {
+                  repositoryRoot: path.resolve(managedProject.projectRoot, repositoryTarget.path),
+                },
+              })
+            : `${messages.taskSyncBeads.invalidPayload}\n- repositoryRoot: ${path.resolve(managedProject.projectRoot, repositoryTarget.path)}`,
         }
       }
 
       return {
         exitCode: 1,
-        stdout: `${messages.taskSyncBeads.readFailed}\n- repositoryRoot: ${path.resolve(managedProject.projectRoot, repositoryTarget.path)}`,
+        stdout: args.json
+          ? toJsonErrorOutput(commandName, {
+              code: 'READ_FAILED',
+              message: messages.taskSyncBeads.readFailed,
+              details: {
+                repositoryRoot: path.resolve(managedProject.projectRoot, repositoryTarget.path),
+              },
+            })
+          : `${messages.taskSyncBeads.readFailed}\n- repositoryRoot: ${path.resolve(managedProject.projectRoot, repositoryTarget.path)}`,
       }
     }
   }
@@ -265,6 +345,15 @@ export async function runTaskSyncBeadsCommand(
   let closed = 0
   const rejected: string[] = []
   const repositoryDetails: string[] = []
+  const repositories: Array<{
+    repositoryPath: string
+    status: 'synced' | 'skipped' | 'failed'
+    created: number
+    updated: number
+    skipped: number
+    closed: number
+    rejected: number
+  }> = []
 
   for (const repository of managedProject.projectConfig.repositories) {
     const repositoryRoot = path.resolve(managedProject.projectRoot, repository.path)
@@ -273,6 +362,15 @@ export async function runTaskSyncBeadsCommand(
     if (!hasLocalBeads) {
       skippedRepositories += 1
       repositoryDetails.push(`- ${repository.path}: skipped(no-local-beads)`)
+      repositories.push({
+        repositoryPath: repository.path,
+        status: 'skipped',
+        created: 0,
+        updated: 0,
+        skipped: 0,
+        closed: 0,
+        rejected: 0,
+      })
       continue
     }
 
@@ -296,6 +394,15 @@ export async function runTaskSyncBeadsCommand(
       repositoryDetails.push(
         `- ${repository.path}: created=${result.created} updated=${result.updated} skipped=${result.skipped} closed=${result.closed} rejected=${result.rejected.length}`,
       )
+      repositories.push({
+        repositoryPath: repository.path,
+        status: 'synced',
+        created: result.created,
+        updated: result.updated,
+        skipped: result.skipped,
+        closed: result.closed,
+        rejected: result.rejected.length,
+      })
     } catch (error) {
       rejected.push(
         error instanceof SyntaxError
@@ -305,10 +412,41 @@ export async function runTaskSyncBeadsCommand(
             : `${repository.path}: 无法读取 bd list 输出`,
       )
       repositoryDetails.push(`- ${repository.path}: failed`)
+      repositories.push({
+        repositoryPath: repository.path,
+        status: 'failed',
+        created: 0,
+        updated: 0,
+        skipped: 0,
+        closed: 0,
+        rejected: 1,
+      })
     }
   }
 
   db.close()
+
+  const data = {
+    projectRoot: managedProject.projectRoot,
+    mode: 'all-repositories' as const,
+    scannedRepositories,
+    syncedRepositories,
+    skippedRepositories,
+    dryRun: args.dryRun,
+    created,
+    updated,
+    skipped,
+    closed,
+    rejected,
+    repositories,
+  }
+
+  if (args.json) {
+    return {
+      exitCode: 0,
+      stdout: toJsonSuccessOutput(commandName, data),
+    }
+  }
 
   return {
     exitCode: 0,

@@ -7,6 +7,7 @@ import { rm } from 'node:fs/promises'
 import path from 'node:path'
 
 import type { CliResult } from '@/commands/init/init-types.js'
+import { toJsonErrorOutput, toJsonSuccessOutput } from '@/cli/json-output.js'
 import { dispatchUninstall } from '@/install/uninstall-dispatcher.js'
 import { readInstallManifest } from '@/install/install-manifest.js'
 import { unregisterCurrentInstallation } from '@/install/install-index.js'
@@ -70,6 +71,8 @@ export async function runSystemUninstallCommand(
   args: SystemUninstallArgs,
   context: SystemUninstallContext,
 ): Promise<CliResult> {
+  const commandName = 'uninstall'
+
   if (args.help) {
     return {
       exitCode: 0,
@@ -83,10 +86,18 @@ export async function runSystemUninstallCommand(
   if (!manifest) {
     return {
       exitCode: 1,
-      stdout: [
-        '[FoxPilot] 无法识别当前安装来源',
-        `- executablePath: ${context.executablePath}`,
-      ].join('\n'),
+      stdout: args.json
+        ? toJsonErrorOutput(commandName, {
+            code: 'INSTALL_MANIFEST_NOT_FOUND',
+            message: '无法识别当前安装来源',
+            details: {
+              executablePath: context.executablePath,
+            },
+          })
+        : [
+            '[FoxPilot] 无法识别当前安装来源',
+            `- executablePath: ${context.executablePath}`,
+          ].join('\n'),
     }
   }
 
@@ -101,27 +112,46 @@ export async function runSystemUninstallCommand(
       await dependencies.purgeUserData({ homeDir: context.homeDir })
     }
 
+    const data = {
+      installMethod: manifest.installMethod,
+      packageVersion: manifest.packageVersion,
+      purge: args.purge,
+      remainingInstalls: unregisterResult.remainingCount,
+      strategy,
+    }
+
     return {
       exitCode: 0,
-      stdout: [
-        '[FoxPilot] 卸载完成',
-        `- installMethod: ${manifest.installMethod}`,
-        `- packageVersion: ${manifest.packageVersion}`,
-        `- purge: ${args.purge ? 'true' : 'false'}`,
-        `- remainingInstalls: ${unregisterResult.remainingCount}`,
-        strategy,
-      ].join('\n'),
+      stdout: args.json
+        ? toJsonSuccessOutput(commandName, data)
+        : [
+            '[FoxPilot] 卸载完成',
+            `- installMethod: ${manifest.installMethod}`,
+            `- packageVersion: ${manifest.packageVersion}`,
+            `- purge: ${args.purge ? 'true' : 'false'}`,
+            `- remainingInstalls: ${unregisterResult.remainingCount}`,
+            strategy,
+          ].join('\n'),
     }
   } catch (error) {
     const detail = error instanceof Error ? error.message : String(error)
 
     return {
       exitCode: 1,
-      stdout: [
-        '[FoxPilot] 卸载失败',
-        `- installMethod: ${manifest.installMethod}`,
-        detail,
-      ].join('\n'),
+      stdout: args.json
+        ? toJsonErrorOutput(commandName, {
+            code: 'UNINSTALL_FAILED',
+            message: '卸载失败',
+            details: {
+              installMethod: manifest.installMethod,
+              detail,
+            },
+          })
+        : [
+            '[FoxPilot] 卸载失败',
+            `- installMethod: ${manifest.installMethod}`,
+            detail,
+          ].join('\n'),
     }
   }
 }

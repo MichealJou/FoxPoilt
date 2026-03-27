@@ -11,6 +11,7 @@ import type { CliRuntimeContext } from '@/cli/runtime-context.js'
 export type SystemVersionArgs = {
   command: 'version'
   help: boolean
+  json: boolean
 }
 
 /**

@@ -3,6 +3,7 @@
  * @author michaeljou
  */
 
+import { toJsonErrorOutput, toJsonSuccessOutput } from '@/cli/json-output.js'
 import type { CliResult } from '@/commands/init/init-types.js'
 import { bootstrapDatabase } from '@/db/bootstrap.js'
 import { createTaskStore } from '@/db/task-store.js'
@@ -67,6 +68,7 @@ export async function runTaskListCommand(
   context: TaskListContext,
 ): Promise<CliResult> {
   const messages = getMessages(context.interfaceLanguage)
+  const commandName = 'task list'
 
   if (args.help) {
     return {
@@ -85,9 +87,18 @@ export async function runTaskListCommand(
     })
   } catch (error) {
     if (error instanceof ProjectNotInitializedError) {
+      const stdout = `${messages.taskList.projectNotInitialized}\n- projectRoot: ${error.projectRoot}`
       return {
         exitCode: 1,
-        stdout: `${messages.taskList.projectNotInitialized}\n- projectRoot: ${error.projectRoot}`,
+        stdout: args.json
+          ? toJsonErrorOutput(commandName, {
+              code: 'PROJECT_NOT_INITIALIZED',
+              message: messages.taskList.projectNotInitialized,
+              details: {
+                projectRoot: error.projectRoot,
+              },
+            })
+          : stdout,
       }
     }
 
@@ -99,9 +110,18 @@ export async function runTaskListCommand(
   try {
     db = await dependencies.bootstrapDatabase(dbPath)
   } catch {
+    const stdout = `${messages.taskList.dbBootstrapFailed}\n- ${dbPath}`
     return {
       exitCode: 4,
-      stdout: `${messages.taskList.dbBootstrapFailed}\n- ${dbPath}`,
+      stdout: args.json
+        ? toJsonErrorOutput(commandName, {
+            code: 'DATABASE_BOOTSTRAP_FAILED',
+            message: messages.taskList.dbBootstrapFailed,
+            details: {
+              dbPath,
+            },
+          })
+        : stdout,
     }
   }
   const taskStore = dependencies.createTaskStore(db)
@@ -117,6 +137,35 @@ export async function runTaskListCommand(
   })
 
   db.close()
+
+  const data = {
+    projectRoot: managedProject.projectRoot,
+    filters: {
+      status: args.status ?? null,
+      source: args.source ?? null,
+      executor: args.executor ?? null,
+    },
+    total: tasks.length,
+    items: tasks.map((task) => ({
+      taskId: task.id,
+      title: task.title,
+      source: task.source_type,
+      status: task.status,
+      priority: task.priority,
+      taskType: task.task_type,
+      executor: task.current_executor,
+      externalSource: task.external_source,
+      externalId: task.external_id,
+      updatedAt: task.updated_at,
+    })),
+  }
+
+  if (args.json) {
+    return {
+      exitCode: 0,
+      stdout: toJsonSuccessOutput(commandName, data),
+    }
+  }
 
   if (tasks.length === 0) {
     return {

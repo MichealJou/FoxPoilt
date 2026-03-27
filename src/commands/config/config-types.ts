@@ -19,6 +19,8 @@ export type ConfigSetLanguageArgs = {
   subcommand: 'set-language'
   /** 为 true 时只输出帮助文本。 */
   help: boolean
+  /** 为 true 时输出结构化 JSON。 */
+  json: boolean
   /** 目标交互语言；只允许进入受支持的 locale 枚举。 */
   lang?: InterfaceLanguage
 }

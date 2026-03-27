@@ -102,6 +102,38 @@ describe('task show CLI', () => {
     expect(result.stdout).toContain('externalId: BEADS-701')
   })
 
+  it('returns structured json task detail output', async () => {
+    const { homeDir, projectRoot, taskId } = await createManagedProjectWithDetailedTask()
+
+    const result = await runCli(
+      ['task', 'show', '--id', taskId, '--json'],
+      { cwd: projectRoot, homeDir },
+    )
+
+    const payload = JSON.parse(result.stdout) as {
+      ok: boolean
+      command: string
+      data: {
+        projectRoot: string
+        task: {
+          taskId: string
+          title: string
+        }
+        targets: Array<{
+          repositoryPath: string | null
+        }>
+      }
+    }
+
+    expect(result.exitCode).toBe(0)
+    expect(payload.ok).toBe(true)
+    expect(payload.command).toBe('task show')
+    expect(payload.data.projectRoot).toBe(projectRoot)
+    expect(payload.data.task.taskId).toBe(taskId)
+    expect(payload.data.task.title).toBe('查看单任务')
+    expect(payload.data.targets[0]?.repositoryPath).toBe('frontend')
+  })
+
   it('prints help and accepts fp alias', async () => {
     const result = await runCli(
       ['task', 'show', '--help'],

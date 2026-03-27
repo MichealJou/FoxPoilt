@@ -293,4 +293,35 @@ describe('task update-status CLI', () => {
     expect(row.status).toBe('analyzing')
     db.close()
   })
+
+  it('returns structured json task status output', async () => {
+    const { homeDir, projectRoot, taskId } = await createManagedProjectWithTask()
+
+    const result = await runCli(
+      ['task', 'update-status', '--id', taskId, '--status', 'analyzing', '--json'],
+      { cwd: projectRoot, homeDir },
+    )
+
+    expect(result.exitCode).toBe(0)
+
+    const payload = JSON.parse(result.stdout) as {
+      ok: true
+      command: string
+      data: {
+        projectRoot: string
+        taskId: string
+        from: string
+        to: string
+        changed: boolean
+      }
+    }
+
+    expect(payload.ok).toBe(true)
+    expect(payload.command).toBe('task update-status')
+    expect(payload.data.projectRoot).toBe(projectRoot)
+    expect(payload.data.taskId).toBe(taskId)
+    expect(payload.data.from).toBe('todo')
+    expect(payload.data.to).toBe('analyzing')
+    expect(payload.data.changed).toBe(true)
+  })
 })

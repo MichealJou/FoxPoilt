@@ -3,6 +3,7 @@
  * @author michaeljou
  */
 
+import { toJsonErrorOutput, toJsonSuccessOutput } from '@/cli/json-output.js'
 import type { CliResult } from '@/commands/init/init-types.js'
 import { resolveGlobalDatabasePath } from '@/core/paths.js'
 import { bootstrapDatabase } from '@/db/bootstrap.js'
@@ -56,6 +57,7 @@ export async function runTaskBeadsSummaryCommand(
   context: TaskBeadsSummaryContext,
 ): Promise<CliResult> {
   const messages = getMessages(context.interfaceLanguage)
+  const commandName = 'task beads-summary'
 
   if (args.help) {
     return {
@@ -74,9 +76,18 @@ export async function runTaskBeadsSummaryCommand(
     })
   } catch (error) {
     if (error instanceof ProjectNotInitializedError) {
+      const stdout = `${messages.taskBeadsSummary.projectNotInitialized}\n- projectRoot: ${error.projectRoot}`
       return {
         exitCode: 1,
-        stdout: `${messages.taskBeadsSummary.projectNotInitialized}\n- projectRoot: ${error.projectRoot}`,
+        stdout: args.json
+          ? toJsonErrorOutput(commandName, {
+              code: 'PROJECT_NOT_INITIALIZED',
+              message: messages.taskBeadsSummary.projectNotInitialized,
+              details: {
+                projectRoot: error.projectRoot,
+              },
+            })
+          : stdout,
       }
     }
 
@@ -88,9 +99,18 @@ export async function runTaskBeadsSummaryCommand(
   try {
     db = await dependencies.bootstrapDatabase(dbPath)
   } catch {
+    const stdout = `${messages.taskBeadsSummary.dbBootstrapFailed}\n- ${dbPath}`
     return {
       exitCode: 4,
-      stdout: `${messages.taskBeadsSummary.dbBootstrapFailed}\n- ${dbPath}`,
+      stdout: args.json
+        ? toJsonErrorOutput(commandName, {
+            code: 'DATABASE_BOOTSTRAP_FAILED',
+            message: messages.taskBeadsSummary.dbBootstrapFailed,
+            details: {
+              dbPath,
+            },
+          })
+        : stdout,
     }
   }
 
@@ -99,6 +119,23 @@ export async function runTaskBeadsSummaryCommand(
     projectId: `project:${managedProject.projectRoot}`,
   })
   db.close()
+
+  if (args.json) {
+    return {
+      exitCode: 0,
+      stdout: toJsonSuccessOutput(commandName, {
+        projectRoot: managedProject.projectRoot,
+        summary: {
+          total: summary.total,
+          repositories: summary.repository_count,
+          todo: summary.todo_count,
+          executing: summary.executing_count,
+          blocked: summary.blocked_count,
+          done: summary.done_count,
+        },
+      }),
+    }
+  }
 
   if (summary.total === 0) {
     return {

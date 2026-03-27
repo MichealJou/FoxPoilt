@@ -399,4 +399,56 @@ describe('task sync-beads CLI', () => {
     expect(result.exitCode).toBe(4)
     expect(result.stdout).toContain('[FoxPilot] 本地 Beads 同步失败: foxpilot.db 初始化失败')
   })
+
+  it('返回结构化 json beads 同步结果', async () => {
+    const { homeDir, projectRoot } = await createManagedProjectWithRepositories()
+
+    const result = await runCli(
+      ['task', 'sync-beads', '--repository', 'frontend', '--json'],
+      {
+        cwd: projectRoot,
+        homeDir,
+        dependencies: {
+          runBdList: async () => JSON.stringify([
+            {
+              id: 'bd-fe-json-1',
+              title: 'JSON 同步任务',
+              status: 'open',
+              priority: 2,
+            },
+          ]),
+        },
+      },
+    )
+
+    expect(result.exitCode).toBe(0)
+
+    const payload = JSON.parse(result.stdout) as {
+      ok: true
+      command: string
+      data: {
+        projectRoot: string
+        mode: string
+        repositoryPath: string
+        dryRun: boolean
+        created: number
+        updated: number
+        skipped: number
+        closed: number
+        rejected: string[]
+      }
+    }
+
+    expect(payload.ok).toBe(true)
+    expect(payload.command).toBe('task sync-beads')
+    expect(payload.data.projectRoot).toBe(projectRoot)
+    expect(payload.data.mode).toBe('single-repository')
+    expect(payload.data.repositoryPath).toBe('frontend')
+    expect(payload.data.dryRun).toBe(false)
+    expect(payload.data.created).toBe(1)
+    expect(payload.data.updated).toBe(0)
+    expect(payload.data.skipped).toBe(0)
+    expect(payload.data.closed).toBe(0)
+    expect(payload.data.rejected).toEqual([])
+  })
 })

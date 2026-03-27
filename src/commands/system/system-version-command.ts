@@ -4,6 +4,7 @@
  */
 
 import type { CliResult } from '@/commands/init/init-types.js'
+import { toJsonSuccessOutput } from '@/cli/json-output.js'
 import { readPackageVersion } from '@/install/package-info.js'
 
 import type { SystemVersionArgs, SystemVersionContext } from '@/commands/system/system-version-types.js'
@@ -23,6 +24,8 @@ export async function runSystemVersionCommand(
   args: SystemVersionArgs,
   context: SystemVersionContext,
 ): Promise<CliResult> {
+  const commandName = 'version'
+
   if (args.help) {
     return {
       exitCode: 0,
@@ -31,14 +34,21 @@ export async function runSystemVersionCommand(
   }
 
   const version = await readPackageVersion()
+  const data = {
+    name: 'foxpilot',
+    version,
+    binName: context.binName,
+  }
 
   return {
     exitCode: 0,
-    stdout: [
-      '[FoxPilot] 当前版本',
-      '- name: foxpilot',
-      `- version: ${version}`,
-      `- binName: ${context.binName}`,
-    ].join('\n'),
+    stdout: args.json
+      ? toJsonSuccessOutput(commandName, data)
+      : [
+          '[FoxPilot] 当前版本',
+          '- name: foxpilot',
+          `- version: ${version}`,
+          `- binName: ${context.binName}`,
+        ].join('\n'),
   }
 }

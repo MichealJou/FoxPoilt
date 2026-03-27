@@ -5,6 +5,7 @@
 
 import path from 'node:path'
 
+import { toJsonErrorOutput, toJsonSuccessOutput } from '@/cli/json-output.js'
 import type { CliResult } from '@/commands/init/init-types.js'
 import { readJsonFile } from '@/core/json-file.js'
 import { resolveGlobalDatabasePath } from '@/core/paths.js'
@@ -78,6 +79,7 @@ export async function runTaskImportBeadsCommand(
   context: TaskImportBeadsContext,
 ): Promise<CliResult> {
   const messages = getMessages(context.interfaceLanguage)
+  const commandName = 'task import-beads'
 
   if (args.help) {
     return {
@@ -89,7 +91,12 @@ export async function runTaskImportBeadsCommand(
   if (!args.file?.trim()) {
     return {
       exitCode: 1,
-      stdout: messages.taskImportBeads.fileRequired,
+      stdout: args.json
+        ? toJsonErrorOutput(commandName, {
+            code: 'FILE_REQUIRED',
+            message: messages.taskImportBeads.fileRequired,
+          })
+        : messages.taskImportBeads.fileRequired,
     }
   }
 
@@ -105,7 +112,15 @@ export async function runTaskImportBeadsCommand(
     if (error instanceof ProjectNotInitializedError) {
       return {
         exitCode: 1,
-        stdout: `${messages.taskImportBeads.projectNotInitialized}\n- projectRoot: ${error.projectRoot}`,
+        stdout: args.json
+          ? toJsonErrorOutput(commandName, {
+              code: 'PROJECT_NOT_INITIALIZED',
+              message: messages.taskImportBeads.projectNotInitialized,
+              details: {
+                projectRoot: error.projectRoot,
+              },
+            })
+          : `${messages.taskImportBeads.projectNotInitialized}\n- projectRoot: ${error.projectRoot}`,
       }
     }
 
@@ -120,20 +135,44 @@ export async function runTaskImportBeadsCommand(
     if (error instanceof SyntaxError) {
       return {
         exitCode: 1,
-        stdout: `${messages.taskImportBeads.invalidJson}\n- ${filePath}`,
+        stdout: args.json
+          ? toJsonErrorOutput(commandName, {
+              code: 'INVALID_JSON',
+              message: messages.taskImportBeads.invalidJson,
+              details: {
+                filePath,
+              },
+            })
+          : `${messages.taskImportBeads.invalidJson}\n- ${filePath}`,
       }
     }
 
     return {
       exitCode: 1,
-      stdout: `${messages.taskImportBeads.fileReadFailed}\n- ${filePath}`,
+      stdout: args.json
+        ? toJsonErrorOutput(commandName, {
+            code: 'FILE_READ_FAILED',
+            message: messages.taskImportBeads.fileReadFailed,
+            details: {
+              filePath,
+            },
+          })
+        : `${messages.taskImportBeads.fileReadFailed}\n- ${filePath}`,
     }
   }
 
   if (!Array.isArray(payload)) {
     return {
       exitCode: 1,
-      stdout: `${messages.taskImportBeads.invalidPayload}\n- ${filePath}`,
+      stdout: args.json
+        ? toJsonErrorOutput(commandName, {
+            code: 'INVALID_PAYLOAD',
+            message: messages.taskImportBeads.invalidPayload,
+            details: {
+              filePath,
+            },
+          })
+        : `${messages.taskImportBeads.invalidPayload}\n- ${filePath}`,
     }
   }
 
@@ -144,7 +183,15 @@ export async function runTaskImportBeadsCommand(
   } catch {
     return {
       exitCode: 4,
-      stdout: `${messages.taskImportBeads.dbBootstrapFailed}\n- ${dbPath}`,
+      stdout: args.json
+        ? toJsonErrorOutput(commandName, {
+            code: 'DATABASE_BOOTSTRAP_FAILED',
+            message: messages.taskImportBeads.dbBootstrapFailed,
+            details: {
+              dbPath,
+            },
+          })
+        : `${messages.taskImportBeads.dbBootstrapFailed}\n- ${dbPath}`,
     }
   }
 
@@ -166,6 +213,24 @@ export async function runTaskImportBeadsCommand(
   })
 
   db.close()
+
+  const data = {
+    projectRoot: managedProject.projectRoot,
+    file: filePath,
+    dryRun: args.dryRun,
+    created: importResult.created,
+    updated: importResult.updated,
+    skipped: importResult.skipped,
+    closed: importResult.closed,
+    rejected: normalized.rejected,
+  }
+
+  if (args.json) {
+    return {
+      exitCode: 0,
+      stdout: toJsonSuccessOutput(commandName, data),
+    }
+  }
 
   return {
     exitCode: 0,

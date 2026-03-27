@@ -107,6 +107,36 @@ describe('task beads-summary CLI', () => {
     expect(result.stdout).toContain('[FoxPilot] 当前项目没有 Beads 同步任务')
   })
 
+  it('returns structured json beads summary output', async () => {
+    const { homeDir, projectRoot } = await createManagedProjectWithImportedBeadsTasks()
+
+    const result = await runCli(
+      ['task', 'beads-summary', '--json'],
+      { cwd: projectRoot, homeDir },
+    )
+
+    const payload = JSON.parse(result.stdout) as {
+      ok: boolean
+      command: string
+      data: {
+        projectRoot: string
+        summary: {
+          total: number
+          repositories: number
+          blocked: number
+        }
+      }
+    }
+
+    expect(result.exitCode).toBe(0)
+    expect(payload.ok).toBe(true)
+    expect(payload.command).toBe('task beads-summary')
+    expect(payload.data.projectRoot).toBe(projectRoot)
+    expect(payload.data.summary.total).toBe(3)
+    expect(payload.data.summary.repositories).toBe(2)
+    expect(payload.data.summary.blocked).toBe(1)
+  })
+
   it('prints help and accepts fp alias', async () => {
     const result = await runCli(
       ['task', 'beads-summary', '--help'],

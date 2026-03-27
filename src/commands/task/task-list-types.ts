@@ -52,6 +52,8 @@ export type TaskListArgs = {
   subcommand: 'list'
   /** 为 true 时只输出帮助文本。 */
   help: boolean
+  /** 为 true 时输出结构化 JSON。 */
+  json: boolean
   /** 可选的项目根目录覆盖值。 */
   path?: string
   /** 可选状态过滤条件；为空时返回当前项目下的全部任务。 */

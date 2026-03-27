@@ -27,6 +27,8 @@ export type TaskImportBeadsArgs = {
   subcommand: 'import-beads'
   /** 为 true 时只输出帮助文本。 */
   help: boolean
+  /** 为 true 时输出结构化 JSON。 */
+  json: boolean
   /** 可选项目根目录覆盖值。 */
   path?: string
   /** 本地 JSON 快照文件路径。 */

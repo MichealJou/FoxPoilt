@@ -151,4 +151,31 @@ describe('task suggest-scan CLI', () => {
     expect(result.exitCode).toBe(4)
     expect(result.stdout).toContain('foxpilot.db 初始化失败')
   })
+
+  it('returns structured json scan suggestion output', async () => {
+    const { homeDir, projectRoot } = await createManagedProjectWithRepositories()
+
+    const result = await runCli(
+      ['task', 'suggest-scan', '--json'],
+      { cwd: projectRoot, homeDir },
+    )
+
+    expect(result.exitCode).toBe(0)
+
+    const payload = JSON.parse(result.stdout) as {
+      ok: true
+      command: string
+      data: {
+        projectRoot: string
+        created: number
+        skipped: number
+      }
+    }
+
+    expect(payload.ok).toBe(true)
+    expect(payload.command).toBe('task suggest-scan')
+    expect(payload.data.projectRoot).toBe(projectRoot)
+    expect(payload.data.created).toBe(2)
+    expect(payload.data.skipped).toBe(0)
+  })
 })

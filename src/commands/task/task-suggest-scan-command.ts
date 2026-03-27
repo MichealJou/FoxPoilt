@@ -5,6 +5,7 @@
 
 import { randomUUID } from 'node:crypto'
 
+import { toJsonErrorOutput, toJsonSuccessOutput } from '@/cli/json-output.js'
 import type { CliResult } from '@/commands/init/init-types.js'
 import { bootstrapDatabase } from '@/db/bootstrap.js'
 import { createTaskStore } from '@/db/task-store.js'
@@ -73,6 +74,7 @@ export async function runTaskSuggestScanCommand(
   context: TaskSuggestScanContext,
 ): Promise<CliResult> {
   const messages = getMessages(context.interfaceLanguage)
+  const commandName = 'task suggest-scan'
 
   if (args.help) {
     return {
@@ -93,7 +95,15 @@ export async function runTaskSuggestScanCommand(
     if (error instanceof ProjectNotInitializedError) {
       return {
         exitCode: 1,
-        stdout: `${messages.taskSuggestScan.projectNotInitialized}\n- projectRoot: ${error.projectRoot}`,
+        stdout: args.json
+          ? toJsonErrorOutput(commandName, {
+              code: 'PROJECT_NOT_INITIALIZED',
+              message: messages.taskSuggestScan.projectNotInitialized,
+              details: {
+                projectRoot: error.projectRoot,
+              },
+            })
+          : `${messages.taskSuggestScan.projectNotInitialized}\n- projectRoot: ${error.projectRoot}`,
       }
     }
 
@@ -107,7 +117,15 @@ export async function runTaskSuggestScanCommand(
   } catch {
     return {
       exitCode: 4,
-      stdout: `${messages.taskSuggestScan.dbBootstrapFailed}\n- ${dbPath}`,
+      stdout: args.json
+        ? toJsonErrorOutput(commandName, {
+            code: 'DATABASE_BOOTSTRAP_FAILED',
+            message: messages.taskSuggestScan.dbBootstrapFailed,
+            details: {
+              dbPath,
+            },
+          })
+        : `${messages.taskSuggestScan.dbBootstrapFailed}\n- ${dbPath}`,
     }
   }
 
@@ -164,6 +182,19 @@ export async function runTaskSuggestScanCommand(
   }
 
   db.close()
+
+  const data = {
+    projectRoot: managedProject.projectRoot,
+    created,
+    skipped,
+  }
+
+  if (args.json) {
+    return {
+      exitCode: 0,
+      stdout: toJsonSuccessOutput(commandName, data),
+    }
+  }
 
   return {
     exitCode: 0,

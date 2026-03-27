@@ -206,4 +206,43 @@ describe('task edit CLI', () => {
     })
     db.close()
   })
+
+  it('returns structured json task edit output', async () => {
+    const { homeDir, projectRoot, taskId } = await createManagedProjectWithTask()
+
+    const result = await runCli(
+      ['task', 'edit', '--id', taskId, '--title', 'JSON 标题', '--json'],
+      { cwd: projectRoot, homeDir },
+    )
+
+    expect(result.exitCode).toBe(0)
+
+    const payload = JSON.parse(result.stdout) as {
+      ok: true
+      command: string
+      data: {
+        projectRoot: string
+        taskId: string
+        changed: boolean
+        before: {
+          title: string
+          taskType: string
+        }
+        after: {
+          title: string
+          taskType: string
+        }
+      }
+    }
+
+    expect(payload.ok).toBe(true)
+    expect(payload.command).toBe('task edit')
+    expect(payload.data.projectRoot).toBe(projectRoot)
+    expect(payload.data.taskId).toBe(taskId)
+    expect(payload.data.changed).toBe(true)
+    expect(payload.data.before.title).toBe('初始标题')
+    expect(payload.data.after.title).toBe('JSON 标题')
+    expect(payload.data.before.taskType).toBe('docs')
+    expect(payload.data.after.taskType).toBe('docs')
+  })
 })

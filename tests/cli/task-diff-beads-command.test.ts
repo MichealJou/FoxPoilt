@@ -323,4 +323,62 @@ describe('task diff-beads CLI', () => {
     expect(result.exitCode).toBe(4)
     expect(result.stdout).toContain('foxpilot.db 初始化失败')
   })
+
+  it('returns structured json beads diff preview', async () => {
+    const { homeDir, projectRoot } = await createManagedProjectWithRepositories()
+    const snapshotPath = await writeSnapshotFile(projectRoot, 'beads-json-preview.json', [
+      {
+        externalTaskId: 'BEADS-DIFF-JSON-1',
+        title: 'JSON 预览任务',
+        status: 'ready',
+        priority: 'P2',
+        repository: '.',
+      },
+    ])
+
+    const result = await runCli(
+      ['task', 'diff-beads', '--file', snapshotPath, '--json'],
+      { cwd: projectRoot, homeDir },
+    )
+
+    expect(result.exitCode).toBe(0)
+
+    const payload = JSON.parse(result.stdout) as {
+      ok: true
+      command: string
+      data: {
+        projectRoot: string
+        mode: string
+        file: string
+        closeMissing: boolean
+        preview: {
+          created: number
+          updated: number
+          skipped: number
+          closed: number
+          entries: Array<{
+            action: string
+            externalTaskId: string
+          }>
+        }
+        rejected: string[]
+      }
+    }
+
+    expect(payload.ok).toBe(true)
+    expect(payload.command).toBe('task diff-beads')
+    expect(payload.data.projectRoot).toBe(projectRoot)
+    expect(payload.data.mode).toBe('file')
+    expect(payload.data.file).toBe(snapshotPath)
+    expect(payload.data.closeMissing).toBe(false)
+    expect(payload.data.preview.created).toBe(1)
+    expect(payload.data.preview.updated).toBe(0)
+    expect(payload.data.preview.entries).toEqual([
+      expect.objectContaining({
+        action: 'create',
+        externalTaskId: 'BEADS-DIFF-JSON-1',
+      }),
+    ])
+    expect(payload.data.rejected).toEqual([])
+  })
 })

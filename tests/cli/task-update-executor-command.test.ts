@@ -170,4 +170,35 @@ describe('task update-executor CLI', () => {
     expect(row.current_executor).toBe('codex')
     db.close()
   })
+
+  it('returns structured json task executor output', async () => {
+    const { homeDir, projectRoot, taskId } = await createManagedProjectWithTask()
+
+    const result = await runCli(
+      ['task', 'update-executor', '--id', taskId, '--executor', 'beads', '--json'],
+      { cwd: projectRoot, homeDir },
+    )
+
+    expect(result.exitCode).toBe(0)
+
+    const payload = JSON.parse(result.stdout) as {
+      ok: true
+      command: string
+      data: {
+        projectRoot: string
+        taskId: string
+        from: string
+        to: string
+        changed: boolean
+      }
+    }
+
+    expect(payload.ok).toBe(true)
+    expect(payload.command).toBe('task update-executor')
+    expect(payload.data.projectRoot).toBe(projectRoot)
+    expect(payload.data.taskId).toBe(taskId)
+    expect(payload.data.from).toBe('codex')
+    expect(payload.data.to).toBe('beads')
+    expect(payload.data.changed).toBe(true)
+  })
 })

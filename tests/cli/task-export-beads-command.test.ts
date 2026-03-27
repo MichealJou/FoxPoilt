@@ -276,4 +276,59 @@ describe('task export-beads CLI', () => {
     expect(result.exitCode).toBe(4)
     expect(result.stdout).toContain('foxpilot.db 初始化失败')
   })
+
+  it('returns structured json beads export output', async () => {
+    const { homeDir, projectRoot } = await createManagedProject({
+      repositories: ['.'],
+    })
+
+    await importBeadsSnapshot({
+      homeDir,
+      projectRoot,
+      fileName: 'beads-export-source.json',
+      records: [
+        {
+          externalTaskId: 'BEADS-EXPORT-JSON-1',
+          title: 'JSON 导出任务',
+          status: 'ready',
+          priority: 'P2',
+          repository: '.',
+        },
+      ],
+    })
+
+    const exportPath = path.join(projectRoot, 'json-export.json')
+    const result = await runCli(
+      ['task', 'export-beads', '--file', exportPath, '--json'],
+      { cwd: projectRoot, homeDir },
+    )
+
+    expect(result.exitCode).toBe(0)
+
+    const payload = JSON.parse(result.stdout) as {
+      ok: true
+      command: string
+      data: {
+        projectRoot: string
+        file: string
+        exported: Array<{
+          externalTaskId: string
+          title: string
+        }>
+        rejected: string[]
+      }
+    }
+
+    expect(payload.ok).toBe(true)
+    expect(payload.command).toBe('task export-beads')
+    expect(payload.data.projectRoot).toBe(projectRoot)
+    expect(payload.data.file).toBe(exportPath)
+    expect(payload.data.exported).toEqual([
+      expect.objectContaining({
+        externalTaskId: 'BEADS-EXPORT-JSON-1',
+        title: 'JSON 导出任务',
+      }),
+    ])
+    expect(payload.data.rejected).toEqual([])
+  })
 })

@@ -3,6 +3,7 @@
  * @author michaeljou
  */
 
+import { toJsonErrorOutput, toJsonSuccessOutput } from '@/cli/json-output.js'
 import type { CliResult } from '@/commands/init/init-types.js'
 import { resolveGlobalDatabasePath } from '@/core/paths.js'
 import { bootstrapDatabase } from '@/db/bootstrap.js'
@@ -70,6 +71,7 @@ export async function runTaskNextCommand(
   context: TaskNextContext,
 ): Promise<CliResult> {
   const messages = getMessages(context.interfaceLanguage)
+  const commandName = 'task next'
 
   if (args.help) {
     return {
@@ -88,9 +90,18 @@ export async function runTaskNextCommand(
     })
   } catch (error) {
     if (error instanceof ProjectNotInitializedError) {
+      const stdout = `${messages.taskNext.projectNotInitialized}\n- projectRoot: ${error.projectRoot}`
       return {
         exitCode: 1,
-        stdout: `${messages.taskNext.projectNotInitialized}\n- projectRoot: ${error.projectRoot}`,
+        stdout: args.json
+          ? toJsonErrorOutput(commandName, {
+              code: 'PROJECT_NOT_INITIALIZED',
+              message: messages.taskNext.projectNotInitialized,
+              details: {
+                projectRoot: error.projectRoot,
+              },
+            })
+          : stdout,
       }
     }
 
@@ -102,9 +113,18 @@ export async function runTaskNextCommand(
   try {
     db = await dependencies.bootstrapDatabase(dbPath)
   } catch {
+    const stdout = `${messages.taskNext.dbBootstrapFailed}\n- ${dbPath}`
     return {
       exitCode: 4,
-      stdout: `${messages.taskNext.dbBootstrapFailed}\n- ${dbPath}`,
+      stdout: args.json
+        ? toJsonErrorOutput(commandName, {
+            code: 'DATABASE_BOOTSTRAP_FAILED',
+            message: messages.taskNext.dbBootstrapFailed,
+            details: {
+              dbPath,
+            },
+          })
+        : stdout,
     }
   }
 
@@ -116,6 +136,34 @@ export async function runTaskNextCommand(
   })
 
   db.close()
+
+  if (args.json) {
+    return {
+      exitCode: 0,
+      stdout: toJsonSuccessOutput(commandName, {
+        projectRoot: managedProject.projectRoot,
+        filters: {
+          source: args.source ?? null,
+          executor: args.executor ?? null,
+        },
+        item: task
+          ? {
+              taskId: task.id,
+              title: task.title,
+              description: task.description,
+              source: task.source_type,
+              executor: task.current_executor,
+              status: task.status,
+              priority: task.priority,
+              taskType: task.task_type,
+              externalSource: task.external_source,
+              externalId: task.external_id,
+              updatedAt: task.updated_at,
+            }
+          : null,
+      }),
+    }
+  }
 
   if (!task) {
     return {

@@ -3,6 +3,7 @@
  * @author michaeljou
  */
 
+import { toJsonErrorOutput, toJsonSuccessOutput } from '@/cli/json-output.js'
 import type { CliResult } from '@/commands/init/init-types.js'
 import { bootstrapDatabase } from '@/db/bootstrap.js'
 import { createTaskStore } from '@/db/task-store.js'
@@ -60,6 +61,7 @@ export async function runTaskUpdateExecutorCommand(
   context: TaskUpdateExecutorContext,
 ): Promise<CliResult> {
   const messages = getMessages(context.interfaceLanguage)
+  const commandName = 'task update-executor'
 
   if (args.help) {
     return {
@@ -71,7 +73,12 @@ export async function runTaskUpdateExecutorCommand(
   if (!args.executor) {
     return {
       exitCode: 1,
-      stdout: messages.taskUpdateExecutor.executorRequired,
+      stdout: args.json
+        ? toJsonErrorOutput(commandName, {
+            code: 'EXECUTOR_REQUIRED',
+            message: messages.taskUpdateExecutor.executorRequired,
+          })
+        : messages.taskUpdateExecutor.executorRequired,
     }
   }
 
@@ -88,7 +95,15 @@ export async function runTaskUpdateExecutorCommand(
     if (error instanceof ProjectNotInitializedError) {
       return {
         exitCode: 1,
-        stdout: `${messages.taskUpdateExecutor.projectNotInitialized}\n- projectRoot: ${error.projectRoot}`,
+        stdout: args.json
+          ? toJsonErrorOutput(commandName, {
+              code: 'PROJECT_NOT_INITIALIZED',
+              message: messages.taskUpdateExecutor.projectNotInitialized,
+              details: {
+                projectRoot: error.projectRoot,
+              },
+            })
+          : `${messages.taskUpdateExecutor.projectNotInitialized}\n- projectRoot: ${error.projectRoot}`,
       }
     }
 
@@ -102,7 +117,15 @@ export async function runTaskUpdateExecutorCommand(
   } catch {
     return {
       exitCode: 4,
-      stdout: `${messages.taskUpdateExecutor.dbBootstrapFailed}\n- ${dbPath}`,
+      stdout: args.json
+        ? toJsonErrorOutput(commandName, {
+            code: 'DATABASE_BOOTSTRAP_FAILED',
+            message: messages.taskUpdateExecutor.dbBootstrapFailed,
+            details: {
+              dbPath,
+            },
+          })
+        : `${messages.taskUpdateExecutor.dbBootstrapFailed}\n- ${dbPath}`,
     }
   }
 
@@ -122,7 +145,20 @@ export async function runTaskUpdateExecutorCommand(
     db.close()
     return {
       exitCode: 1,
-      stdout: taskReference.stdout,
+      stdout: args.json
+        ? toJsonErrorOutput(commandName, {
+            code: args.externalId ? 'TASK_NOT_FOUND' : 'TASK_REFERENCE_REQUIRED',
+            message: args.externalId
+              ? messages.taskUpdateExecutor.taskNotFound
+              : messages.taskUpdateExecutor.idRequired,
+            details: args.externalId
+              ? {
+                  externalSource: args.externalSource ?? 'beads',
+                  externalId: args.externalId,
+                }
+              : undefined,
+          })
+        : taskReference.stdout,
     }
   }
 
@@ -135,25 +171,51 @@ export async function runTaskUpdateExecutorCommand(
     db.close()
     return {
       exitCode: 1,
-      stdout: [
-        messages.taskUpdateExecutor.taskNotFound,
-        `- taskId: ${taskReference.value.taskId}`,
-        ...taskReference.value.referenceLines,
-      ].join('\n'),
+      stdout: args.json
+        ? toJsonErrorOutput(commandName, {
+            code: 'TASK_NOT_FOUND',
+            message: messages.taskUpdateExecutor.taskNotFound,
+            details: {
+              taskId: taskReference.value.taskId,
+              externalSource: args.externalId ? (args.externalSource ?? 'beads') : null,
+              externalId: args.externalId ?? null,
+            },
+          })
+        : [
+            messages.taskUpdateExecutor.taskNotFound,
+            `- taskId: ${taskReference.value.taskId}`,
+            ...taskReference.value.referenceLines,
+          ].join('\n'),
     }
   }
 
   if (existingTask.current_executor === nextExecutor) {
     db.close()
+    const data = {
+      projectRoot: managedProject.projectRoot,
+      taskId: taskReference.value.taskId,
+      externalRef: args.externalId
+        ? {
+            externalSource: args.externalSource ?? 'beads',
+            externalId: args.externalId,
+          }
+        : null,
+      from: existingTask.current_executor,
+      to: nextExecutor,
+      changed: false,
+    }
+
     return {
       exitCode: 0,
-      stdout: [
-        messages.taskUpdateExecutor.unchanged,
-        `- projectRoot: ${managedProject.projectRoot}`,
-        `- taskId: ${taskReference.value.taskId}`,
-        ...taskReference.value.referenceLines,
-        `- executor: ${nextExecutor}`,
-      ].join('\n'),
+      stdout: args.json
+        ? toJsonSuccessOutput(commandName, data)
+        : [
+            messages.taskUpdateExecutor.unchanged,
+            `- projectRoot: ${managedProject.projectRoot}`,
+            `- taskId: ${taskReference.value.taskId}`,
+            ...taskReference.value.referenceLines,
+            `- executor: ${nextExecutor}`,
+          ].join('\n'),
     }
   }
 
@@ -169,11 +231,42 @@ export async function runTaskUpdateExecutorCommand(
   if (!updated) {
     return {
       exitCode: 1,
-      stdout: [
-        messages.taskUpdateExecutor.taskNotFound,
-        `- taskId: ${taskReference.value.taskId}`,
-        ...taskReference.value.referenceLines,
-      ].join('\n'),
+      stdout: args.json
+        ? toJsonErrorOutput(commandName, {
+            code: 'TASK_NOT_FOUND',
+            message: messages.taskUpdateExecutor.taskNotFound,
+            details: {
+              taskId: taskReference.value.taskId,
+              externalSource: args.externalId ? (args.externalSource ?? 'beads') : null,
+              externalId: args.externalId ?? null,
+            },
+          })
+        : [
+            messages.taskUpdateExecutor.taskNotFound,
+            `- taskId: ${taskReference.value.taskId}`,
+            ...taskReference.value.referenceLines,
+          ].join('\n'),
+    }
+  }
+
+  const data = {
+    projectRoot: managedProject.projectRoot,
+    taskId: taskReference.value.taskId,
+    externalRef: args.externalId
+      ? {
+          externalSource: args.externalSource ?? 'beads',
+          externalId: args.externalId,
+        }
+      : null,
+    from: existingTask.current_executor,
+    to: nextExecutor,
+    changed: true,
+  }
+
+  if (args.json) {
+    return {
+      exitCode: 0,
+      stdout: toJsonSuccessOutput(commandName, data),
     }
   }
 

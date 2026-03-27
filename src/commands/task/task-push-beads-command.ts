@@ -5,6 +5,7 @@
 
 import path from 'node:path'
 
+import { toJsonErrorOutput, toJsonSuccessOutput } from '@/cli/json-output.js'
 import type { CliResult } from '@/commands/init/init-types.js'
 import { resolveGlobalDatabasePath } from '@/core/paths.js'
 import { bootstrapDatabase } from '@/db/bootstrap.js'
@@ -208,6 +209,7 @@ export async function runTaskPushBeadsCommand(
   context: TaskPushBeadsContext,
 ): Promise<CliResult> {
   const messages = getMessages(context.interfaceLanguage)
+  const commandName = 'task push-beads'
   const singleTaskMode = hasSingleTaskSelector(args)
 
   if (args.help) {
@@ -220,7 +222,12 @@ export async function runTaskPushBeadsCommand(
   if (!singleTaskMode && !args.repository?.trim() && !args.allRepositories) {
     return {
       exitCode: 1,
-      stdout: messages.taskPushBeads.targetRequired,
+      stdout: args.json
+        ? toJsonErrorOutput(commandName, {
+            code: 'TARGET_REQUIRED',
+            message: messages.taskPushBeads.targetRequired,
+          })
+        : messages.taskPushBeads.targetRequired,
     }
   }
 
@@ -236,7 +243,15 @@ export async function runTaskPushBeadsCommand(
     if (error instanceof ProjectNotInitializedError) {
       return {
         exitCode: 1,
-        stdout: `${messages.taskPushBeads.projectNotInitialized}\n- projectRoot: ${error.projectRoot}`,
+        stdout: args.json
+          ? toJsonErrorOutput(commandName, {
+              code: 'PROJECT_NOT_INITIALIZED',
+              message: messages.taskPushBeads.projectNotInitialized,
+              details: {
+                projectRoot: error.projectRoot,
+              },
+            })
+          : `${messages.taskPushBeads.projectNotInitialized}\n- projectRoot: ${error.projectRoot}`,
       }
     }
 
@@ -250,7 +265,15 @@ export async function runTaskPushBeadsCommand(
   } catch {
     return {
       exitCode: 4,
-      stdout: `${messages.taskPushBeads.dbBootstrapFailed}\n- ${dbPath}`,
+      stdout: args.json
+        ? toJsonErrorOutput(commandName, {
+            code: 'DATABASE_BOOTSTRAP_FAILED',
+            message: messages.taskPushBeads.dbBootstrapFailed,
+            details: {
+              dbPath,
+            },
+          })
+        : `${messages.taskPushBeads.dbBootstrapFailed}\n- ${dbPath}`,
     }
   }
 
@@ -272,7 +295,18 @@ export async function runTaskPushBeadsCommand(
       db.close()
       return {
         exitCode: 1,
-        stdout: taskReference.stdout,
+        stdout: args.json
+          ? toJsonErrorOutput(commandName, {
+              code: args.externalId ? 'TASK_NOT_FOUND' : 'TASK_REFERENCE_REQUIRED',
+              message: args.externalId ? messages.taskPushBeads.taskNotFound : messages.taskPushBeads.idRequired,
+              details: args.externalId
+                ? {
+                    externalSource: args.externalSource ?? 'beads',
+                    externalId: args.externalId,
+                  }
+                : undefined,
+            })
+          : taskReference.stdout,
       }
     }
 
@@ -285,11 +319,21 @@ export async function runTaskPushBeadsCommand(
       db.close()
       return {
         exitCode: 1,
-        stdout: [
-          messages.taskPushBeads.taskNotFound,
-          `- taskId: ${taskReference.value.taskId}`,
-          ...taskReference.value.referenceLines,
-        ].join('\n'),
+        stdout: args.json
+          ? toJsonErrorOutput(commandName, {
+              code: 'TASK_NOT_FOUND',
+              message: messages.taskPushBeads.taskNotFound,
+              details: {
+                taskId: taskReference.value.taskId,
+                externalSource: args.externalId ? (args.externalSource ?? 'beads') : null,
+                externalId: args.externalId ?? null,
+              },
+            })
+          : [
+              messages.taskPushBeads.taskNotFound,
+              `- taskId: ${taskReference.value.taskId}`,
+              ...taskReference.value.referenceLines,
+            ].join('\n'),
       }
     }
 
@@ -302,11 +346,21 @@ export async function runTaskPushBeadsCommand(
       db.close()
       return {
         exitCode: 1,
-        stdout: [
-          messages.taskPushBeads.notImportedTask,
-          `- taskId: ${taskReference.value.taskId}`,
-          ...taskReference.value.referenceLines,
-        ].join('\n'),
+        stdout: args.json
+          ? toJsonErrorOutput(commandName, {
+              code: 'NOT_IMPORTED_TASK',
+              message: messages.taskPushBeads.notImportedTask,
+              details: {
+                taskId: taskReference.value.taskId,
+                externalSource: args.externalId ? (args.externalSource ?? 'beads') : null,
+                externalId: args.externalId ?? null,
+              },
+            })
+          : [
+              messages.taskPushBeads.notImportedTask,
+              `- taskId: ${taskReference.value.taskId}`,
+              ...taskReference.value.referenceLines,
+            ].join('\n'),
       }
     }
 
@@ -323,27 +377,72 @@ export async function runTaskPushBeadsCommand(
       if (error instanceof Error && error.message.startsWith('repository-not-initialized:')) {
         return {
           exitCode: 1,
-          stdout: [
-            messages.taskPushBeads.repositoryNotInitialized,
-            `- repository: ${snapshot.repositoryPath}`,
-            `- repositoryRoot: ${snapshot.repositoryRoot}`,
-          ].join('\n'),
+          stdout: args.json
+            ? toJsonErrorOutput(commandName, {
+                code: 'REPOSITORY_NOT_INITIALIZED',
+                message: messages.taskPushBeads.repositoryNotInitialized,
+                details: {
+                  repository: snapshot.repositoryPath,
+                  repositoryRoot: snapshot.repositoryRoot,
+                },
+              })
+            : [
+                messages.taskPushBeads.repositoryNotInitialized,
+                `- repository: ${snapshot.repositoryPath}`,
+                `- repositoryRoot: ${snapshot.repositoryRoot}`,
+              ].join('\n'),
         }
       }
 
       return {
         exitCode: 1,
-        stdout: [
-          messages.taskPushBeads.pushFailed,
-          `- repository: ${snapshot.repositoryPath}`,
-          `- repositoryRoot: ${snapshot.repositoryRoot}`,
-          `- externalId: ${snapshot.externalTaskId}`,
-          error instanceof Error ? `- reason: ${error.message}` : '- reason: unknown error',
-        ].join('\n'),
+        stdout: args.json
+          ? toJsonErrorOutput(commandName, {
+              code: 'PUSH_FAILED',
+              message: messages.taskPushBeads.pushFailed,
+              details: {
+                repository: snapshot.repositoryPath,
+                repositoryRoot: snapshot.repositoryRoot,
+                externalId: snapshot.externalTaskId,
+                reason: error instanceof Error ? error.message : 'unknown error',
+              },
+            })
+          : [
+              messages.taskPushBeads.pushFailed,
+              `- repository: ${snapshot.repositoryPath}`,
+              `- repositoryRoot: ${snapshot.repositoryRoot}`,
+              `- externalId: ${snapshot.externalTaskId}`,
+              error instanceof Error ? `- reason: ${error.message}` : '- reason: unknown error',
+            ].join('\n'),
       }
     }
 
     db.close()
+
+    const data = {
+      projectRoot: managedProject.projectRoot,
+      mode: 'single-task' as const,
+      taskId: taskReference.value.taskId,
+      externalRef: {
+        externalSource: 'beads' as const,
+        externalId: snapshot.externalTaskId,
+      },
+      repositoryPath: snapshot.repositoryPath,
+      repositoryRoot: snapshot.repositoryRoot,
+      title: snapshot.title,
+      description: snapshot.description,
+      priority: snapshot.priority,
+      status: snapshot.status,
+      pushed: 1,
+      dryRun: args.dryRun,
+    }
+
+    if (args.json) {
+      return {
+        exitCode: 0,
+        stdout: toJsonSuccessOutput(commandName, data),
+      }
+    }
 
     return {
       exitCode: 0,
@@ -375,7 +474,15 @@ export async function runTaskPushBeadsCommand(
       if (error instanceof RepositoryTargetNotFoundError) {
         return {
           exitCode: 1,
-          stdout: `${messages.taskPushBeads.repositoryNotFound}\n- repository: ${error.repositorySelector}`,
+          stdout: args.json
+            ? toJsonErrorOutput(commandName, {
+                code: 'REPOSITORY_NOT_FOUND',
+                message: messages.taskPushBeads.repositoryNotFound,
+                details: {
+                  repository: error.repositorySelector,
+                },
+              })
+            : `${messages.taskPushBeads.repositoryNotFound}\n- repository: ${error.repositorySelector}`,
         }
       }
 
@@ -386,7 +493,12 @@ export async function runTaskPushBeadsCommand(
       db.close()
       return {
         exitCode: 1,
-        stdout: messages.taskPushBeads.targetRequired,
+        stdout: args.json
+          ? toJsonErrorOutput(commandName, {
+              code: 'TARGET_REQUIRED',
+              message: messages.taskPushBeads.targetRequired,
+            })
+          : messages.taskPushBeads.targetRequired,
       }
     }
 
@@ -397,11 +509,20 @@ export async function runTaskPushBeadsCommand(
       db.close()
       return {
         exitCode: 1,
-        stdout: [
-          messages.taskPushBeads.repositoryNotInitialized,
-          `- repository: ${repositoryTarget.path}`,
-          `- repositoryRoot: ${repositoryRoot}`,
-        ].join('\n'),
+        stdout: args.json
+          ? toJsonErrorOutput(commandName, {
+              code: 'REPOSITORY_NOT_INITIALIZED',
+              message: messages.taskPushBeads.repositoryNotInitialized,
+              details: {
+                repository: repositoryTarget.path,
+                repositoryRoot,
+              },
+            })
+          : [
+              messages.taskPushBeads.repositoryNotInitialized,
+              `- repository: ${repositoryTarget.path}`,
+              `- repositoryRoot: ${repositoryRoot}`,
+            ].join('\n'),
       }
     }
 
@@ -425,16 +546,42 @@ export async function runTaskPushBeadsCommand(
       db.close()
       return {
         exitCode: 1,
-        stdout: [
-          messages.taskPushBeads.pushFailed,
-          `- repository: ${repositoryTarget.path}`,
-          `- repositoryRoot: ${repositoryRoot}`,
-          error instanceof Error ? `- reason: ${error.message}` : '- reason: unknown error',
-        ].join('\n'),
+        stdout: args.json
+          ? toJsonErrorOutput(commandName, {
+              code: 'PUSH_FAILED',
+              message: messages.taskPushBeads.pushFailed,
+              details: {
+                repository: repositoryTarget.path,
+                repositoryRoot,
+                reason: error instanceof Error ? error.message : 'unknown error',
+              },
+            })
+          : [
+              messages.taskPushBeads.pushFailed,
+              `- repository: ${repositoryTarget.path}`,
+              `- repositoryRoot: ${repositoryRoot}`,
+              error instanceof Error ? `- reason: ${error.message}` : '- reason: unknown error',
+            ].join('\n'),
       }
     }
 
     db.close()
+
+    const data = {
+      projectRoot: managedProject.projectRoot,
+      mode: 'repository' as const,
+      repositoryPath: repositoryTarget.path,
+      repositoryRoot,
+      pushed: snapshots.length,
+      dryRun: args.dryRun,
+    }
+
+    if (args.json) {
+      return {
+        exitCode: 0,
+        stdout: toJsonSuccessOutput(commandName, data),
+      }
+    }
 
     return {
       exitCode: 0,
@@ -489,14 +636,39 @@ export async function runTaskPushBeadsCommand(
     db.close()
     return {
       exitCode: 1,
-      stdout: [
-        messages.taskPushBeads.pushFailed,
-        error instanceof Error ? `- reason: ${error.message}` : '- reason: unknown error',
-      ].join('\n'),
+      stdout: args.json
+        ? toJsonErrorOutput(commandName, {
+            code: 'PUSH_FAILED',
+            message: messages.taskPushBeads.pushFailed,
+            details: {
+              reason: error instanceof Error ? error.message : 'unknown error',
+            },
+          })
+        : [
+            messages.taskPushBeads.pushFailed,
+            error instanceof Error ? `- reason: ${error.message}` : '- reason: unknown error',
+          ].join('\n'),
     }
   }
 
   db.close()
+
+  const data = {
+    projectRoot: managedProject.projectRoot,
+    mode: 'all-repositories' as const,
+    scannedRepositories,
+    pushedRepositories,
+    skippedRepositories,
+    pushed,
+    dryRun: args.dryRun,
+  }
+
+  if (args.json) {
+    return {
+      exitCode: 0,
+      stdout: toJsonSuccessOutput(commandName, data),
+    }
+  }
 
   return {
     exitCode: 0,

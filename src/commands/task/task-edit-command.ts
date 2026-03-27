@@ -3,6 +3,7 @@
  * @author michaeljou
  */
 
+import { toJsonErrorOutput, toJsonSuccessOutput } from '@/cli/json-output.js'
 import type { CliResult } from '@/commands/init/init-types.js'
 import { resolveGlobalDatabasePath } from '@/core/paths.js'
 import { bootstrapDatabase } from '@/db/bootstrap.js'
@@ -69,6 +70,7 @@ export async function runTaskEditCommand(
   context: TaskEditContext,
 ): Promise<CliResult> {
   const messages = getMessages(context.interfaceLanguage)
+  const commandName = 'task edit'
 
   if (args.help) {
     return {
@@ -84,28 +86,48 @@ export async function runTaskEditCommand(
   if (!hasTitle && !hasDescription && !hasTaskType && !args.clearDescription) {
     return {
       exitCode: 1,
-      stdout: messages.taskEdit.noChangesSpecified,
+      stdout: args.json
+        ? toJsonErrorOutput(commandName, {
+            code: 'NO_CHANGES_SPECIFIED',
+            message: messages.taskEdit.noChangesSpecified,
+          })
+        : messages.taskEdit.noChangesSpecified,
     }
   }
 
   if (hasDescription && args.clearDescription) {
     return {
       exitCode: 1,
-      stdout: messages.taskEdit.conflictingDescription,
+      stdout: args.json
+        ? toJsonErrorOutput(commandName, {
+            code: 'CONFLICTING_DESCRIPTION_FLAGS',
+            message: messages.taskEdit.conflictingDescription,
+          })
+        : messages.taskEdit.conflictingDescription,
     }
   }
 
   if (hasTitle && !args.title?.trim()) {
     return {
       exitCode: 1,
-      stdout: messages.taskEdit.titleRequired,
+      stdout: args.json
+        ? toJsonErrorOutput(commandName, {
+            code: 'TITLE_REQUIRED',
+            message: messages.taskEdit.titleRequired,
+          })
+        : messages.taskEdit.titleRequired,
     }
   }
 
   if (hasDescription && !args.description?.trim()) {
     return {
       exitCode: 1,
-      stdout: messages.taskEdit.descriptionRequired,
+      stdout: args.json
+        ? toJsonErrorOutput(commandName, {
+            code: 'DESCRIPTION_REQUIRED',
+            message: messages.taskEdit.descriptionRequired,
+          })
+        : messages.taskEdit.descriptionRequired,
     }
   }
 
@@ -121,7 +143,15 @@ export async function runTaskEditCommand(
     if (error instanceof ProjectNotInitializedError) {
       return {
         exitCode: 1,
-        stdout: `${messages.taskEdit.projectNotInitialized}\n- projectRoot: ${error.projectRoot}`,
+        stdout: args.json
+          ? toJsonErrorOutput(commandName, {
+              code: 'PROJECT_NOT_INITIALIZED',
+              message: messages.taskEdit.projectNotInitialized,
+              details: {
+                projectRoot: error.projectRoot,
+              },
+            })
+          : `${messages.taskEdit.projectNotInitialized}\n- projectRoot: ${error.projectRoot}`,
       }
     }
 
@@ -135,7 +165,15 @@ export async function runTaskEditCommand(
   } catch {
     return {
       exitCode: 4,
-      stdout: `${messages.taskEdit.dbBootstrapFailed}\n- ${dbPath}`,
+      stdout: args.json
+        ? toJsonErrorOutput(commandName, {
+            code: 'DATABASE_BOOTSTRAP_FAILED',
+            message: messages.taskEdit.dbBootstrapFailed,
+            details: {
+              dbPath,
+            },
+          })
+        : `${messages.taskEdit.dbBootstrapFailed}\n- ${dbPath}`,
     }
   }
 
@@ -155,7 +193,18 @@ export async function runTaskEditCommand(
     db.close()
     return {
       exitCode: 1,
-      stdout: taskReference.stdout,
+      stdout: args.json
+        ? toJsonErrorOutput(commandName, {
+            code: args.externalId ? 'TASK_NOT_FOUND' : 'TASK_REFERENCE_REQUIRED',
+            message: args.externalId ? messages.taskEdit.taskNotFound : messages.taskEdit.idRequired,
+            details: args.externalId
+              ? {
+                  externalSource: args.externalSource ?? 'beads',
+                  externalId: args.externalId,
+                }
+              : undefined,
+          })
+        : taskReference.stdout,
     }
   }
 
@@ -168,11 +217,21 @@ export async function runTaskEditCommand(
     db.close()
     return {
       exitCode: 1,
-      stdout: [
-        messages.taskEdit.taskNotFound,
-        `- taskId: ${taskReference.value.taskId}`,
-        ...taskReference.value.referenceLines,
-      ].join('\n'),
+      stdout: args.json
+        ? toJsonErrorOutput(commandName, {
+            code: 'TASK_NOT_FOUND',
+            message: messages.taskEdit.taskNotFound,
+            details: {
+              taskId: taskReference.value.taskId,
+              externalSource: args.externalId ? (args.externalSource ?? 'beads') : null,
+              externalId: args.externalId ?? null,
+            },
+          })
+        : [
+            messages.taskEdit.taskNotFound,
+            `- taskId: ${taskReference.value.taskId}`,
+            ...taskReference.value.referenceLines,
+          ].join('\n'),
     }
   }
 
@@ -190,14 +249,38 @@ export async function runTaskEditCommand(
     nextTaskType === detail.task.task_type
   ) {
     db.close()
+    const data = {
+      projectRoot: managedProject.projectRoot,
+      taskId: taskReference.value.taskId,
+      externalRef: args.externalId
+        ? {
+            externalSource: args.externalSource ?? 'beads',
+            externalId: args.externalId,
+          }
+        : null,
+      before: {
+        title: detail.task.title,
+        description: detail.task.description,
+        taskType: detail.task.task_type,
+      },
+      after: {
+        title: nextTitle,
+        description: nextDescription,
+        taskType: nextTaskType,
+      },
+      changed: false,
+    }
+
     return {
       exitCode: 0,
-      stdout: [
-        messages.taskEdit.unchanged,
-        `- projectRoot: ${managedProject.projectRoot}`,
-        `- taskId: ${taskReference.value.taskId}`,
-        ...taskReference.value.referenceLines,
-      ].join('\n'),
+      stdout: args.json
+        ? toJsonSuccessOutput(commandName, data)
+        : [
+            messages.taskEdit.unchanged,
+            `- projectRoot: ${managedProject.projectRoot}`,
+            `- taskId: ${taskReference.value.taskId}`,
+            ...taskReference.value.referenceLines,
+          ].join('\n'),
     }
   }
 
@@ -215,11 +298,50 @@ export async function runTaskEditCommand(
   if (!updated) {
     return {
       exitCode: 1,
-      stdout: [
-        messages.taskEdit.taskNotFound,
-        `- taskId: ${taskReference.value.taskId}`,
-        ...taskReference.value.referenceLines,
-      ].join('\n'),
+      stdout: args.json
+        ? toJsonErrorOutput(commandName, {
+            code: 'TASK_NOT_FOUND',
+            message: messages.taskEdit.taskNotFound,
+            details: {
+              taskId: taskReference.value.taskId,
+              externalSource: args.externalId ? (args.externalSource ?? 'beads') : null,
+              externalId: args.externalId ?? null,
+            },
+          })
+        : [
+            messages.taskEdit.taskNotFound,
+            `- taskId: ${taskReference.value.taskId}`,
+            ...taskReference.value.referenceLines,
+          ].join('\n'),
+    }
+  }
+
+  const data = {
+    projectRoot: managedProject.projectRoot,
+    taskId: taskReference.value.taskId,
+    externalRef: args.externalId
+      ? {
+          externalSource: args.externalSource ?? 'beads',
+          externalId: args.externalId,
+        }
+      : null,
+    before: {
+      title: detail.task.title,
+      description: detail.task.description,
+      taskType: detail.task.task_type,
+    },
+    after: {
+      title: nextTitle,
+      description: nextDescription,
+      taskType: nextTaskType,
+    },
+    changed: true,
+  }
+
+  if (args.json) {
+    return {
+      exitCode: 0,
+      stdout: toJsonSuccessOutput(commandName, data),
     }
   }
 

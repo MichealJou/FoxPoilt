@@ -22,6 +22,8 @@ export type TaskCreateArgs = {
   subcommand: 'create'
   /** 当为 true 时只输出帮助，不真正写入任务。 */
   help: boolean
+  /** 为 true 时输出结构化 JSON。 */
+  json: boolean
   /** 项目根目录覆盖值；缺省时从当前工作目录向上解析受管项目。 */
   path?: string
   /** 任务标题，是任务列表中的主展示字段，也是创建时唯一必填字段。 */

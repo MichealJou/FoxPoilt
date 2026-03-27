@@ -335,4 +335,52 @@ describe('task push-beads CLI', () => {
     expect(result.exitCode).toBe(4)
     expect(result.stdout).toContain('foxpilot.db 初始化失败')
   })
+
+  it('返回结构化 json beads 回写结果', async () => {
+    const fixture = await createManagedProjectWithImportedBeadsTask({ tempDirs })
+
+    const result = await runCli(
+      ['task', 'push-beads', '--external-id', fixture.externalId, '--dry-run', '--json'],
+      {
+        cwd: fixture.projectRoot,
+        homeDir: fixture.homeDir,
+        dependencies: {
+          hasLocalBeadsRepository: async () => true,
+          runBdUpdate: async () => {
+            throw new Error('should not be called')
+          },
+        },
+      },
+    )
+
+    expect(result.exitCode).toBe(0)
+
+    const payload = JSON.parse(result.stdout) as {
+      ok: true
+      command: string
+      data: {
+        projectRoot: string
+        mode: string
+        taskId: string
+        externalRef: {
+          externalSource: string
+          externalId: string
+        }
+        pushed: number
+        dryRun: boolean
+      }
+    }
+
+    expect(payload.ok).toBe(true)
+    expect(payload.command).toBe('task push-beads')
+    expect(payload.data.projectRoot).toBe(fixture.projectRoot)
+    expect(payload.data.mode).toBe('single-task')
+    expect(payload.data.taskId).toBe(fixture.taskId)
+    expect(payload.data.externalRef).toEqual({
+      externalSource: 'beads',
+      externalId: fixture.externalId,
+    })
+    expect(payload.data.pushed).toBe(1)
+    expect(payload.data.dryRun).toBe(true)
+  })
 })

@@ -4,6 +4,7 @@
  */
 
 import type { CliResult } from '@/commands/init/init-types.js'
+import { toJsonErrorOutput, toJsonSuccessOutput } from '@/cli/json-output.js'
 import { dispatchUpdate } from '@/install/update-dispatcher.js'
 import { readInstallManifest } from '@/install/install-manifest.js'
 import { runBrewUpdate, runNpmUpdate, runReleaseUpdate } from '@/install/update-runner.js'
@@ -43,6 +44,8 @@ export async function runSystemUpdateCommand(
   args: SystemUpdateArgs,
   context: SystemUpdateContext,
 ): Promise<CliResult> {
+  const commandName = 'update'
+
   if (args.help) {
     return {
       exitCode: 0,
@@ -56,22 +59,37 @@ export async function runSystemUpdateCommand(
   if (!manifest) {
     return {
       exitCode: 1,
-      stdout: [
-        '[FoxPilot] 无法识别当前安装来源',
-        `- executablePath: ${context.executablePath}`,
-      ].join('\n'),
+      stdout: args.json
+        ? toJsonErrorOutput(commandName, {
+            code: 'INSTALL_MANIFEST_NOT_FOUND',
+            message: '无法识别当前安装来源',
+            details: {
+              executablePath: context.executablePath,
+            },
+          })
+        : [
+            '[FoxPilot] 无法识别当前安装来源',
+            `- executablePath: ${context.executablePath}`,
+          ].join('\n'),
     }
   }
 
   const strategy = await dependencies.dispatchUpdate(manifest)
+  const data = {
+    installMethod: manifest.installMethod,
+    packageVersion: manifest.packageVersion,
+    strategy,
+  }
 
   return {
     exitCode: 0,
-    stdout: [
-      '[FoxPilot] 更新策略已解析',
-      `- installMethod: ${manifest.installMethod}`,
-      `- packageVersion: ${manifest.packageVersion}`,
-      strategy,
-    ].join('\n'),
+    stdout: args.json
+      ? toJsonSuccessOutput(commandName, data)
+      : [
+          '[FoxPilot] 更新策略已解析',
+          `- installMethod: ${manifest.installMethod}`,
+          `- packageVersion: ${manifest.packageVersion}`,
+          strategy,
+        ].join('\n'),
   }
 }

@@ -170,4 +170,47 @@ describe('task create CLI', () => {
     expect(result.exitCode).toBe(4)
     expect(result.stdout).toContain('foxpilot.db 初始化失败')
   })
+
+  it('returns structured json task create output', async () => {
+    const { homeDir, projectRoot } = await createManagedProjectFixture()
+
+    const result = await runCli(
+      ['task', 'create', '--title', 'json 创建任务', '--repository', 'frontend', '--json'],
+      { cwd: projectRoot, homeDir },
+    )
+
+    expect(result.exitCode).toBe(0)
+
+    const payload = JSON.parse(result.stdout) as {
+      ok: true
+      command: string
+      data: {
+        projectRoot: string
+        task: {
+          title: string
+          source: string
+          status: string
+          executor: string
+        }
+        targets: Array<{
+          targetType: string
+          repositoryPath: string
+        }>
+      }
+    }
+
+    expect(payload.ok).toBe(true)
+    expect(payload.command).toBe('task create')
+    expect(payload.data.projectRoot).toBe(projectRoot)
+    expect(payload.data.task.title).toBe('json 创建任务')
+    expect(payload.data.task.source).toBe('manual')
+    expect(payload.data.task.status).toBe('todo')
+    expect(payload.data.task.executor).toBe('codex')
+    expect(payload.data.targets).toEqual([
+      {
+        targetType: 'repository',
+        repositoryPath: 'frontend',
+      },
+    ])
+  })
 })

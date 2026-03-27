@@ -108,6 +108,46 @@ describe('task doctor-beads CLI', () => {
     expect(result.stdout).toContain('- status: ready')
   })
 
+  it('返回结构化 json beads 环境诊断结果', async () => {
+    const { homeDir, projectRoot } = await createManagedProjectWithRepositories()
+
+    const result = await runCli(
+      ['task', 'doctor-beads', '--all-repositories', '--json'],
+      {
+        cwd: projectRoot,
+        homeDir,
+        dependencies: {
+          hasLocalBeadsRepository: async (input: { repositoryRoot: string }) => input.repositoryRoot.endsWith('/frontend'),
+          runBdList: async () => JSON.stringify([
+            { id: 'BEADS-FE-1', title: '前端任务', status: 'open', priority: 1 },
+          ]),
+        },
+      },
+    )
+
+    const payload = JSON.parse(result.stdout) as {
+      ok: boolean
+      command: string
+      data: {
+        mode: string
+        checkedRepositories: number
+        warningRepositories: number
+        diagnoses: Array<{
+          repositoryPath: string
+          status: string
+        }>
+      }
+    }
+
+    expect(result.exitCode).toBe(1)
+    expect(payload.ok).toBe(true)
+    expect(payload.command).toBe('task doctor-beads')
+    expect(payload.data.mode).toBe('all-repositories')
+    expect(payload.data.checkedRepositories).toBe(2)
+    expect(payload.data.warningRepositories).toBe(1)
+    expect(payload.data.diagnoses.some((item) => item.repositoryPath === '.' && item.status === 'warning')).toBe(true)
+  })
+
   it('仓库存在但 bd 输出非法时标记为 error', async () => {
     const { homeDir, projectRoot } = await createManagedProjectWithRepositories()
 

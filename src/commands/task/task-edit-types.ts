@@ -27,6 +27,7 @@ export type TaskEditArgs = TaskReferenceArgs & {
   command: 'task'
   subcommand: 'edit'
   help: boolean
+  json: boolean
   path?: string
   title?: string
   description?: string

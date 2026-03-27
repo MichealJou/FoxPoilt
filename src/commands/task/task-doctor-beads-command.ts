@@ -5,6 +5,7 @@
 
 import path from 'node:path'
 
+import { toJsonErrorOutput, toJsonSuccessOutput } from '@/cli/json-output.js'
 import type { CliResult } from '@/commands/init/init-types.js'
 import { resolveGlobalDatabasePath } from '@/core/paths.js'
 import { bootstrapDatabase } from '@/db/bootstrap.js'
@@ -176,6 +177,7 @@ export async function runTaskDoctorBeadsCommand(
   context: TaskDoctorBeadsContext,
 ): Promise<CliResult> {
   const messages = getMessages(context.interfaceLanguage)
+  const commandName = 'task doctor-beads'
 
   if (args.help) {
     return {
@@ -187,7 +189,12 @@ export async function runTaskDoctorBeadsCommand(
   if (!args.allRepositories && !args.repository?.trim()) {
     return {
       exitCode: 1,
-      stdout: messages.taskDoctorBeads.repositoryRequired,
+      stdout: args.json
+        ? toJsonErrorOutput(commandName, {
+            code: 'REPOSITORY_REQUIRED',
+            message: messages.taskDoctorBeads.repositoryRequired,
+          })
+        : messages.taskDoctorBeads.repositoryRequired,
     }
   }
 
@@ -201,9 +208,18 @@ export async function runTaskDoctorBeadsCommand(
     })
   } catch (error) {
     if (error instanceof ProjectNotInitializedError) {
+      const stdout = `${messages.taskDoctorBeads.projectNotInitialized}\n- projectRoot: ${error.projectRoot}`
       return {
         exitCode: 1,
-        stdout: `${messages.taskDoctorBeads.projectNotInitialized}\n- projectRoot: ${error.projectRoot}`,
+        stdout: args.json
+          ? toJsonErrorOutput(commandName, {
+              code: 'PROJECT_NOT_INITIALIZED',
+              message: messages.taskDoctorBeads.projectNotInitialized,
+              details: {
+                projectRoot: error.projectRoot,
+              },
+            })
+          : stdout,
       }
     }
 
@@ -215,9 +231,18 @@ export async function runTaskDoctorBeadsCommand(
   try {
     db = await dependencies.bootstrapDatabase(dbPath)
   } catch {
+    const stdout = `${messages.taskDoctorBeads.dbBootstrapFailed}\n- ${dbPath}`
     return {
       exitCode: 4,
-      stdout: `${messages.taskDoctorBeads.dbBootstrapFailed}\n- ${dbPath}`,
+      stdout: args.json
+        ? toJsonErrorOutput(commandName, {
+            code: 'DATABASE_BOOTSTRAP_FAILED',
+            message: messages.taskDoctorBeads.dbBootstrapFailed,
+            details: {
+              dbPath,
+            },
+          })
+        : stdout,
     }
   }
   db.close()
@@ -233,16 +258,30 @@ export async function runTaskDoctorBeadsCommand(
       if (!repositoryTarget) {
         return {
           exitCode: 1,
-          stdout: messages.taskDoctorBeads.repositoryRequired,
+          stdout: args.json
+            ? toJsonErrorOutput(commandName, {
+                code: 'REPOSITORY_REQUIRED',
+                message: messages.taskDoctorBeads.repositoryRequired,
+              })
+            : messages.taskDoctorBeads.repositoryRequired,
         }
       }
 
       repositoryPaths = [repositoryTarget.path]
     } catch (error) {
       if (error instanceof RepositoryTargetNotFoundError) {
+        const stdout = `${messages.taskDoctorBeads.repositoryNotFound}\n- repository: ${error.repositorySelector}`
         return {
           exitCode: 1,
-          stdout: `${messages.taskDoctorBeads.repositoryNotFound}\n- repository: ${error.repositorySelector}`,
+          stdout: args.json
+            ? toJsonErrorOutput(commandName, {
+                code: 'REPOSITORY_NOT_FOUND',
+                message: messages.taskDoctorBeads.repositoryNotFound,
+                details: {
+                  repository: error.repositorySelector,
+                },
+              })
+            : stdout,
         }
       }
 
@@ -260,6 +299,26 @@ export async function runTaskDoctorBeadsCommand(
   )
 
   const hasIssues = diagnoses.some((item) => item.status !== 'ready')
+
+  if (args.json) {
+    const readyRepositories = diagnoses.filter((item) => item.status === 'ready').length
+    const warningRepositories = diagnoses.filter((item) => item.status === 'warning').length
+    const errorRepositories = diagnoses.filter((item) => item.status === 'error').length
+
+    return {
+      exitCode: hasIssues ? 1 : 0,
+      stdout: toJsonSuccessOutput(commandName, {
+        projectRoot: managedProject.projectRoot,
+        mode: args.allRepositories ? 'all-repositories' : 'single-repository',
+        checkedRepositories: diagnoses.length,
+        readyRepositories,
+        warningRepositories,
+        errorRepositories,
+        hasIssues,
+        diagnoses,
+      }),
+    }
+  }
 
   return {
     exitCode: hasIssues ? 1 : 0,

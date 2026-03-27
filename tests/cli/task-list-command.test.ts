@@ -142,6 +142,34 @@ describe('task list CLI', () => {
     expect(result.stdout).toContain('[beads:BEADS-801]')
   })
 
+  it('returns structured json task list output', async () => {
+    const { homeDir, projectRoot } = await createManagedProjectWithTasks()
+
+    const result = await runCli(
+      ['task', 'list', '--json'],
+      { cwd: projectRoot, homeDir },
+    )
+
+    const payload = JSON.parse(result.stdout) as {
+      ok: boolean
+      command: string
+      data: {
+        projectRoot: string
+        total: number
+        items: Array<{
+          title: string
+        }>
+      }
+    }
+
+    expect(result.exitCode).toBe(0)
+    expect(payload.ok).toBe(true)
+    expect(payload.command).toBe('task list')
+    expect(payload.data.projectRoot).toBe(projectRoot)
+    expect(payload.data.total).toBe(2)
+    expect(payload.data.items.map((item) => item.title)).toContain('先做 task list')
+  })
+
   it('prints help and accepts fp alias', async () => {
     const result = await runCli(
       ['task', 'list', '--help'],

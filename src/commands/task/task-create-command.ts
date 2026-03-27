@@ -6,6 +6,7 @@
 import { randomUUID } from 'node:crypto'
 import path from 'node:path'
 
+import { toJsonErrorOutput, toJsonSuccessOutput } from '@/cli/json-output.js'
 import type { CliResult } from '@/commands/init/init-types.js'
 import { readGlobalConfig, GlobalConfigParseError } from '@/config/global-config.js'
 import { bootstrapDatabase } from '@/db/bootstrap.js'
@@ -110,6 +111,7 @@ export async function runTaskCreateCommand(
   context: TaskCreateContext,
 ): Promise<CliResult> {
   const messages = getMessages(context.interfaceLanguage)
+  const commandName = 'task create'
 
   if (args.help) {
     return {
@@ -121,7 +123,12 @@ export async function runTaskCreateCommand(
   if (!args.title?.trim()) {
     return {
       exitCode: 1,
-      stdout: buildErrorOutput(messages.taskCreate.titleRequired),
+      stdout: args.json
+        ? toJsonErrorOutput(commandName, {
+            code: 'TITLE_REQUIRED',
+            message: messages.taskCreate.titleRequired,
+          })
+        : buildErrorOutput(messages.taskCreate.titleRequired),
     }
   }
 
@@ -134,9 +141,17 @@ export async function runTaskCreateCommand(
     if (error instanceof GlobalConfigParseError) {
       return {
         exitCode: 3,
-        stdout: buildErrorOutput(messages.taskCreate.malformedGlobalConfig, [
-          `- ${error.configPath}`,
-        ]),
+        stdout: args.json
+          ? toJsonErrorOutput(commandName, {
+              code: 'MALFORMED_GLOBAL_CONFIG',
+              message: messages.taskCreate.malformedGlobalConfig,
+              details: {
+                configPath: error.configPath,
+              },
+            })
+          : buildErrorOutput(messages.taskCreate.malformedGlobalConfig, [
+              `- ${error.configPath}`,
+            ]),
       }
     }
 
@@ -151,11 +166,20 @@ export async function runTaskCreateCommand(
     })
   } catch (error) {
     if (error instanceof ProjectNotInitializedError) {
+      const projectRoot = path.resolve(context.cwd, args.path ?? '.')
       return {
         exitCode: 1,
-        stdout: buildErrorOutput(messages.taskCreate.projectNotInitialized, [
-          `- projectRoot: ${path.resolve(context.cwd, args.path ?? '.')}`,
-        ]),
+        stdout: args.json
+          ? toJsonErrorOutput(commandName, {
+              code: 'PROJECT_NOT_INITIALIZED',
+              message: messages.taskCreate.projectNotInitialized,
+              details: {
+                projectRoot,
+              },
+            })
+          : buildErrorOutput(messages.taskCreate.projectNotInitialized, [
+              `- projectRoot: ${projectRoot}`,
+            ]),
       }
     }
 
@@ -169,9 +193,17 @@ export async function runTaskCreateCommand(
     if (error instanceof RepositoryTargetNotFoundError) {
       return {
         exitCode: 1,
-        stdout: buildErrorOutput(messages.taskCreate.repositoryNotFound, [
-          `- repository: ${error.repositorySelector}`,
-        ]),
+        stdout: args.json
+          ? toJsonErrorOutput(commandName, {
+              code: 'REPOSITORY_NOT_FOUND',
+              message: messages.taskCreate.repositoryNotFound,
+              details: {
+                repository: error.repositorySelector,
+              },
+            })
+          : buildErrorOutput(messages.taskCreate.repositoryNotFound, [
+              `- repository: ${error.repositorySelector}`,
+            ]),
       }
     }
 
@@ -185,7 +217,15 @@ export async function runTaskCreateCommand(
   } catch {
     return {
       exitCode: 4,
-      stdout: buildErrorOutput(messages.taskCreate.dbBootstrapFailed, [`- ${dbPath}`]),
+      stdout: args.json
+        ? toJsonErrorOutput(commandName, {
+            code: 'DATABASE_BOOTSTRAP_FAILED',
+            message: messages.taskCreate.dbBootstrapFailed,
+            details: {
+              dbPath,
+            },
+          })
+        : buildErrorOutput(messages.taskCreate.dbBootstrapFailed, [`- ${dbPath}`]),
     }
   }
   const taskStore = dependencies.createTaskStore(db)
@@ -255,13 +295,50 @@ export async function runTaskCreateCommand(
     db.close()
     return {
       exitCode: 1,
-      stdout: buildErrorOutput(messages.taskCreate.projectNotIndexed, [
-        `- projectRoot: ${managedProject.projectRoot}`,
-      ]),
+      stdout: args.json
+        ? toJsonErrorOutput(commandName, {
+            code: 'PROJECT_NOT_INDEXED',
+            message: messages.taskCreate.projectNotIndexed,
+            details: {
+              projectRoot: managedProject.projectRoot,
+            },
+          })
+        : buildErrorOutput(messages.taskCreate.projectNotIndexed, [
+            `- projectRoot: ${managedProject.projectRoot}`,
+          ]),
     }
   }
 
   db.close()
+
+  const data = {
+    projectRoot: managedProject.projectRoot,
+    task: {
+      taskId,
+      title: args.title.trim(),
+      description: args.description?.trim() || null,
+      source: 'manual' as const,
+      status: 'todo' as const,
+      priority: args.priority,
+      taskType: args.taskType,
+      executor: resolveExecutor(globalConfig.config.defaultExecutor),
+    },
+    targets: repositoryTarget
+      ? [
+          {
+            targetType: 'repository' as const,
+            repositoryPath: repositoryTarget.path,
+          },
+        ]
+      : [],
+  }
+
+  if (args.json) {
+    return {
+      exitCode: 0,
+      stdout: toJsonSuccessOutput(commandName, data),
+    }
+  }
 
   return {
     exitCode: 0,

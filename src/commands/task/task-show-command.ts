@@ -3,6 +3,7 @@
  * @author michaeljou
  */
 
+import { toJsonErrorOutput, toJsonSuccessOutput } from '@/cli/json-output.js'
 import type { CliResult } from '@/commands/init/init-types.js'
 import { bootstrapDatabase } from '@/db/bootstrap.js'
 import { createTaskStore } from '@/db/task-store.js'
@@ -64,6 +65,7 @@ export async function runTaskShowCommand(
   context: TaskShowContext,
 ): Promise<CliResult> {
   const messages = getMessages(context.interfaceLanguage)
+  const commandName = 'task show'
 
   if (args.help) {
     return {
@@ -82,9 +84,18 @@ export async function runTaskShowCommand(
     })
   } catch (error) {
     if (error instanceof ProjectNotInitializedError) {
+      const stdout = `${messages.taskShow.projectNotInitialized}\n- projectRoot: ${error.projectRoot}`
       return {
         exitCode: 1,
-        stdout: `${messages.taskShow.projectNotInitialized}\n- projectRoot: ${error.projectRoot}`,
+        stdout: args.json
+          ? toJsonErrorOutput(commandName, {
+              code: 'PROJECT_NOT_INITIALIZED',
+              message: messages.taskShow.projectNotInitialized,
+              details: {
+                projectRoot: error.projectRoot,
+              },
+            })
+          : stdout,
       }
     }
 
@@ -96,9 +107,18 @@ export async function runTaskShowCommand(
   try {
     db = await dependencies.bootstrapDatabase(dbPath)
   } catch {
+    const stdout = `${messages.taskShow.dbBootstrapFailed}\n- ${dbPath}`
     return {
       exitCode: 4,
-      stdout: `${messages.taskShow.dbBootstrapFailed}\n- ${dbPath}`,
+      stdout: args.json
+        ? toJsonErrorOutput(commandName, {
+            code: 'DATABASE_BOOTSTRAP_FAILED',
+            message: messages.taskShow.dbBootstrapFailed,
+            details: {
+              dbPath,
+            },
+          })
+        : stdout,
     }
   }
   const taskStore = dependencies.createTaskStore(db)
@@ -117,7 +137,15 @@ export async function runTaskShowCommand(
     db.close()
     return {
       exitCode: 1,
-      stdout: taskReference.stdout,
+      stdout: args.json
+        ? toJsonErrorOutput(commandName, {
+            code: 'TASK_REFERENCE_INVALID',
+            message: messages.taskShow.taskNotFound,
+            details: {
+              projectRoot: managedProject.projectRoot,
+            },
+          })
+        : taskReference.stdout,
     }
   }
 
@@ -128,13 +156,23 @@ export async function runTaskShowCommand(
 
   if (!detail) {
     db.close()
+    const stdout = [
+      messages.taskShow.taskNotFound,
+      `- taskId: ${taskReference.value.taskId}`,
+      ...taskReference.value.referenceLines,
+    ].join('\n')
     return {
       exitCode: 1,
-      stdout: [
-        messages.taskShow.taskNotFound,
-        `- taskId: ${taskReference.value.taskId}`,
-        ...taskReference.value.referenceLines,
-      ].join('\n'),
+      stdout: args.json
+        ? toJsonErrorOutput(commandName, {
+            code: 'TASK_NOT_FOUND',
+            message: messages.taskShow.taskNotFound,
+            details: {
+              projectRoot: managedProject.projectRoot,
+              taskId: taskReference.value.taskId,
+            },
+          })
+        : stdout,
     }
   }
 
@@ -167,6 +205,46 @@ export async function runTaskShowCommand(
         })
 
   db.close()
+
+  if (args.json) {
+    return {
+      exitCode: 0,
+      stdout: toJsonSuccessOutput(commandName, {
+        projectRoot: managedProject.projectRoot,
+        taskId: detail.task.id,
+        externalRef: detail.task.external_source && detail.task.external_id
+          ? {
+              externalSource: detail.task.external_source,
+              externalId: detail.task.external_id,
+            }
+          : null,
+        task: {
+          taskId: detail.task.id,
+          title: detail.task.title,
+          description: detail.task.description,
+          status: detail.task.status,
+          priority: detail.task.priority,
+          taskType: detail.task.task_type,
+          executor: detail.task.current_executor,
+          updatedAt: detail.task.updated_at,
+        },
+        targets: detail.targets.map((target) => ({
+          targetType: target.target_type,
+          targetValue: target.target_value,
+          repositoryPath: target.repository_path,
+        })),
+        runs: taskRunLines.map((run) => ({
+          runId: run.id,
+          runType: run.run_type,
+          executor: run.executor,
+          status: run.status,
+          summary: run.summary,
+          startedAt: run.started_at,
+          endedAt: run.ended_at,
+        })),
+      }),
+    }
+  }
 
   return {
     exitCode: 0,

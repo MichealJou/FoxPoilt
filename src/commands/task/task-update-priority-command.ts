@@ -3,6 +3,7 @@
  * @author michaeljou
  */
 
+import { toJsonErrorOutput, toJsonSuccessOutput } from '@/cli/json-output.js'
 import type { CliResult } from '@/commands/init/init-types.js'
 import { resolveGlobalDatabasePath } from '@/core/paths.js'
 import { bootstrapDatabase } from '@/db/bootstrap.js'
@@ -63,6 +64,7 @@ export async function runTaskUpdatePriorityCommand(
   context: TaskUpdatePriorityContext,
 ): Promise<CliResult> {
   const messages = getMessages(context.interfaceLanguage)
+  const commandName = 'task update-priority'
 
   if (args.help) {
     return {
@@ -74,7 +76,12 @@ export async function runTaskUpdatePriorityCommand(
   if (!args.priority) {
     return {
       exitCode: 1,
-      stdout: messages.taskUpdatePriority.priorityRequired,
+      stdout: args.json
+        ? toJsonErrorOutput(commandName, {
+            code: 'PRIORITY_REQUIRED',
+            message: messages.taskUpdatePriority.priorityRequired,
+          })
+        : messages.taskUpdatePriority.priorityRequired,
     }
   }
 
@@ -91,7 +98,15 @@ export async function runTaskUpdatePriorityCommand(
     if (error instanceof ProjectNotInitializedError) {
       return {
         exitCode: 1,
-        stdout: `${messages.taskUpdatePriority.projectNotInitialized}\n- projectRoot: ${error.projectRoot}`,
+        stdout: args.json
+          ? toJsonErrorOutput(commandName, {
+              code: 'PROJECT_NOT_INITIALIZED',
+              message: messages.taskUpdatePriority.projectNotInitialized,
+              details: {
+                projectRoot: error.projectRoot,
+              },
+            })
+          : `${messages.taskUpdatePriority.projectNotInitialized}\n- projectRoot: ${error.projectRoot}`,
       }
     }
 
@@ -105,7 +120,15 @@ export async function runTaskUpdatePriorityCommand(
   } catch {
     return {
       exitCode: 4,
-      stdout: `${messages.taskUpdatePriority.dbBootstrapFailed}\n- ${dbPath}`,
+      stdout: args.json
+        ? toJsonErrorOutput(commandName, {
+            code: 'DATABASE_BOOTSTRAP_FAILED',
+            message: messages.taskUpdatePriority.dbBootstrapFailed,
+            details: {
+              dbPath,
+            },
+          })
+        : `${messages.taskUpdatePriority.dbBootstrapFailed}\n- ${dbPath}`,
     }
   }
 
@@ -125,7 +148,20 @@ export async function runTaskUpdatePriorityCommand(
     db.close()
     return {
       exitCode: 1,
-      stdout: taskReference.stdout,
+      stdout: args.json
+        ? toJsonErrorOutput(commandName, {
+            code: args.externalId ? 'TASK_NOT_FOUND' : 'TASK_REFERENCE_REQUIRED',
+            message: args.externalId
+              ? messages.taskUpdatePriority.taskNotFound
+              : messages.taskUpdatePriority.idRequired,
+            details: args.externalId
+              ? {
+                  externalSource: args.externalSource ?? 'beads',
+                  externalId: args.externalId,
+                }
+              : undefined,
+          })
+        : taskReference.stdout,
     }
   }
 
@@ -138,25 +174,51 @@ export async function runTaskUpdatePriorityCommand(
     db.close()
     return {
       exitCode: 1,
-      stdout: [
-        messages.taskUpdatePriority.taskNotFound,
-        `- taskId: ${taskReference.value.taskId}`,
-        ...taskReference.value.referenceLines,
-      ].join('\n'),
+      stdout: args.json
+        ? toJsonErrorOutput(commandName, {
+            code: 'TASK_NOT_FOUND',
+            message: messages.taskUpdatePriority.taskNotFound,
+            details: {
+              taskId: taskReference.value.taskId,
+              externalSource: args.externalId ? (args.externalSource ?? 'beads') : null,
+              externalId: args.externalId ?? null,
+            },
+          })
+        : [
+            messages.taskUpdatePriority.taskNotFound,
+            `- taskId: ${taskReference.value.taskId}`,
+            ...taskReference.value.referenceLines,
+          ].join('\n'),
     }
   }
 
   if (existingTask.priority === nextPriority) {
     db.close()
+    const data = {
+      projectRoot: managedProject.projectRoot,
+      taskId: taskReference.value.taskId,
+      externalRef: args.externalId
+        ? {
+            externalSource: args.externalSource ?? 'beads',
+            externalId: args.externalId,
+          }
+        : null,
+      from: existingTask.priority,
+      to: nextPriority,
+      changed: false,
+    }
+
     return {
       exitCode: 0,
-      stdout: [
-        messages.taskUpdatePriority.unchanged,
-        `- projectRoot: ${managedProject.projectRoot}`,
-        `- taskId: ${taskReference.value.taskId}`,
-        ...taskReference.value.referenceLines,
-        `- priority: ${nextPriority}`,
-      ].join('\n'),
+      stdout: args.json
+        ? toJsonSuccessOutput(commandName, data)
+        : [
+            messages.taskUpdatePriority.unchanged,
+            `- projectRoot: ${managedProject.projectRoot}`,
+            `- taskId: ${taskReference.value.taskId}`,
+            ...taskReference.value.referenceLines,
+            `- priority: ${nextPriority}`,
+          ].join('\n'),
     }
   }
 
@@ -172,11 +234,42 @@ export async function runTaskUpdatePriorityCommand(
   if (!updated) {
     return {
       exitCode: 1,
-      stdout: [
-        messages.taskUpdatePriority.taskNotFound,
-        `- taskId: ${taskReference.value.taskId}`,
-        ...taskReference.value.referenceLines,
-      ].join('\n'),
+      stdout: args.json
+        ? toJsonErrorOutput(commandName, {
+            code: 'TASK_NOT_FOUND',
+            message: messages.taskUpdatePriority.taskNotFound,
+            details: {
+              taskId: taskReference.value.taskId,
+              externalSource: args.externalId ? (args.externalSource ?? 'beads') : null,
+              externalId: args.externalId ?? null,
+            },
+          })
+        : [
+            messages.taskUpdatePriority.taskNotFound,
+            `- taskId: ${taskReference.value.taskId}`,
+            ...taskReference.value.referenceLines,
+          ].join('\n'),
+    }
+  }
+
+  const data = {
+    projectRoot: managedProject.projectRoot,
+    taskId: taskReference.value.taskId,
+    externalRef: args.externalId
+      ? {
+          externalSource: args.externalSource ?? 'beads',
+          externalId: args.externalId,
+        }
+      : null,
+    from: existingTask.priority,
+    to: nextPriority,
+    changed: true,
+  }
+
+  if (args.json) {
+    return {
+      exitCode: 0,
+      stdout: toJsonSuccessOutput(commandName, data),
     }
   }
 

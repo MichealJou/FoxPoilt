@@ -156,4 +156,85 @@ describe('uninstall CLI', () => {
     expect(result.exitCode).toBe(1)
     expect(result.stdout).toContain('无法识别当前安装来源')
   })
+
+  it('returns structured json uninstall metadata when called with --json', async () => {
+    const homeDir = await createTempDir('foxpilot-uninstall-home-')
+    const tempDir = await createTempDir('foxpilot-uninstall-bin-')
+    tempDirs.push(homeDir, tempDir)
+
+    const executablePath = path.join(tempDir, 'foxpilot')
+    await mkdir(path.join(homeDir, '.foxpilot'), { recursive: true })
+    await writeFile(executablePath, '#!/bin/sh\n')
+    await writeFile(
+      path.join(tempDir, 'install-manifest.json'),
+      JSON.stringify(
+        {
+          schemaVersion: 1,
+          installMethod: 'release',
+          packageName: 'foxpilot',
+          packageVersion: '0.1.4',
+          channel: 'stable',
+          platform: 'darwin',
+          arch: 'arm64',
+          installRoot: path.join(homeDir, '.foxpilot', 'release', 'current'),
+          binPath: executablePath,
+          updateTarget: {
+            releaseAsset: 'foxpilot-darwin-arm64.tar.gz',
+          },
+          installedAt: '2026-03-26T00:00:00.000Z',
+          updatedAt: '2026-03-27T00:00:00.000Z',
+        },
+        null,
+        2,
+      ),
+    )
+    await writeFile(
+      path.join(homeDir, '.foxpilot', 'installations.json'),
+      JSON.stringify(
+        [
+          {
+            installId: `release:darwin:arm64:${path.join(homeDir, '.foxpilot', 'release', 'current')}`,
+            installMethod: 'release',
+            packageVersion: '0.1.4',
+            platform: 'darwin',
+            arch: 'arm64',
+            installRoot: path.join(homeDir, '.foxpilot', 'release', 'current'),
+            binPath: executablePath,
+            lastSeenAt: '2026-03-27T00:00:00.000Z',
+          },
+        ],
+        null,
+        2,
+      ),
+    )
+
+    const result = await runCli(['uninstall', '--json'], {
+      homeDir,
+      executablePath,
+      dependencies: {
+        dispatchUninstall: async () => 'strategy: release\nexitCode: 0',
+      },
+    })
+
+    const payload = JSON.parse(result.stdout) as {
+      ok: boolean
+      command: string
+      data: {
+        installMethod: string
+        packageVersion: string
+        purge: boolean
+        remainingInstalls: number
+        strategy: string
+      }
+    }
+
+    expect(result.exitCode).toBe(0)
+    expect(payload.ok).toBe(true)
+    expect(payload.command).toBe('uninstall')
+    expect(payload.data.installMethod).toBe('release')
+    expect(payload.data.packageVersion).toBe('0.1.4')
+    expect(payload.data.purge).toBe(false)
+    expect(payload.data.remainingInstalls).toBe(0)
+    expect(payload.data.strategy).toContain('strategy: release')
+  })
 })

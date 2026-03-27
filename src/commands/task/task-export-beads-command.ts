@@ -5,6 +5,7 @@
 
 import path from 'node:path'
 
+import { toJsonErrorOutput, toJsonSuccessOutput } from '@/cli/json-output.js'
 import type { CliResult } from '@/commands/init/init-types.js'
 import { writeJsonFile } from '@/core/json-file.js'
 import { resolveGlobalDatabasePath } from '@/core/paths.js'
@@ -74,6 +75,7 @@ export async function runTaskExportBeadsCommand(
   context: TaskExportBeadsContext,
 ): Promise<CliResult> {
   const messages = getMessages(context.interfaceLanguage)
+  const commandName = 'task export-beads'
 
   if (args.help) {
     return {
@@ -85,7 +87,12 @@ export async function runTaskExportBeadsCommand(
   if (!args.file?.trim()) {
     return {
       exitCode: 1,
-      stdout: messages.taskExportBeads.fileRequired,
+      stdout: args.json
+        ? toJsonErrorOutput(commandName, {
+            code: 'FILE_REQUIRED',
+            message: messages.taskExportBeads.fileRequired,
+          })
+        : messages.taskExportBeads.fileRequired,
     }
   }
 
@@ -101,7 +108,15 @@ export async function runTaskExportBeadsCommand(
     if (error instanceof ProjectNotInitializedError) {
       return {
         exitCode: 1,
-        stdout: `${messages.taskExportBeads.projectNotInitialized}\n- projectRoot: ${error.projectRoot}`,
+        stdout: args.json
+          ? toJsonErrorOutput(commandName, {
+              code: 'PROJECT_NOT_INITIALIZED',
+              message: messages.taskExportBeads.projectNotInitialized,
+              details: {
+                projectRoot: error.projectRoot,
+              },
+            })
+          : `${messages.taskExportBeads.projectNotInitialized}\n- projectRoot: ${error.projectRoot}`,
       }
     }
 
@@ -115,7 +130,15 @@ export async function runTaskExportBeadsCommand(
   } catch {
     return {
       exitCode: 4,
-      stdout: `${messages.taskExportBeads.dbBootstrapFailed}\n- ${dbPath}`,
+      stdout: args.json
+        ? toJsonErrorOutput(commandName, {
+            code: 'DATABASE_BOOTSTRAP_FAILED',
+            message: messages.taskExportBeads.dbBootstrapFailed,
+            details: {
+              dbPath,
+            },
+          })
+        : `${messages.taskExportBeads.dbBootstrapFailed}\n- ${dbPath}`,
     }
   }
 
@@ -133,7 +156,29 @@ export async function runTaskExportBeadsCommand(
   } catch {
     return {
       exitCode: 1,
-      stdout: `${messages.taskExportBeads.writeFailed}\n- ${filePath}`,
+      stdout: args.json
+        ? toJsonErrorOutput(commandName, {
+            code: 'WRITE_FAILED',
+            message: messages.taskExportBeads.writeFailed,
+            details: {
+              filePath,
+            },
+          })
+        : `${messages.taskExportBeads.writeFailed}\n- ${filePath}`,
+    }
+  }
+
+  const data = {
+    projectRoot: managedProject.projectRoot,
+    file: filePath,
+    exported: snapshot.exported,
+    rejected: snapshot.rejected,
+  }
+
+  if (args.json) {
+    return {
+      exitCode: 0,
+      stdout: toJsonSuccessOutput(commandName, data),
     }
   }
 

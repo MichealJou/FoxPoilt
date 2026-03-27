@@ -7,6 +7,7 @@ import { ensureGlobalConfig, GlobalConfigParseError } from '@/config/global-conf
 import { getMessages } from '@/i18n/messages.js'
 
 import type { CliResult } from '@/commands/init/init-types.js'
+import { toJsonErrorOutput, toJsonSuccessOutput } from '@/cli/json-output.js'
 import type {
   ConfigSetLanguageArgs,
   ConfigSetLanguageContext,
@@ -59,6 +60,7 @@ export async function runConfigSetLanguageCommand(
   args: ConfigSetLanguageArgs,
   context: ConfigSetLanguageContext,
 ): Promise<CliResult> {
+  const commandName = 'config.set-language'
   const currentMessages = getMessages(context.interfaceLanguage)
 
   if (args.help) {
@@ -71,7 +73,12 @@ export async function runConfigSetLanguageCommand(
   if (!args.lang) {
     return {
       exitCode: 1,
-      stdout: currentMessages.configSetLanguage.invalidLanguage,
+      stdout: args.json
+        ? toJsonErrorOutput(commandName, {
+            code: 'INVALID_LANGUAGE',
+            message: currentMessages.configSetLanguage.invalidLanguage,
+          })
+        : currentMessages.configSetLanguage.invalidLanguage,
     }
   }
 
@@ -83,23 +90,37 @@ export async function runConfigSetLanguageCommand(
       interfaceLanguage: args.lang,
     })
     const nextMessages = getMessages(result.config.interfaceLanguage)
+    const data = {
+      interfaceLanguage: result.config.interfaceLanguage,
+      configPath: result.configPath,
+    }
 
     return {
       exitCode: 0,
-      stdout: [
-        nextMessages.configSetLanguage.updated,
-        `- interfaceLanguage: ${result.config.interfaceLanguage}`,
-        `- configPath: ${result.configPath}`,
-      ].join('\n'),
+      stdout: args.json
+        ? toJsonSuccessOutput(commandName, data)
+        : [
+            nextMessages.configSetLanguage.updated,
+            `- interfaceLanguage: ${result.config.interfaceLanguage}`,
+            `- configPath: ${result.configPath}`,
+          ].join('\n'),
     }
   } catch (error) {
     if (error instanceof GlobalConfigParseError) {
       return {
         exitCode: 3,
-        stdout: [
-          currentMessages.configSetLanguage.malformedGlobalConfig,
-          `- ${error.configPath}`,
-        ].join('\n'),
+        stdout: args.json
+          ? toJsonErrorOutput(commandName, {
+              code: 'MALFORMED_GLOBAL_CONFIG',
+              message: currentMessages.configSetLanguage.malformedGlobalConfig,
+              details: {
+                configPath: error.configPath,
+              },
+            })
+          : [
+              currentMessages.configSetLanguage.malformedGlobalConfig,
+              `- ${error.configPath}`,
+            ].join('\n'),
       }
     }
 

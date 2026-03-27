@@ -112,6 +112,40 @@ describe('task history CLI', () => {
     expect(result.stdout).toContain('running')
   })
 
+  it('returns structured json task history output', async () => {
+    const { homeDir, projectRoot, taskId } = await createManagedProjectWithTask()
+
+    await runCli(
+      ['task', 'update-status', '--id', taskId, '--status', 'analyzing'],
+      { cwd: projectRoot, homeDir },
+    )
+
+    const result = await runCli(
+      ['task', 'history', '--id', taskId, '--json'],
+      { cwd: projectRoot, homeDir },
+    )
+
+    const payload = JSON.parse(result.stdout) as {
+      ok: boolean
+      command: string
+      data: {
+        taskId: string
+        totalRuns: number
+        runs: Array<{
+          runType: string
+          status: string
+        }>
+      }
+    }
+
+    expect(result.exitCode).toBe(0)
+    expect(payload.ok).toBe(true)
+    expect(payload.command).toBe('task history')
+    expect(payload.data.taskId).toBe(taskId)
+    expect(payload.data.totalRuns).toBe(1)
+    expect(payload.data.runs[0]?.runType).toBe('analysis')
+  })
+
   it('returns a clear error when the project is not initialized', async () => {
     const homeDir = await createTempDir('foxpilot-home-')
     const projectRoot = await createTempDir('foxpilot-project-')

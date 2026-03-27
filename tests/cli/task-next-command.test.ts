@@ -155,6 +155,41 @@ describe('task next CLI', () => {
     expect(result.stdout).toContain('externalId: BEADS-901')
   })
 
+  it('returns structured json next-task output', async () => {
+    const { homeDir, projectRoot } = await createManagedProjectWithTasks()
+    const rows = getTaskRows(homeDir)
+    const secondTask = rows.find((row) => row.title === '继续补任务状态流转')
+    expect(secondTask).toBeDefined()
+
+    await runCli(
+      ['task', 'update-status', '--id', secondTask!.id, '--status', 'analyzing'],
+      { cwd: projectRoot, homeDir },
+    )
+
+    const result = await runCli(
+      ['task', 'next', '--json'],
+      { cwd: projectRoot, homeDir },
+    )
+
+    const payload = JSON.parse(result.stdout) as {
+      ok: boolean
+      command: string
+      data: {
+        item: {
+          taskId: string
+          title: string
+          status: string
+        } | null
+      }
+    }
+
+    expect(result.exitCode).toBe(0)
+    expect(payload.ok).toBe(true)
+    expect(payload.command).toBe('task next')
+    expect(payload.data.item?.taskId).toBe(secondTask!.id)
+    expect(payload.data.item?.status).toBe('analyzing')
+  })
+
   it('prints help and accepts fp alias', async () => {
     const result = await runCli(
       ['task', 'next', '--help'],

@@ -38,6 +38,8 @@ export type TaskUpdateStatusArgs = TaskReferenceArgs & {
   subcommand: 'update-status'
   /** 为 true 时只输出帮助文本。 */
   help: boolean
+  /** 为 true 时输出结构化 JSON。 */
+  json: boolean
   /** 可选项目根目录覆盖值。 */
   path?: string
   /** 目标状态；解析器只允许合法枚举进入命令层。 */

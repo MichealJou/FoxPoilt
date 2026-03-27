@@ -144,4 +144,60 @@ describe('task init-beads CLI', () => {
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('fp task init-beads')
   })
+
+  it('返回结构化 json beads 初始化结果', async () => {
+    const { homeDir, projectRoot } = await createManagedProjectWithRepositories()
+
+    const result = await runCli(
+      ['task', 'init-beads', '--repository', 'frontend', '--dry-run', '--json'],
+      {
+        cwd: projectRoot,
+        homeDir,
+        dependencies: {
+          hasLocalBeadsRepository: async () => false,
+          runBdInit: async () => {
+            throw new Error('should not be called')
+          },
+        },
+      },
+    )
+
+    expect(result.exitCode).toBe(0)
+
+    const payload = JSON.parse(result.stdout) as {
+      ok: true
+      command: string
+      data: {
+        projectRoot: string
+        mode: string
+        dryRun: boolean
+        checkedRepositories: number
+        plannedRepositories: number
+        initializedRepositories: number
+        skippedRepositories: number
+        errorRepositories: number
+        results: Array<{
+          repositoryPath: string
+          status: string
+        }>
+      }
+    }
+
+    expect(payload.ok).toBe(true)
+    expect(payload.command).toBe('task init-beads')
+    expect(payload.data.projectRoot).toBe(projectRoot)
+    expect(payload.data.mode).toBe('single-repository')
+    expect(payload.data.dryRun).toBe(true)
+    expect(payload.data.checkedRepositories).toBe(1)
+    expect(payload.data.plannedRepositories).toBe(1)
+    expect(payload.data.initializedRepositories).toBe(0)
+    expect(payload.data.skippedRepositories).toBe(0)
+    expect(payload.data.errorRepositories).toBe(0)
+    expect(payload.data.results).toEqual([
+      expect.objectContaining({
+        repositoryPath: 'frontend',
+        status: 'planned',
+      }),
+    ])
+  })
 })

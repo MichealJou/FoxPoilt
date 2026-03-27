@@ -171,4 +171,35 @@ describe('task update-priority CLI', () => {
     expect(row.priority).toBe('P0')
     db.close()
   })
+
+  it('returns structured json task priority output', async () => {
+    const { homeDir, projectRoot, taskId } = await createManagedProjectWithTask()
+
+    const result = await runCli(
+      ['task', 'update-priority', '--id', taskId, '--priority', 'P0', '--json'],
+      { cwd: projectRoot, homeDir },
+    )
+
+    expect(result.exitCode).toBe(0)
+
+    const payload = JSON.parse(result.stdout) as {
+      ok: true
+      command: string
+      data: {
+        projectRoot: string
+        taskId: string
+        from: string
+        to: string
+        changed: boolean
+      }
+    }
+
+    expect(payload.ok).toBe(true)
+    expect(payload.command).toBe('task update-priority')
+    expect(payload.data.projectRoot).toBe(projectRoot)
+    expect(payload.data.taskId).toBe(taskId)
+    expect(payload.data.from).toBe('P2')
+    expect(payload.data.to).toBe('P0')
+    expect(payload.data.changed).toBe(true)
+  })
 })

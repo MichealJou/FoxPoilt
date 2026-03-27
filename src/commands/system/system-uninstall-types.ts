@@ -12,6 +12,7 @@ import type { InstallManifest } from '@/install/install-types.js'
 export type SystemUninstallArgs = {
   command: 'uninstall'
   help: boolean
+  json: boolean
   purge: boolean
 }
 

@@ -21,6 +21,7 @@ export type TaskUpdateExecutorArgs = TaskReferenceArgs & {
   command: 'task'
   subcommand: 'update-executor'
   help: boolean
+  json: boolean
   path?: string
   executor?: TaskExecutor
 }

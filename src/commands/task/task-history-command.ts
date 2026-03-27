@@ -3,6 +3,7 @@
  * @author michaeljou
  */
 
+import { toJsonErrorOutput, toJsonSuccessOutput } from '@/cli/json-output.js'
 import type { CliResult } from '@/commands/init/init-types.js'
 import { bootstrapDatabase } from '@/db/bootstrap.js'
 import { createTaskStore } from '@/db/task-store.js'
@@ -64,6 +65,7 @@ export async function runTaskHistoryCommand(
   context: TaskHistoryContext,
 ): Promise<CliResult> {
   const messages = getMessages(context.interfaceLanguage)
+  const commandName = 'task history'
 
   if (args.help) {
     return {
@@ -82,9 +84,18 @@ export async function runTaskHistoryCommand(
     })
   } catch (error) {
     if (error instanceof ProjectNotInitializedError) {
+      const stdout = `${messages.taskHistory.projectNotInitialized}\n- projectRoot: ${error.projectRoot}`
       return {
         exitCode: 1,
-        stdout: `${messages.taskHistory.projectNotInitialized}\n- projectRoot: ${error.projectRoot}`,
+        stdout: args.json
+          ? toJsonErrorOutput(commandName, {
+              code: 'PROJECT_NOT_INITIALIZED',
+              message: messages.taskHistory.projectNotInitialized,
+              details: {
+                projectRoot: error.projectRoot,
+              },
+            })
+          : stdout,
       }
     }
 
@@ -96,9 +107,18 @@ export async function runTaskHistoryCommand(
   try {
     db = await dependencies.bootstrapDatabase(dbPath)
   } catch {
+    const stdout = `${messages.taskHistory.dbBootstrapFailed}\n- ${dbPath}`
     return {
       exitCode: 4,
-      stdout: `${messages.taskHistory.dbBootstrapFailed}\n- ${dbPath}`,
+      stdout: args.json
+        ? toJsonErrorOutput(commandName, {
+            code: 'DATABASE_BOOTSTRAP_FAILED',
+            message: messages.taskHistory.dbBootstrapFailed,
+            details: {
+              dbPath,
+            },
+          })
+        : stdout,
     }
   }
   const taskStore = dependencies.createTaskStore(db)
@@ -117,7 +137,15 @@ export async function runTaskHistoryCommand(
     db.close()
     return {
       exitCode: 1,
-      stdout: taskReference.stdout,
+      stdout: args.json
+        ? toJsonErrorOutput(commandName, {
+            code: 'TASK_REFERENCE_INVALID',
+            message: messages.taskHistory.taskNotFound,
+            details: {
+              projectRoot: managedProject.projectRoot,
+            },
+          })
+        : taskReference.stdout,
     }
   }
 
@@ -128,18 +156,55 @@ export async function runTaskHistoryCommand(
 
   if (!task) {
     db.close()
+    const stdout = [
+      messages.taskHistory.taskNotFound,
+      `- taskId: ${taskReference.value.taskId}`,
+      ...taskReference.value.referenceLines,
+    ].join('\n')
     return {
       exitCode: 1,
-      stdout: [
-        messages.taskHistory.taskNotFound,
-        `- taskId: ${taskReference.value.taskId}`,
-        ...taskReference.value.referenceLines,
-      ].join('\n'),
+      stdout: args.json
+        ? toJsonErrorOutput(commandName, {
+            code: 'TASK_NOT_FOUND',
+            message: messages.taskHistory.taskNotFound,
+            details: {
+              projectRoot: managedProject.projectRoot,
+              taskId: taskReference.value.taskId,
+            },
+          })
+        : stdout,
     }
   }
 
   const runs = taskStore.listTaskRuns({ taskId: taskReference.value.taskId })
   db.close()
+
+  if (args.json) {
+    return {
+      exitCode: 0,
+      stdout: toJsonSuccessOutput(commandName, {
+        projectRoot: managedProject.projectRoot,
+        taskId: task.id,
+        title: task.title,
+        externalRef: args.externalId
+          ? {
+              externalSource: args.externalSource ?? 'beads',
+              externalId: args.externalId,
+            }
+          : null,
+        totalRuns: runs.length,
+        runs: runs.map((run) => ({
+          runId: run.id,
+          runType: run.run_type,
+          executor: run.executor,
+          status: run.status,
+          summary: run.summary,
+          startedAt: run.started_at,
+          endedAt: run.ended_at,
+        })),
+      }),
+    }
+  }
 
   const runLines =
     runs.length === 0

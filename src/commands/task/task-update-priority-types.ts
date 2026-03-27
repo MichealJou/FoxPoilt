@@ -21,6 +21,7 @@ export type TaskUpdatePriorityArgs = TaskReferenceArgs & {
   command: 'task'
   subcommand: 'update-priority'
   help: boolean
+  json: boolean
   path?: string
   priority?: TaskPriority
 }

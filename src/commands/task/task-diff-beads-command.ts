@@ -5,6 +5,7 @@
 
 import path from 'node:path'
 
+import { toJsonErrorOutput, toJsonSuccessOutput } from '@/cli/json-output.js'
 import type { CliResult } from '@/commands/init/init-types.js'
 import { readJsonFile } from '@/core/json-file.js'
 import { resolveGlobalDatabasePath } from '@/core/paths.js'
@@ -132,6 +133,7 @@ export async function runTaskDiffBeadsCommand(
   context: TaskDiffBeadsContext,
 ): Promise<CliResult> {
   const messages = getMessages(context.interfaceLanguage)
+  const commandName = 'task diff-beads'
 
   if (args.help) {
     return {
@@ -143,7 +145,12 @@ export async function runTaskDiffBeadsCommand(
   if (!args.file?.trim() && !args.repository?.trim() && !args.allRepositories) {
     return {
       exitCode: 1,
-      stdout: messages.taskDiffBeads.fileRequired,
+      stdout: args.json
+        ? toJsonErrorOutput(commandName, {
+            code: 'PREVIEW_SOURCE_REQUIRED',
+            message: messages.taskDiffBeads.fileRequired,
+          })
+        : messages.taskDiffBeads.fileRequired,
     }
   }
 
@@ -159,7 +166,15 @@ export async function runTaskDiffBeadsCommand(
     if (error instanceof ProjectNotInitializedError) {
       return {
         exitCode: 1,
-        stdout: `${messages.taskDiffBeads.projectNotInitialized}\n- projectRoot: ${error.projectRoot}`,
+        stdout: args.json
+          ? toJsonErrorOutput(commandName, {
+              code: 'PROJECT_NOT_INITIALIZED',
+              message: messages.taskDiffBeads.projectNotInitialized,
+              details: {
+                projectRoot: error.projectRoot,
+              },
+            })
+          : `${messages.taskDiffBeads.projectNotInitialized}\n- projectRoot: ${error.projectRoot}`,
       }
     }
 
@@ -173,7 +188,15 @@ export async function runTaskDiffBeadsCommand(
   } catch {
     return {
       exitCode: 4,
-      stdout: `${messages.taskDiffBeads.dbBootstrapFailed}\n- ${dbPath}`,
+      stdout: args.json
+        ? toJsonErrorOutput(commandName, {
+            code: 'DATABASE_BOOTSTRAP_FAILED',
+            message: messages.taskDiffBeads.dbBootstrapFailed,
+            details: {
+              dbPath,
+            },
+          })
+        : `${messages.taskDiffBeads.dbBootstrapFailed}\n- ${dbPath}`,
     }
   }
 
@@ -191,13 +214,29 @@ export async function runTaskDiffBeadsCommand(
       if (error instanceof SyntaxError) {
         return {
           exitCode: 1,
-          stdout: `${messages.taskDiffBeads.invalidJson}\n- ${filePath}`,
+          stdout: args.json
+            ? toJsonErrorOutput(commandName, {
+                code: 'INVALID_JSON',
+                message: messages.taskDiffBeads.invalidJson,
+                details: {
+                  filePath,
+                },
+              })
+            : `${messages.taskDiffBeads.invalidJson}\n- ${filePath}`,
         }
       }
 
       return {
         exitCode: 1,
-        stdout: `${messages.taskDiffBeads.fileReadFailed}\n- ${filePath}`,
+        stdout: args.json
+          ? toJsonErrorOutput(commandName, {
+              code: 'FILE_READ_FAILED',
+              message: messages.taskDiffBeads.fileReadFailed,
+              details: {
+                filePath,
+              },
+            })
+          : `${messages.taskDiffBeads.fileReadFailed}\n- ${filePath}`,
       }
     }
 
@@ -205,7 +244,15 @@ export async function runTaskDiffBeadsCommand(
       db.close()
       return {
         exitCode: 1,
-        stdout: `${messages.taskDiffBeads.invalidPayload}\n- ${filePath}`,
+        stdout: args.json
+          ? toJsonErrorOutput(commandName, {
+              code: 'INVALID_PAYLOAD',
+              message: messages.taskDiffBeads.invalidPayload,
+              details: {
+                filePath,
+              },
+            })
+          : `${messages.taskDiffBeads.invalidPayload}\n- ${filePath}`,
       }
     }
 
@@ -223,6 +270,22 @@ export async function runTaskDiffBeadsCommand(
       closeMissing: args.closeMissing,
     })
     db.close()
+
+    const data = {
+      projectRoot: managedProject.projectRoot,
+      mode: 'file' as const,
+      file: filePath,
+      closeMissing: args.closeMissing,
+      preview,
+      rejected: normalized.rejected,
+    }
+
+    if (args.json) {
+      return {
+        exitCode: 0,
+        stdout: toJsonSuccessOutput(commandName, data),
+      }
+    }
 
     const detailLines = preview.entries.length === 0
       ? [messages.taskDiffBeads.noChanges]
@@ -261,7 +324,15 @@ export async function runTaskDiffBeadsCommand(
       if (error instanceof RepositoryTargetNotFoundError) {
         return {
           exitCode: 1,
-          stdout: `${messages.taskDiffBeads.repositoryNotFound}\n- repository: ${error.repositorySelector}`,
+          stdout: args.json
+            ? toJsonErrorOutput(commandName, {
+                code: 'REPOSITORY_NOT_FOUND',
+                message: messages.taskDiffBeads.repositoryNotFound,
+                details: {
+                  repository: error.repositorySelector,
+                },
+              })
+            : `${messages.taskDiffBeads.repositoryNotFound}\n- repository: ${error.repositorySelector}`,
         }
       }
 
@@ -272,7 +343,12 @@ export async function runTaskDiffBeadsCommand(
       db.close()
       return {
         exitCode: 1,
-        stdout: messages.taskDiffBeads.fileRequired,
+        stdout: args.json
+          ? toJsonErrorOutput(commandName, {
+              code: 'PREVIEW_SOURCE_REQUIRED',
+              message: messages.taskDiffBeads.fileRequired,
+            })
+          : messages.taskDiffBeads.fileRequired,
       }
     }
 
@@ -286,6 +362,23 @@ export async function runTaskDiffBeadsCommand(
         closeMissing: args.closeMissing,
       })
       db.close()
+
+      const data = {
+        projectRoot: managedProject.projectRoot,
+        mode: 'single-repository' as const,
+        repositoryPath: result.repositoryPath,
+        repositoryRoot: result.repositoryRoot,
+        closeMissing: args.closeMissing,
+        preview: result.preview,
+        rejected: result.rejected,
+      }
+
+      if (args.json) {
+        return {
+          exitCode: 0,
+          stdout: toJsonSuccessOutput(commandName, data),
+        }
+      }
 
       const detailLines = result.preview.entries.length === 0
         ? [messages.taskDiffBeads.noChanges]
@@ -319,20 +412,44 @@ export async function runTaskDiffBeadsCommand(
       if (error instanceof SyntaxError) {
         return {
           exitCode: 1,
-          stdout: `${messages.taskDiffBeads.invalidJson}\n- repositoryRoot: ${path.resolve(managedProject.projectRoot, repositoryTarget.path)}`,
+          stdout: args.json
+            ? toJsonErrorOutput(commandName, {
+                code: 'INVALID_JSON',
+                message: messages.taskDiffBeads.invalidJson,
+                details: {
+                  repositoryRoot: path.resolve(managedProject.projectRoot, repositoryTarget.path),
+                },
+              })
+            : `${messages.taskDiffBeads.invalidJson}\n- repositoryRoot: ${path.resolve(managedProject.projectRoot, repositoryTarget.path)}`,
         }
       }
 
       if (error instanceof TypeError) {
         return {
           exitCode: 1,
-          stdout: `${messages.taskDiffBeads.invalidPayload}\n- repositoryRoot: ${path.resolve(managedProject.projectRoot, repositoryTarget.path)}`,
+          stdout: args.json
+            ? toJsonErrorOutput(commandName, {
+                code: 'INVALID_PAYLOAD',
+                message: messages.taskDiffBeads.invalidPayload,
+                details: {
+                  repositoryRoot: path.resolve(managedProject.projectRoot, repositoryTarget.path),
+                },
+              })
+            : `${messages.taskDiffBeads.invalidPayload}\n- repositoryRoot: ${path.resolve(managedProject.projectRoot, repositoryTarget.path)}`,
         }
       }
 
       return {
         exitCode: 1,
-        stdout: `${messages.taskDiffBeads.fileReadFailed}\n- repositoryRoot: ${path.resolve(managedProject.projectRoot, repositoryTarget.path)}`,
+        stdout: args.json
+          ? toJsonErrorOutput(commandName, {
+              code: 'READ_FAILED',
+              message: messages.taskDiffBeads.fileReadFailed,
+              details: {
+                repositoryRoot: path.resolve(managedProject.projectRoot, repositoryTarget.path),
+              },
+            })
+          : `${messages.taskDiffBeads.fileReadFailed}\n- repositoryRoot: ${path.resolve(managedProject.projectRoot, repositoryTarget.path)}`,
       }
     }
   }
@@ -384,6 +501,30 @@ export async function runTaskDiffBeadsCommand(
   }
 
   db.close()
+
+  const data = {
+    projectRoot: managedProject.projectRoot,
+    mode: 'all-repositories' as const,
+    scannedRepositories,
+    previewedRepositories,
+    skippedRepositories,
+    closeMissing: args.closeMissing,
+    preview: {
+      created,
+      updated,
+      skipped,
+      closed,
+      entries: details,
+    },
+    rejected,
+  }
+
+  if (args.json) {
+    return {
+      exitCode: 0,
+      stdout: toJsonSuccessOutput(commandName, data),
+    }
+  }
 
   return {
     exitCode: 0,

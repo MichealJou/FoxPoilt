@@ -22,6 +22,8 @@ export type TaskPushBeadsArgs = {
   subcommand: 'push-beads'
   /** 为 true 时只输出帮助文本。 */
   help: boolean
+  /** 为 true 时输出结构化 JSON。 */
+  json: boolean
   /** 可选项目根目录覆盖值。 */
   path?: string
   /** 指定单个仓库做批量回写。 */

@@ -5,6 +5,7 @@
 
 import { randomUUID } from 'node:crypto'
 
+import { toJsonErrorOutput, toJsonSuccessOutput } from '@/cli/json-output.js'
 import type { CliResult } from '@/commands/init/init-types.js'
 import { bootstrapDatabase } from '@/db/bootstrap.js'
 import { createTaskStore, type TaskRunRow } from '@/db/task-store.js'
@@ -210,6 +211,7 @@ export async function runTaskUpdateStatusCommand(
   context: TaskUpdateStatusContext,
 ): Promise<CliResult> {
   const messages = getMessages(context.interfaceLanguage)
+  const commandName = 'task update-status'
 
   if (args.help) {
     return {
@@ -221,7 +223,12 @@ export async function runTaskUpdateStatusCommand(
   if (!args.status) {
     return {
       exitCode: 1,
-      stdout: messages.taskUpdateStatus.statusRequired,
+      stdout: args.json
+        ? toJsonErrorOutput(commandName, {
+            code: 'STATUS_REQUIRED',
+            message: messages.taskUpdateStatus.statusRequired,
+          })
+        : messages.taskUpdateStatus.statusRequired,
     }
   }
 
@@ -239,7 +246,15 @@ export async function runTaskUpdateStatusCommand(
     if (error instanceof ProjectNotInitializedError) {
       return {
         exitCode: 1,
-        stdout: `${messages.taskUpdateStatus.projectNotInitialized}\n- projectRoot: ${error.projectRoot}`,
+        stdout: args.json
+          ? toJsonErrorOutput(commandName, {
+              code: 'PROJECT_NOT_INITIALIZED',
+              message: messages.taskUpdateStatus.projectNotInitialized,
+              details: {
+                projectRoot: error.projectRoot,
+              },
+            })
+          : `${messages.taskUpdateStatus.projectNotInitialized}\n- projectRoot: ${error.projectRoot}`,
       }
     }
 
@@ -250,9 +265,18 @@ export async function runTaskUpdateStatusCommand(
   try {
     db = await dependencies.bootstrapDatabase(resolveGlobalDatabasePath(context.homeDir))
   } catch {
+    const dbPath = resolveGlobalDatabasePath(context.homeDir)
     return {
       exitCode: 4,
-      stdout: `${messages.taskUpdateStatus.dbBootstrapFailed}\n- ${resolveGlobalDatabasePath(context.homeDir)}`,
+      stdout: args.json
+        ? toJsonErrorOutput(commandName, {
+            code: 'DATABASE_BOOTSTRAP_FAILED',
+            message: messages.taskUpdateStatus.dbBootstrapFailed,
+            details: {
+              dbPath,
+            },
+          })
+        : `${messages.taskUpdateStatus.dbBootstrapFailed}\n- ${dbPath}`,
     }
   }
   const taskStore = dependencies.createTaskStore(db)
@@ -271,7 +295,20 @@ export async function runTaskUpdateStatusCommand(
     db.close()
     return {
       exitCode: 1,
-      stdout: taskReference.stdout,
+      stdout: args.json
+        ? toJsonErrorOutput(commandName, {
+            code: args.externalId ? 'TASK_NOT_FOUND' : 'TASK_REFERENCE_REQUIRED',
+            message: args.externalId
+              ? messages.taskUpdateStatus.taskNotFound
+              : messages.taskUpdateStatus.idRequired,
+            details: args.externalId
+              ? {
+                  externalSource: args.externalSource ?? 'beads',
+                  externalId: args.externalId,
+                }
+              : undefined,
+          })
+        : taskReference.stdout,
     }
   }
 
@@ -289,11 +326,21 @@ export async function runTaskUpdateStatusCommand(
     db.close()
     return {
       exitCode: 1,
-      stdout: [
-        messages.taskUpdateStatus.taskNotFound,
-        `- taskId: ${taskReference.value.taskId}`,
-        ...taskReference.value.referenceLines,
-      ].join('\n'),
+      stdout: args.json
+        ? toJsonErrorOutput(commandName, {
+            code: 'TASK_NOT_FOUND',
+            message: messages.taskUpdateStatus.taskNotFound,
+            details: {
+              taskId: taskReference.value.taskId,
+              externalSource: args.externalId ? (args.externalSource ?? 'beads') : null,
+              externalId: args.externalId ?? null,
+            },
+          })
+        : [
+            messages.taskUpdateStatus.taskNotFound,
+            `- taskId: ${taskReference.value.taskId}`,
+            ...taskReference.value.referenceLines,
+          ].join('\n'),
     }
   }
 
@@ -301,27 +348,55 @@ export async function runTaskUpdateStatusCommand(
     db.close()
     return {
       exitCode: 1,
-      stdout: [
-        messages.taskUpdateStatus.invalidTransition,
-        `- taskId: ${taskReference.value.taskId}`,
-        ...taskReference.value.referenceLines,
-        `- from: ${existingTask.status}`,
-        `- to: ${nextStatus}`,
-      ].join('\n'),
+      stdout: args.json
+        ? toJsonErrorOutput(commandName, {
+            code: 'INVALID_STATUS_TRANSITION',
+            message: messages.taskUpdateStatus.invalidTransition,
+            details: {
+              taskId: taskReference.value.taskId,
+              from: existingTask.status,
+              to: nextStatus,
+              externalSource: args.externalId ? (args.externalSource ?? 'beads') : null,
+              externalId: args.externalId ?? null,
+            },
+          })
+        : [
+            messages.taskUpdateStatus.invalidTransition,
+            `- taskId: ${taskReference.value.taskId}`,
+            ...taskReference.value.referenceLines,
+            `- from: ${existingTask.status}`,
+            `- to: ${nextStatus}`,
+          ].join('\n'),
     }
   }
 
   if (existingTask.status === nextStatus) {
     db.close()
+    const data = {
+      projectRoot: managedProject.projectRoot,
+      taskId: taskReference.value.taskId,
+      externalRef: args.externalId
+        ? {
+            externalSource: args.externalSource ?? 'beads',
+            externalId: args.externalId,
+          }
+        : null,
+      from: existingTask.status,
+      to: nextStatus,
+      changed: false,
+    }
+
     return {
       exitCode: 0,
-      stdout: [
-        messages.taskUpdateStatus.unchanged,
-        `- projectRoot: ${managedProject.projectRoot}`,
-        `- taskId: ${taskReference.value.taskId}`,
-        ...taskReference.value.referenceLines,
-        `- status: ${nextStatus}`,
-      ].join('\n'),
+      stdout: args.json
+        ? toJsonSuccessOutput(commandName, data)
+        : [
+            messages.taskUpdateStatus.unchanged,
+            `- projectRoot: ${managedProject.projectRoot}`,
+            `- taskId: ${taskReference.value.taskId}`,
+            ...taskReference.value.referenceLines,
+            `- status: ${nextStatus}`,
+          ].join('\n'),
     }
   }
 
@@ -350,11 +425,42 @@ export async function runTaskUpdateStatusCommand(
   if (!updated) {
     return {
       exitCode: 1,
-      stdout: [
-        messages.taskUpdateStatus.taskNotFound,
-        `- taskId: ${taskReference.value.taskId}`,
-        ...taskReference.value.referenceLines,
-      ].join('\n'),
+      stdout: args.json
+        ? toJsonErrorOutput(commandName, {
+            code: 'TASK_NOT_FOUND',
+            message: messages.taskUpdateStatus.taskNotFound,
+            details: {
+              taskId: taskReference.value.taskId,
+              externalSource: args.externalId ? (args.externalSource ?? 'beads') : null,
+              externalId: args.externalId ?? null,
+            },
+          })
+        : [
+            messages.taskUpdateStatus.taskNotFound,
+            `- taskId: ${taskReference.value.taskId}`,
+            ...taskReference.value.referenceLines,
+          ].join('\n'),
+    }
+  }
+
+  const data = {
+    projectRoot: managedProject.projectRoot,
+    taskId: taskReference.value.taskId,
+    externalRef: args.externalId
+      ? {
+          externalSource: args.externalSource ?? 'beads',
+          externalId: args.externalId,
+        }
+      : null,
+    from: existingTask.status,
+    to: nextStatus,
+    changed: true,
+  }
+
+  if (args.json) {
+    return {
+      exitCode: 0,
+      stdout: toJsonSuccessOutput(commandName, data),
     }
   }
 

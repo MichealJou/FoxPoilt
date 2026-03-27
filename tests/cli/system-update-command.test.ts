@@ -79,4 +79,61 @@ describe('update CLI', () => {
     expect(result.exitCode).toBe(1)
     expect(result.stdout).toContain('无法识别当前安装来源')
   })
+
+  it('returns structured json update metadata when called with --json', async () => {
+    const homeDir = await createTempDir('foxpilot-update-home-')
+    const tempDir = await createTempDir('foxpilot-update-bin-')
+    tempDirs.push(homeDir, tempDir)
+
+    const executablePath = path.join(tempDir, 'foxpilot')
+    await writeFile(executablePath, '#!/bin/sh\n')
+    await writeFile(
+      path.join(tempDir, 'install-manifest.json'),
+      JSON.stringify(
+        {
+          schemaVersion: 1,
+          installMethod: 'npm',
+          packageName: 'foxpilot',
+          packageVersion: '0.1.4',
+          channel: 'stable',
+          platform: 'darwin',
+          arch: 'arm64',
+          installRoot: '/usr/local/lib/node_modules/foxpilot',
+          binPath: executablePath,
+          updateTarget: {
+            npmPackage: 'foxpilot',
+          },
+          installedAt: '2026-03-26T00:00:00.000Z',
+          updatedAt: '2026-03-27T00:00:00.000Z',
+        },
+        null,
+        2,
+      ),
+    )
+
+    const result = await runCli(['update', '--json'], {
+      homeDir,
+      executablePath,
+      dependencies: {
+        dispatchUpdate: async () => 'strategy: npm\ncommand: npm install -g foxpilot@latest\nexitCode: 0',
+      },
+    })
+
+    const payload = JSON.parse(result.stdout) as {
+      ok: boolean
+      command: string
+      data: {
+        installMethod: string
+        packageVersion: string
+        strategy: string
+      }
+    }
+
+    expect(result.exitCode).toBe(0)
+    expect(payload.ok).toBe(true)
+    expect(payload.command).toBe('update')
+    expect(payload.data.installMethod).toBe('npm')
+    expect(payload.data.packageVersion).toBe('0.1.4')
+    expect(payload.data.strategy).toContain('strategy: npm')
+  })
 })
