@@ -664,6 +664,9 @@ Portfolio + Tasks + Runs + Health + Control Plane + Focus Queue
 - 桌面导航信息架构
 - 右侧上下文面板模型
 - Focus Queue 评分模型
+- Workspace 页面选择模型
+- 事件时间线分组模型
+- Control Plane 状态汇总模型
 - Desktop Bridge 契约
 - 桌面读模型契约
 - Init Wizard 状态机
@@ -710,3 +713,6 @@ Portfolio + Tasks + Runs + Health + Control Plane + Focus Queue
 - `Desktop Navigation Information Architecture` 作为常驻导航边界
 - `Context Panel Model` 作为右侧解释层边界
 - `Focus Queue Scoring Model` 作为首页高优事项排序规则
+- `Workspace Page Selection Model` 作为项目 / 仓库统一视图规则
+- `Event Timeline Grouping Model` 作为事件页链路分组规则
+- `Control Plane Status Summary Model` 作为中控首页汇总口径
