@@ -371,6 +371,9 @@ repair     -> fixer    -> trae
 - 协作集成层
 - 执行平台集成层
 - 阶段 / 角色 / 平台 关系
+- Runtime Core 目录结构
+- 平台适配器契约
+- Skills / MCP 管理模型
 
 ## 9. 当前结论
 

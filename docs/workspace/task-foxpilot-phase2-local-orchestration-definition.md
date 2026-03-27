@@ -62,3 +62,6 @@
 - [x] 已输出第二阶段实现准备计划
 - [x] 已确认第二阶段桌面技术栈为 `Tauri + React + Vite + shadcn/ui`
 - [x] 已补第二阶段工具架构图
+- [x] 已补 Runtime Core 目录结构设计
+- [x] 已补平台适配器契约
+- [x] 已补 Skills / MCP 管理模型

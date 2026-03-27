@@ -8,6 +8,14 @@
 
 **Tech Stack:** `TypeScript`、`Node.js`、`pnpm`、`Vitest`、`Tauri`、`React`、`Vite`、`shadcn/ui`
 
+**Reference Docs:**
+- `docs/specs/foxpilot-phase2-tool-architecture.md`
+- `docs/specs/foxpilot-phase2-runtime-core-architecture.md`
+- `docs/specs/foxpilot-phase2-integrations-architecture.md`
+- `docs/specs/foxpilot-phase2-runtime-directory-structure.md`
+- `docs/specs/foxpilot-phase2-platform-adapter-contract.md`
+- `docs/specs/foxpilot-phase2-skills-mcp-management-model.md`
+
 ---
 
 ## 文件结构
