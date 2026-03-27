@@ -61,6 +61,9 @@
 - `docs/specs/foxpilot-phase2-tasks-list-view-policy.md`
 - `docs/specs/foxpilot-phase2-runs-page-coordination-model.md`
 - `docs/specs/foxpilot-phase2-health-issue-entry-hierarchy.md`
+- `docs/specs/foxpilot-phase2-events-page-density-policy.md`
+- `docs/specs/foxpilot-phase2-control-plane-detail-layout-policy.md`
+- `docs/specs/foxpilot-phase2-workspace-summary-block-policy.md`
 
 ---
 
@@ -196,6 +199,12 @@
   - Runs 页面列表 / 详情 / session 协同
 - `src/ui/pages/health/health-issue-entry-hierarchy.ts`
   - Health 页面问题分层与导流
+- `src/ui/pages/events/events-page-density-policy.ts`
+  - Events 页标题层 / 展开层密度策略
+- `src/ui/pages/control-plane/control-plane-detail-layout-policy.ts`
+  - 平台 / skill / mcp 详情布局规则
+- `src/ui/pages/workspace/workspace-summary-block-policy.ts`
+  - Workspace 摘要区块规则
 - `src/runtime/actions/task-run-detail-action-service.ts`
   - Tasks / Runs 详情动作服务
 - `src/runtime/actions/control-plane-bulk-action-policy.ts`
@@ -302,6 +311,12 @@
   - Runs 页面协同模型测试
 - `tests/ui/health-issue-entry-hierarchy.test.ts`
   - Health 页面问题层级测试
+- `tests/ui/events-page-density-policy.test.ts`
+  - Events 页面密度策略测试
+- `tests/ui/control-plane-detail-layout-policy.test.ts`
+  - Control Plane 详情布局策略测试
+- `tests/ui/workspace-summary-block-policy.test.ts`
+  - Workspace 摘要区块策略测试
 - `tests/runtime/task-run-detail-action-service.test.ts`
   - Tasks / Runs 详情动作测试
 - `tests/runtime/control-plane-bulk-action-policy.test.ts`
@@ -373,6 +388,9 @@
 - Tasks List View Policy 必须限制任务表格职责与列膨胀
 - Runs Page Coordination Model 必须统一运行列表、详情和 session 解释
 - Health Issue Entry Hierarchy 必须把健康页收敛成问题分层和修复导流页
+- Events Page Density Policy 必须限制事件页标题层与展开层职责
+- Control Plane Detail Layout Policy 必须统一平台 / skill / mcp 详情页布局
+- Workspace Summary Block Policy 必须防止 Workspace 重复 Dashboard 全局摘要
 - 保持 TDD：先写失败测试，再补最小实现
 
 ### Task 0: 双入口与 Shared Runtime 基线

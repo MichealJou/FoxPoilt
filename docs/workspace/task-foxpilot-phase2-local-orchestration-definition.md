@@ -56,6 +56,9 @@
 - 第二阶段 Tasks 列表视图策略
 - 第二阶段 Runs 页面协同模型
 - 第二阶段 Health 页面问题入口层级
+- 第二阶段 Events 页面密度策略
+- 第二阶段 Control Plane 详情布局策略
+- 第二阶段 Workspace 摘要区块策略
 
 ## 设计约束
 
@@ -98,6 +101,9 @@
 - Tasks 不能退化成无限加列的大表
 - Runs 不能把 run / session / handoff 混成一层
 - Health 不能只是问题堆叠清单
+- Events 不能既想做日志墙又想做详情页
+- Control Plane 详情页不能三种对象三种完全不同套路
+- Workspace 不能重复 Dashboard 的全局摘要职责
 
 ## 关键结论
 
@@ -140,6 +146,9 @@
 - Tasks 必须以表格扫描为主，详情深挖为辅
 - Runs 必须同时解释 Run、Execution Session、Handoff 三层对象
 - Health 必须先做问题分层，再做修复导流
+- Events 必须稳定区分标题层、展开层、原始下钻层
+- Control Plane 详情必须统一主区、动作区、右侧关系区
+- Workspace 摘要必须只解释当前对象，而不是全局态
 
 ## 当前进度
 
@@ -202,3 +211,6 @@
 - [x] 已补 Tasks 列表视图策略
 - [x] 已补 Runs 页面协同模型
 - [x] 已补 Health 页面问题入口层级
+- [x] 已补 Events 页面密度策略
+- [x] 已补 Control Plane 详情布局策略
+- [x] 已补 Workspace 摘要区块策略

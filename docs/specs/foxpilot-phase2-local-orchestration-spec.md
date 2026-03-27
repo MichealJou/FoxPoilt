@@ -673,6 +673,9 @@ Portfolio + Tasks + Runs + Health + Control Plane + Focus Queue
 - Tasks 列表视图策略
 - Runs 页面协同模型
 - Health 页面问题入口层级
+- Events 页面密度策略
+- Control Plane 详情布局策略
+- Workspace 摘要区块策略
 - Desktop Bridge 契约
 - 桌面读模型契约
 - Init Wizard 状态机
@@ -728,3 +731,6 @@ Portfolio + Tasks + Runs + Health + Control Plane + Focus Queue
 - `Tasks List View Policy` 作为任务扫描主视图规则
 - `Runs Page Coordination Model` 作为运行页列表 / 详情 / session 协同规则
 - `Health Issue Entry Hierarchy` 作为健康页问题分层与导流规则
+- `Events Page Density Policy` 作为事件页扫描与展开层级规则
+- `Control Plane Detail Layout Policy` 作为平台 / skill / mcp 详情页布局规则
+- `Workspace Summary Block Policy` 作为项目 / 仓库对象级摘要规则
