@@ -3,11 +3,11 @@
 import { fireEvent, render, screen, within } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 
-import { AppRouter } from '@desktop/ui/app/router.js'
+import { App } from '@desktop/App.js'
 
 describe('desktop app layout', () => {
   it('renders the desktop shell with navigation and context panel', () => {
-    render(<AppRouter />)
+    render(<App />)
 
     expect(screen.getByRole('heading', { name: 'Dashboard', level: 1 })).toBeInTheDocument()
     expect(screen.getByTestId('context-panel')).toBeInTheDocument()
@@ -15,7 +15,7 @@ describe('desktop app layout', () => {
   })
 
   it('switches to the control plane page from navigation', () => {
-    render(<AppRouter />)
+    render(<App />)
 
     const nav = screen.getAllByRole('navigation', { name: 'FoxPilot 主导航' })[0]
     const controlPlaneButton = within(nav).getAllByRole('button')[5]

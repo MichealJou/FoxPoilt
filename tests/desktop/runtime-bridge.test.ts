@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { buildRuntimeBridgeRequest } from '@desktop/desktop/bridge/runtime-bridge.js'
+import { buildRuntimeBridgeRequest } from '@desktop/lib/runtime-bridge.js'
 
 describe('desktop runtime bridge', () => {
   it('builds a desktop runtime bridge request', () => {

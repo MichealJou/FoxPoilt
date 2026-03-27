@@ -8,10 +8,10 @@ import {
   Workflow,
 } from 'lucide-react'
 
-import { Button } from '@desktop/ui/components/ui/button.js'
-import { cn } from '@desktop/ui/lib/utils.js'
-import { desktopPageMeta } from '@desktop/ui/app/mock-data.js'
-import type { DesktopPageId } from '@desktop/ui/app/types.js'
+import { Button } from '@desktop/components/ui/button.js'
+import { desktopPageMeta } from '@desktop/lib/mock-data.js'
+import type { DesktopPageId } from '@desktop/lib/desktop-pages.js'
+import { cn } from '@desktop/lib/utils.js'
 
 const NAV_ITEMS: Array<{
   id: DesktopPageId

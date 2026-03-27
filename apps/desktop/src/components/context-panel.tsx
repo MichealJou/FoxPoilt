@@ -1,10 +1,10 @@
 import { Command, FileStack, ShieldCheck } from 'lucide-react'
 
-import { desktopPageMeta, workspaceSummary } from '@desktop/ui/app/mock-data.js'
-import type { DesktopPageId } from '@desktop/ui/app/types.js'
-import { Badge } from '@desktop/ui/components/ui/badge.js'
-import { Button } from '@desktop/ui/components/ui/button.js'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@desktop/ui/components/ui/card.js'
+import { Badge } from '@desktop/components/ui/badge.js'
+import { Button } from '@desktop/components/ui/button.js'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@desktop/components/ui/card.js'
+import { desktopPageMeta, workspaceSummary } from '@desktop/lib/mock-data.js'
+import type { DesktopPageId } from '@desktop/lib/desktop-pages.js'
 
 const panelActions: Record<DesktopPageId, string[]> = {
   dashboard: ['查看 Focus Queue', '打开风险确认', '进入最新运行'],

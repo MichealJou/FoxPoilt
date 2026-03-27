@@ -3,14 +3,14 @@
   "style": "new-york",
   "tsx": true,
   "tailwind": {
-    "css": "src/ui/styles.css",
+    "css": "src/styles.css",
     "baseColor": "zinc",
     "cssVariables": true
   },
   "aliases": {
-    "components": "@desktop/ui/components",
-    "ui": "@desktop/ui/components/ui",
-    "lib": "@desktop/ui/lib",
-    "utils": "@desktop/ui/lib"
+    "components": "@desktop/components",
+    "ui": "@desktop/components/ui",
+    "lib": "@desktop/lib",
+    "utils": "@desktop/lib/utils"
   }
 }

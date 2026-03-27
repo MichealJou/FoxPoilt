@@ -1,6 +1,6 @@
 import * as React from 'react'
 
-import { cn } from '@desktop/ui/lib/utils.js'
+import { cn } from '@desktop/lib/utils.js'
 
 export function Separator({
   className,

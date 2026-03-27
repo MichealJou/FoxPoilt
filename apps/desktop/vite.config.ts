@@ -13,8 +13,6 @@ export default defineConfig({
       { find: '@foxpilot/infra', replacement: fileURLToPath(new URL('../../packages/infra/src', import.meta.url)) },
       { find: '@foxpilot/integrations', replacement: fileURLToPath(new URL('../../packages/integrations/src', import.meta.url)) },
       { find: '@desktop', replacement: fileURLToPath(new URL('./src', import.meta.url)) },
-      { find: '@tests', replacement: fileURLToPath(new URL('../../tests', import.meta.url)) },
-      { find: '@', replacement: fileURLToPath(new URL('../../src', import.meta.url)) },
     ],
   },
 })

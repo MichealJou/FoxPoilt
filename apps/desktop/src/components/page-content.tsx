@@ -11,12 +11,12 @@ import {
   skillRegistry,
   tasksTable,
   workspaceSummary,
-} from '@desktop/ui/app/mock-data.js'
-import type { DesktopPageId } from '@desktop/ui/app/types.js'
-import { Badge } from '@desktop/ui/components/ui/badge.js'
-import { Button } from '@desktop/ui/components/ui/button.js'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@desktop/ui/components/ui/card.js'
-import { Separator } from '@desktop/ui/components/ui/separator.js'
+} from '@desktop/lib/mock-data.js'
+import type { DesktopPageId } from '@desktop/lib/desktop-pages.js'
+import { Badge } from '@desktop/components/ui/badge.js'
+import { Button } from '@desktop/components/ui/button.js'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@desktop/components/ui/card.js'
+import { Separator } from '@desktop/components/ui/separator.js'
 
 function statusVariant(status: string): 'default' | 'success' | 'warning' | 'danger' | 'outline' {
   if (status === 'ready' || status === 'success') {

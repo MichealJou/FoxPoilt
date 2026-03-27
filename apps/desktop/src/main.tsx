@@ -1,15 +1,15 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 
-import { AppRouter } from '@desktop/ui/app/router.js'
-import '@desktop/ui/styles.css'
+import App from '@desktop/App.js'
+import '@desktop/styles.css'
 
 const container = document.getElementById('root')
 
 if (container) {
   createRoot(container).render(
     <StrictMode>
-      <AppRouter />
+      <App />
     </StrictMode>,
   )
 }

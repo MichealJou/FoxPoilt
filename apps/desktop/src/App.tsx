@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 
-import { AppLayout } from '@desktop/ui/app/layout.js'
-import { isDesktopPageId, type DesktopPageId } from '@desktop/ui/app/types.js'
-import { readDesktopRuntimeStatus } from '@desktop/ui/desktop/tauri-bridge.js'
-import type { DesktopRuntimeStatus } from '@desktop/ui/desktop/tauri-status.js'
+import { AppLayout } from '@desktop/components/app-layout.js'
+import { isDesktopPageId, type DesktopPageId } from '@desktop/lib/desktop-pages.js'
+import { readDesktopRuntimeStatus } from '@desktop/lib/tauri-bridge.js'
+import type { DesktopRuntimeStatus } from '@desktop/lib/tauri-status.js'
 
 function readCurrentPage(): DesktopPageId {
   if (typeof window === 'undefined') {
@@ -19,7 +19,7 @@ function readCurrentPage(): DesktopPageId {
   return 'dashboard'
 }
 
-export function AppRouter() {
+export function App() {
   const [currentPage, setCurrentPage] = useState<DesktopPageId>(() => readCurrentPage())
   const [runtimeStatus, setRuntimeStatus] = useState<DesktopRuntimeStatus>()
 
@@ -59,3 +59,5 @@ export function AppRouter() {
 
   return <AppLayout currentPage={currentPage} onNavigate={handleNavigate} runtimeStatus={runtimeStatus} />
 }
+
+export default App

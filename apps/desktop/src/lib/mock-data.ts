@@ -1,4 +1,4 @@
-import type { DesktopPageId } from '@desktop/ui/app/types.js'
+import type { DesktopPageId } from '@desktop/lib/desktop-pages.js'
 
 export const desktopPageMeta: Record<
   DesktopPageId,
