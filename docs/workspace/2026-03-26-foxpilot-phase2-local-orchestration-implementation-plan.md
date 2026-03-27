@@ -34,6 +34,9 @@
 - `docs/specs/foxpilot-phase2-runtime-mutation-surface.md`
 - `docs/specs/foxpilot-phase2-risk-confirmation-policy.md`
 - `docs/specs/foxpilot-phase2-stage-role-platform-handoff-model.md`
+- `docs/specs/foxpilot-phase2-platform-capability-matrix.md`
+- `docs/specs/foxpilot-phase2-workflow-template-model.md`
+- `docs/specs/foxpilot-phase2-skills-mcp-binding-model.md`
 
 ---
 
@@ -125,6 +128,12 @@
   - 平台推荐值、显式覆盖值和最终生效值的统一结构
 - `src/runtime/orchestrators/stage-handoff-orchestrator.ts`
   - 阶段推进、交接包生成与下一阶段落地
+- `src/runtime/workflows/workflow-template-registry.ts`
+  - 工作流模板注册、匹配与默认链定义
+- `src/runtime/bindings/skill-mcp-binding-resolver.ts`
+  - Skills / MCP 正式绑定解析
+- `src/platforms/platform-capability-matrix.ts`
+  - 平台能力矩阵定义
 - `src/runtime/mutations/runtime-mutation-surface.ts`
   - Runtime 正式写接口与结果结构
 - `src/runtime/confirmation/risk-confirmation-policy.ts`
@@ -177,6 +186,12 @@
   - 阶段 / 角色 编排测试
 - `tests/runtime/stage-handoff-orchestrator.test.ts`
   - 阶段交接与 handoff 测试
+- `tests/runtime/workflow-template-registry.test.ts`
+  - 工作流模板匹配与阶段链测试
+- `tests/runtime/skill-mcp-binding-resolver.test.ts`
+  - Skills / MCP 正式绑定解析测试
+- `tests/platforms/platform-capability-matrix.test.ts`
+  - 平台能力矩阵测试
 - `tests/runtime/runtime-mutation-surface.test.ts`
   - Runtime 正式写接口测试
 - `tests/runtime/risk-confirmation-policy.test.ts`
@@ -213,6 +228,9 @@
 - 所有正式写动作必须先进入 Runtime Mutation Surface
 - 高风险动作必须统一走 Risk Confirmation Policy
 - 阶段推进必须形成 handoff，而不是只改任务字段
+- Workflow Template 必须作为 Profile 与 Snapshot 之间的正式层
+- Platform Capability Matrix 必须作为 Detect 与 Resolve 之间的正式层
+- Skills / MCP 必须从清单管理升级为正式绑定模型
 - 保持 TDD：先写失败测试，再补最小实现
 
 ### Task 0: 双入口与 Shared Runtime 基线

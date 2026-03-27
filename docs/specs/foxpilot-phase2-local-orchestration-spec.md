@@ -218,6 +218,23 @@ FoxPilot 第一阶段已经完成本地 CLI 主线：
 - 初始化职责不清
 - UI 信息架构混乱
 
+### 4.4 Workflow Template 是独立层
+
+第二阶段里，`Profile` 也不能直接替代工作流模板。
+
+必须继续拆开：
+
+- Profile 决定协作强度
+- Workflow Template 决定阶段主链
+
+否则后面：
+
+- `fast-bugfix`
+- `docs-heavy`
+- `standard-software`
+
+这类项目主链就无处落。
+
 ## 5. 阶段 / 角色 / 平台 模型
 
 ### 5.1 为什么必须引入这三层
@@ -279,6 +296,40 @@ repair     -> fixer    -> trae
 - `manual`
 - `future_platforms`
 
+### 5.5 平台能力矩阵必须独立存在
+
+第二阶段里，平台探测结果只解决：
+
+```text
+这个平台在不在
+这个平台健不健康
+```
+
+它不能直接替代：
+
+```text
+这个平台擅长什么
+能消费什么交接产物
+更适合哪个角色
+```
+
+所以第二阶段必须补一层：
+
+```text
+Platform Capability Matrix
+```
+
+### 5.6 Skills / MCP 绑定必须进入正式依赖层
+
+第二阶段里，`Skills / MCP` 不能只停留在 Control Plane 清单页。
+
+系统还必须知道：
+
+- 哪个工作流依赖它
+- 哪个阶段依赖它
+- 哪个平台依赖它
+- 缺失时是阻塞还是降级
+
 ### 5.5 决策顺序
 
 建议固定为：
@@ -288,7 +339,7 @@ repair     -> fixer    -> trae
 3. 平台自动探测结果
 4. 默认回退
 
-### 5.6 第二阶段不做什么
+### 5.10 第二阶段不做什么
 
 第二阶段不应把某一个桌面端定义成必然可控的私有接口。
 
@@ -447,7 +498,10 @@ Desktop / CLI
 - 阶段 / 角色 / 平台 关系
 - Runtime Core 目录结构
 - 平台适配器契约
+- 平台能力矩阵
 - Skills / MCP 管理模型
+- Skills / MCP 绑定模型
+- Workflow Template 模型
 - 中控平台规格
 - 中控平台信息架构
 - 中控命令族设计
@@ -487,3 +541,6 @@ Desktop / CLI
 - `Runtime Mutation Surface` 作为正式写入口
 - `Handoff` 作为阶段推进的正式交接对象
 - `Risk Confirmation Policy` 作为高风险动作唯一确认规则
+- `Workflow Template` 作为 Profile 与快照之间的正式层
+- `Platform Capability Matrix` 作为 Detect 与 Resolve 之间的正式层
+- `Skills / MCP Binding` 作为 Runtime 正式依赖层
