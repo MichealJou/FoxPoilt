@@ -6,6 +6,7 @@
 import os from 'node:os'
 import path from 'node:path'
 
+import { setupFoundationPack } from '@/foundation/foundation-installer.js'
 import { registerCurrentInstallation } from '@/install/install-index.js'
 import { readPackageMetadata } from '@/install/package-info.js'
 
@@ -14,14 +15,33 @@ import { readPackageMetadata } from '@/install/package-info.js'
  *
  * 这样可以避免本地开发时执行 `pnpm install` 把工作副本误登记成正式安装实例。
  */
-function shouldSkipRegistration(): boolean {
+function shouldSkipRegistration(cwd: string): boolean {
   const initCwd = process.env.INIT_CWD
 
   if (!initCwd) {
     return false
   }
 
-  return path.resolve(initCwd) === process.cwd()
+  return path.resolve(initCwd) === cwd
+}
+
+type PostinstallDependencies = {
+  registerCurrentInstallation: typeof registerCurrentInstallation
+  readPackageMetadata: typeof readPackageMetadata
+  setupFoundationPack: typeof setupFoundationPack
+  stdout: Pick<NodeJS.WriteStream, 'write'>
+}
+
+function getDependencies(
+  overrides: Partial<PostinstallDependencies> = {},
+): PostinstallDependencies {
+  return {
+    registerCurrentInstallation,
+    readPackageMetadata,
+    setupFoundationPack,
+    stdout: process.stdout,
+    ...overrides,
+  }
 }
 
 /**
@@ -31,16 +51,27 @@ function shouldSkipRegistration(): boolean {
  * - 写安装实例清单
  * - 更新用户级安装索引
  */
-export async function runPostinstall(): Promise<void> {
-  if (shouldSkipRegistration()) {
+export async function runPostinstall(
+  input: Partial<PostinstallDependencies> & {
+    cwd?: string
+    homeDir?: string
+    executablePath?: string
+  } = {},
+): Promise<void> {
+  const cwd = input.cwd ?? process.cwd()
+  const homeDir = input.homeDir ?? os.homedir()
+  const executablePath = input.executablePath ?? path.join(cwd, 'dist', 'cli', 'run.js')
+
+  if (shouldSkipRegistration(cwd)) {
     return
   }
 
-  const metadata = await readPackageMetadata()
-  const installRoot = process.cwd()
+  const dependencies = getDependencies(input)
+  const metadata = await dependencies.readPackageMetadata()
+  const installRoot = cwd
 
-  await registerCurrentInstallation({
-    homeDir: os.homedir(),
+  await dependencies.registerCurrentInstallation({
+    homeDir,
     installMethod: 'npm',
     packageName: metadata.name,
     packageVersion: metadata.version,
@@ -48,11 +79,26 @@ export async function runPostinstall(): Promise<void> {
     platform: process.platform,
     arch: process.arch,
     installRoot,
-    executablePath: path.join(installRoot, 'dist', 'cli', 'run.js'),
+    executablePath,
     updateTarget: {
       npmPackage: metadata.name,
     },
   })
+
+  const foundation = await dependencies.setupFoundationPack({
+    homeDir,
+    platform: process.platform,
+  })
+
+  dependencies.stdout.write(
+    [
+      '[FoxPilot] Foundation Pack',
+      `- foundationPack: ${foundation.items.map((item) => item.tool).join(', ')}`,
+      `- ready: ${foundation.ready.length > 0 ? foundation.ready.join(', ') : 'none'}`,
+      `- installed: ${foundation.installed.length > 0 ? foundation.installed.join(', ') : 'none'}`,
+      `- missing: ${foundation.missing.length > 0 ? foundation.missing.join(', ') : 'none'}`,
+    ].join('\n') + '\n',
+  )
 }
 
 try {

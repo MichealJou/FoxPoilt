@@ -14,8 +14,16 @@ export type FoundationTool = 'beads' | 'superpowers'
 export type FoundationToolMetadata = {
   tool: FoundationTool
   displayName: string
-  executable: string
-  versionArgs: string[]
+  detection:
+    | {
+        kind: 'command'
+        command: string
+        versionArgs: string[]
+      }
+    | {
+        kind: 'filesystem'
+        paths: (input: { homeDir: string }) => string[]
+      }
 }
 
 /**
@@ -34,14 +42,22 @@ const foundationToolMetadata: Record<FoundationTool, FoundationToolMetadata> = {
   beads: {
     tool: 'beads',
     displayName: 'Beads',
-    executable: 'bd',
-    versionArgs: ['--version'],
+    detection: {
+      kind: 'command',
+      command: 'bd',
+      versionArgs: ['--version'],
+    },
   },
   superpowers: {
     tool: 'superpowers',
     displayName: 'Superpowers',
-    executable: 'superpowers',
-    versionArgs: ['--version'],
+    detection: {
+      kind: 'filesystem',
+      paths: ({ homeDir }) => [
+        `${homeDir}/.codex/superpowers`,
+        `${homeDir}/.agents/skills/superpowers`,
+      ],
+    },
   },
 }
 

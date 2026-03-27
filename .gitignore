@@ -4,3 +4,4 @@ node_modules/
 .foxpilot/
 *.db
 dist/
+install-manifest.json

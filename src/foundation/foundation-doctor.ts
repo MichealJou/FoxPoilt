@@ -15,7 +15,9 @@ import {
  * 第二批开始再往这里补 repair、回滚和官方安装策略。
  */
 export async function runFoundationDoctor(
-  dependencies: Partial<EnsureFoundationPackDependencies> = {},
+  dependencies: Partial<EnsureFoundationPackDependencies> & {
+    homeDir?: string
+  } = {},
 ): Promise<FoundationInspectionResult> {
   return ensureFoundationPack(dependencies)
 }

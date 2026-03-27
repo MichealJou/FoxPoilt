@@ -34,4 +34,32 @@ describe('foundation installer', () => {
       }),
     ])
   })
+
+  it('installs missing tools through the official installer and re-checks readiness', async () => {
+    const { setupFoundationPack } = await import('@/foundation/foundation-installer.js')
+
+    const installedTools: string[] = []
+
+    const result = await setupFoundationPack({
+      detectTool: async (tool) => {
+        if (tool === 'beads' && installedTools.includes('beads')) {
+          return { version: '2.0.0' }
+        }
+
+        if (tool === 'superpowers') {
+          return { version: null }
+        }
+
+        return null
+      },
+      installOfficialTool: async (tool) => {
+        installedTools.push(tool)
+      },
+    })
+
+    expect(installedTools).toEqual(['beads'])
+    expect(result.installed).toEqual(['beads'])
+    expect(result.missing).toEqual([])
+    expect(result.ready).toEqual(['beads', 'superpowers'])
+  })
 })
