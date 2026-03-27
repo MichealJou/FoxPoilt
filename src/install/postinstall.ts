@@ -5,24 +5,29 @@
 
 import os from 'node:os'
 import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 import { setupFoundationPack } from '@/foundation/foundation-installer.js'
 import { registerCurrentInstallation } from '@/install/install-index.js'
 import { readPackageMetadata } from '@/install/package-info.js'
 
 /**
- * npm postinstall 只在“当前目录不是开发仓库根目录”时登记安装元数据。
+ * npm postinstall 只在“当前包根目录不是开发仓库根目录”时登记安装元数据。
  *
  * 这样可以避免本地开发时执行 `pnpm install` 把工作副本误登记成正式安装实例。
  */
-function shouldSkipRegistration(cwd: string): boolean {
+function shouldSkipRegistration(packageRoot: string): boolean {
   const initCwd = process.env.INIT_CWD
 
   if (!initCwd) {
     return false
   }
 
-  return path.resolve(initCwd) === cwd
+  return path.resolve(initCwd) === packageRoot
+}
+
+function resolvePackageRoot(): string {
+  return path.resolve(fileURLToPath(new URL('../..', import.meta.url)))
 }
 
 type PostinstallDependencies = {
@@ -56,19 +61,21 @@ export async function runPostinstall(
     cwd?: string
     homeDir?: string
     executablePath?: string
+    packageRoot?: string
   } = {},
 ): Promise<void> {
   const cwd = input.cwd ?? process.cwd()
   const homeDir = input.homeDir ?? os.homedir()
-  const executablePath = input.executablePath ?? path.join(cwd, 'dist', 'cli', 'run.js')
+  const packageRoot = input.packageRoot ?? resolvePackageRoot()
+  const executablePath = input.executablePath ?? path.join(packageRoot, 'dist', 'cli', 'run.js')
 
-  if (shouldSkipRegistration(cwd)) {
+  if (shouldSkipRegistration(packageRoot)) {
     return
   }
 
   const dependencies = getDependencies(input)
   const metadata = await dependencies.readPackageMetadata()
-  const installRoot = cwd
+  const installRoot = packageRoot
 
   await dependencies.registerCurrentInstallation({
     homeDir,

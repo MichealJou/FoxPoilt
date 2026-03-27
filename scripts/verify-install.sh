@@ -35,7 +35,8 @@ pnpm pack --pack-destination "$pack_dir" >/dev/null
 package_file="$(find "$pack_dir" -maxdepth 1 -name '*.tgz' | head -n 1)"
 
 cd "$consumer_dir"
-HOME="$home_dir" pnpm add "$package_file" >/dev/null
+npm init -y >/dev/null 2>&1
+HOME="$home_dir" npm install --silent "$package_file" >/dev/null
 
 ./node_modules/.bin/foxpilot init --help >/dev/null
 ./node_modules/.bin/fp init --help >/dev/null

@@ -65,6 +65,7 @@ describe('postinstall integration', () => {
 
     await runPostinstall({
       cwd: '/tmp/global-install',
+      packageRoot: '/tmp/global-install',
       homeDir: '/Users/demo',
       executablePath: '/tmp/global-install/dist/cli/run.js',
       registerCurrentInstallation,
@@ -81,5 +82,62 @@ describe('postinstall integration', () => {
       platform: process.platform,
     })
     expect(output.join('')).toContain('foundationPack: beads, superpowers')
+  })
+
+  it('does not skip consumer install when INIT_CWD equals consumer root but package root differs', async () => {
+    process.env.INIT_CWD = '/tmp/consumer-root'
+    const { runPostinstall } = await import('@/install/postinstall.js')
+
+    const registerCurrentInstallation = vi.fn(async () => ({
+      manifest: {
+        schemaVersion: 1,
+        installMethod: 'npm',
+        packageName: 'foxpilot',
+        packageVersion: '0.1.4',
+        channel: 'stable',
+        platform: process.platform,
+        arch: process.arch,
+        installRoot: '/tmp/consumer-root/node_modules/foxpilot',
+        binPath: '/tmp/consumer-root/node_modules/foxpilot/dist/cli/run.js',
+        updateTarget: {
+          npmPackage: 'foxpilot',
+        },
+        installedAt: '2026-03-27T00:00:00.000Z',
+        updatedAt: '2026-03-27T00:00:00.000Z',
+      } satisfies InstallManifest,
+      manifestPath: '/tmp/consumer-root/node_modules/foxpilot/install-manifest.json',
+      indexPath: '/Users/demo/.foxpilot/installations.json',
+    }))
+    const readPackageMetadata = vi.fn(async () => ({
+      name: 'foxpilot',
+      version: '0.1.4',
+    }))
+    const setupFoundationPack = vi.fn(async (): Promise<FoundationSetupResult> => ({
+      packId: 'default-foundation',
+      items: [],
+      ready: [],
+      missing: [],
+      installed: [],
+    }))
+
+    await runPostinstall({
+      cwd: '/tmp/consumer-root',
+      packageRoot: '/tmp/consumer-root/node_modules/foxpilot',
+      homeDir: '/Users/demo',
+      registerCurrentInstallation,
+      readPackageMetadata,
+      setupFoundationPack,
+      stdout: {
+        write: () => true,
+      },
+    })
+
+    expect(registerCurrentInstallation).toHaveBeenCalledTimes(1)
+    expect(registerCurrentInstallation).toHaveBeenCalledWith(
+      expect.objectContaining({
+        installRoot: '/tmp/consumer-root/node_modules/foxpilot',
+        executablePath: '/tmp/consumer-root/node_modules/foxpilot/dist/cli/run.js',
+      }),
+    )
   })
 })
