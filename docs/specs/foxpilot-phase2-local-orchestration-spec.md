@@ -417,6 +417,9 @@ repair     -> fixer    -> trae
 - Init Wizard 状态机
 - 页面级数据契约
 - 中控注册表更新与事件模型
+- Runtime 查询面
+- Control Plane 页面动作矩阵
+- 读模型刷新策略
 
 ## 9. 当前结论
 

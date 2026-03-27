@@ -28,6 +28,9 @@
 - `docs/specs/foxpilot-phase2-init-wizard-state-machine.md`
 - `docs/specs/foxpilot-phase2-page-data-contracts.md`
 - `docs/specs/foxpilot-phase2-control-plane-registry-event-model.md`
+- `docs/specs/foxpilot-phase2-runtime-query-surface.md`
+- `docs/specs/foxpilot-phase2-control-plane-page-action-matrix.md`
+- `docs/specs/foxpilot-phase2-read-model-refresh-policy.md`
 
 ---
 
