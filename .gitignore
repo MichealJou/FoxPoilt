@@ -4,4 +4,7 @@ node_modules/
 .foxpilot/
 *.db
 dist/
+dist-ui/
+src-tauri/target/
+src-tauri/gen/
 install-manifest.json

@@ -1,21 +1,63 @@
-const NAV_ITEMS = [
-  'Dashboard',
-  'Workspace',
-  'Tasks',
-  'Runs',
-  'Events',
-  'Control Plane',
-  'Health',
-] as const
+import {
+  Activity,
+  Blocks,
+  FolderKanban,
+  LayoutDashboard,
+  ListTodo,
+  Orbit,
+  Workflow,
+} from 'lucide-react'
 
-export function Navigation() {
+import { Button } from '@/ui/components/ui/button.js'
+import { cn } from '@/ui/lib/utils.js'
+import { desktopPageMeta } from '@/ui/app/mock-data.js'
+import type { DesktopPageId } from '@/ui/app/types.js'
+
+const NAV_ITEMS: Array<{
+  id: DesktopPageId
+  icon: typeof LayoutDashboard
+}> = [
+  { id: 'dashboard', icon: LayoutDashboard },
+  { id: 'workspace', icon: FolderKanban },
+  { id: 'tasks', icon: ListTodo },
+  { id: 'runs', icon: Workflow },
+  { id: 'events', icon: Activity },
+  { id: 'control-plane', icon: Blocks },
+  { id: 'health', icon: Orbit },
+]
+
+export function Navigation({
+  currentPage,
+  onNavigate,
+}: {
+  currentPage: DesktopPageId
+  onNavigate: (page: DesktopPageId) => void
+}) {
   return (
-    <nav aria-label="FoxPilot 主导航">
-      <ul>
-        {NAV_ITEMS.map((item) => (
-          <li key={item}>{item}</li>
-        ))}
-      </ul>
+    <nav aria-label="FoxPilot 主导航" className="flex flex-col gap-2">
+      {NAV_ITEMS.map(({ id, icon: Icon }) => {
+        const active = currentPage === id
+
+        return (
+          <Button
+            key={id}
+            variant="ghost"
+            className={cn(
+              'h-auto justify-start rounded-xl px-3 py-3 text-left',
+              active
+                ? 'bg-accent text-accent-foreground shadow-[inset_0_0_0_1px_rgba(56,189,248,0.18)]'
+                : 'text-muted-foreground hover:text-foreground',
+            )}
+            onClick={() => onNavigate(id)}
+          >
+            <Icon className="size-4" />
+            <span className="flex flex-col gap-0.5">
+              <span className="text-sm font-medium">{desktopPageMeta[id].label}</span>
+              <span className="text-xs text-muted-foreground">{desktopPageMeta[id].eyebrow}</span>
+            </span>
+          </Button>
+        )
+      })}
     </nav>
   )
 }

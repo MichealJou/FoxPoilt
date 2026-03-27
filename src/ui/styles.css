@@ -1,0 +1,78 @@
+@import "tailwindcss";
+
+:root {
+  --background: #08111f;
+  --foreground: #edf3fb;
+  --card: #0f1b2d;
+  --card-foreground: #edf3fb;
+  --popover: #132136;
+  --popover-foreground: #edf3fb;
+  --primary: #38bdf8;
+  --primary-foreground: #031523;
+  --secondary: #152338;
+  --secondary-foreground: #d8e3f2;
+  --muted: #102033;
+  --muted-foreground: #8ea2bb;
+  --accent: #1d3250;
+  --accent-foreground: #edf3fb;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --border: #20324a;
+  --input: #16263b;
+  --ring: #38bdf8;
+  --radius: 0.875rem;
+  color-scheme: dark;
+  font-family: "IBM Plex Sans", "SF Pro Display", ui-sans-serif, system-ui, sans-serif;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(circle at top left, rgba(56, 189, 248, 0.12), transparent 28%),
+    linear-gradient(180deg, #08111f 0%, #091320 100%);
+  color: var(--foreground);
+}
+
+code,
+pre,
+[data-mono="true"] {
+  font-family: "JetBrains Mono", "SFMono-Regular", ui-monospace, monospace;
+}

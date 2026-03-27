@@ -7,9 +7,13 @@ describe('ui infrastructure', () => {
 
     expect(pkg.dependencies.react).toBeDefined()
     expect(pkg.dependencies['react-dom']).toBeDefined()
+    expect(pkg.dependencies['lucide-react']).toBeDefined()
     expect(pkg.devDependencies.vite).toBeDefined()
     expect(pkg.devDependencies.jsdom).toBeDefined()
     expect(pkg.devDependencies['@testing-library/react']).toBeDefined()
+    expect(pkg.devDependencies['@tailwindcss/vite']).toBeDefined()
+    expect(pkg.devDependencies.tailwindcss).toBeDefined()
+    expect(pkg.devDependencies['@tauri-apps/cli']).toBeDefined()
     expect(pkg.dependencies['@radix-ui/react-dialog']).toBeDefined()
   })
 })
