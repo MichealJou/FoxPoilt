@@ -20,9 +20,10 @@ Runtime 再有第三套内部动作
 
 ## 2. 第二阶段新增命令族
 
-建议第二阶段新增三组正式命令：
+建议第二阶段新增四组正式命令：
 
 ```text
+foxpilot control-plane ...
 foxpilot platforms ...
 foxpilot skills ...
 foxpilot mcp ...
@@ -31,12 +32,37 @@ foxpilot mcp ...
 简写同样支持：
 
 ```text
+fp control-plane ...
 fp platforms ...
 fp skills ...
 fp mcp ...
 ```
 
-## 3. `platforms` 命令族
+## 3. `control-plane` 命令族
+
+### 3.1 目标
+
+提供中控首页级别的统一聚合入口。
+
+### 3.2 建议子命令
+
+```text
+control-plane overview
+```
+
+### 3.3 含义
+
+#### `control-plane overview`
+
+返回中控平台总览：
+
+- 平台数量
+- skills 数量
+- mcp 数量
+- `ready / degraded / unavailable` 汇总
+- 最近一次 detect / doctor 时间
+
+## 4. `platforms` 命令族
 
 ### 3.1 目标
 
@@ -84,7 +110,7 @@ platforms resolve
 
 查看某个项目在当前环境下的阶段 / 角色 / 平台解析结果。
 
-## 4. `skills` 命令族
+## 5. `skills` 命令族
 
 ### 4.1 目标
 
@@ -126,7 +152,7 @@ skills repair
 `skills repair --skill <id>`  
 修复损坏的技能记录或目录。
 
-## 5. `mcp` 命令族
+## 6. `mcp` 命令族
 
 ### 5.1 目标
 
@@ -172,9 +198,9 @@ mcp restart
 `mcp restart --server <id>`  
 重启 MCP 服务。
 
-## 6. 三组命令的统一风格
+## 7. 四组命令的统一风格
 
-第二阶段这三组命令建议统一遵守：
+第二阶段这四组命令建议统一遵守：
 
 ```text
 list      列表
@@ -188,14 +214,23 @@ disable   禁用
 然后再按对象特性补：
 
 ```text
+control-plane overview
 platforms  detect / capabilities / resolve
 skills     install / uninstall
 mcp        add / remove / restart
 ```
 
-## 7. Desktop 对应动作
+## 8. Desktop 对应动作
 
 Desktop 页面动作应和 CLI 命令一一对应。
+
+### Control Plane 首页
+
+对应：
+
+```text
+overview
+```
 
 ### Platforms 页面
 
@@ -241,13 +276,15 @@ repair
 restart
 ```
 
-## 8. Runtime 命令映射
+## 9. Runtime 命令映射
 
-建议 Runtime 内部继续走统一命令对象，而不是让三组命令各自乱长。
+建议 Runtime 内部继续走统一命令对象，而不是让四组命令各自乱长。
 
 例如：
 
 ```text
+controlPlane.overview
+
 platform.list
 platform.inspect
 platform.detect
@@ -270,11 +307,13 @@ mcp.repair
 - CLI 可以直接映射命令动作
 - Runtime 可以稳定做 handler 分发
 
-## 9. 第一批实现优先级
+## 10. 第一批实现优先级
 
 第二阶段第一批建议先做：
 
 ```text
+control-plane overview
+
 platforms list
 platforms inspect
 platforms detect
@@ -301,13 +340,13 @@ mcp add / remove / enable / disable / restart
 platforms capabilities / resolve
 ```
 
-## 10. 审核点
+## 11. 审核点
 
 你审核这份文档时，重点看：
 
 ```text
-1  是否接受 platforms / skills / mcp 三组正式命令族
-2  是否接受三组命令共享统一动作风格
-3  是否接受 Desktop 页面动作与 CLI 子命令一一对应
-4  是否接受第二阶段第一批先做 list / inspect / doctor / repair
+1  是否接受 control-plane overview 作为中控首页正式命令
+2  是否接受 platforms / skills / mcp 三组正式命令族继续保留
+3  是否接受四组命令共享统一动作风格
+4  是否接受 Desktop 页面动作与 CLI 子命令一一对应
 ```

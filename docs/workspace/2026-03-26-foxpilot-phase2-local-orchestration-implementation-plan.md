@@ -19,6 +19,9 @@
 - `docs/specs/foxpilot-phase2-control-plane-information-architecture.md`
 - `docs/specs/foxpilot-phase2-control-plane-commands.md`
 - `docs/specs/foxpilot-phase2-control-plane-registry-model.md`
+- `docs/specs/foxpilot-phase2-runtime-command-model.md`
+- `docs/specs/foxpilot-phase2-control-plane-action-protocol.md`
+- `docs/specs/foxpilot-phase2-control-plane-json-contract.md`
 
 ---
 

@@ -120,6 +120,21 @@ FoxPilot 需要有一个统一视图，能够列出：
 
 这层是后面所有管理能力的基础。
 
+### 5.1.1 中控首页聚合入口
+
+第二阶段建议正式增加：
+
+```text
+control-plane overview
+```
+
+它负责输出：
+
+- 中控总览摘要
+- 健康状态分布
+- 异常对象引用
+- 最近一次 detect / doctor 时间
+
 ### 5.2 统一健康检查
 
 FoxPilot 需要把不同对象的健康状态统一成一个模型。
@@ -160,6 +175,8 @@ skills: install / uninstall
 mcp: add / remove / restart
 platforms: detect / capability-check
 ```
+
+这些动作在 Desktop 中表现为页面按钮，在 CLI 中表现为命令，但两者背后都必须先映射成统一的 Runtime 命令，而不是各自发明动作语言。
 
 ### 5.4 统一编排视角
 
@@ -223,6 +240,7 @@ Health
 3  MCP 列表与 doctor
 4  平台解析结果展示
 5  任务 -> 阶段 -> 角色 -> 平台 映射展示
+6  Control Plane 首页聚合摘要
 ```
 
 这一版先不做：

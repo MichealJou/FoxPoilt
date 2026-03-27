@@ -71,7 +71,28 @@ task list
 task show
 task history
 task doctor-beads
+control-plane overview
+platforms list
+platforms inspect
+platforms capabilities
+platforms resolve
+platforms doctor
+skills list
+skills inspect
+skills doctor
+skills repair
+mcp list
+mcp inspect
+mcp doctor
+mcp repair
+mcp restart
 ```
+
+其中：
+
+- 工作流类命令的详细 JSON 草案继续放在本文件
+- 中控类命令的详细 JSON 草案拆到：
+  - `docs/specs/foxpilot-phase2-control-plane-json-contract.md`
 
 ## 4. 接口草案
 
@@ -322,6 +343,15 @@ task update-status --json
 task update-priority --json
 task update-executor --json
 task import-beads --json
+platforms detect --json
+skills install --json
+skills uninstall --json
+skills enable --json
+skills disable --json
+mcp add --json
+mcp remove --json
+mcp enable --json
+mcp disable --json
 ```
 
 ## 6. 错误码建议
@@ -348,3 +378,7 @@ COMMAND_FAILED
 - 调试与测试接口
 
 Desktop 正式通道应走 `Runtime Core`，而不是把 `CLI --json` 当成唯一宿主。
+
+中控详细契约见：
+
+- `docs/specs/foxpilot-phase2-control-plane-json-contract.md`
