@@ -35,6 +35,9 @@
 - 第二阶段交接产物目录
 - 第二阶段覆盖优先级策略
 - 第二阶段执行会话生命周期
+- 第二阶段 Runtime 持久化模型
+- 第二阶段 Runtime 事件分类体系
+- 第二阶段项目配置结构
 
 ## 设计约束
 
@@ -56,6 +59,9 @@
 - handoff artifacts 不能用自由字符串
 - 覆盖来源不能各算各的
 - Run 不能直接代替平台执行会话
+- project.json 不能承载运行历史
+- 事件不能只有 Control Plane 子集
+- 派生读模型不能作为真相源
 
 ## 关键结论
 
@@ -77,6 +83,9 @@
 - Artifact Catalog 必须成为 handoff 与平台消费的正式词表
 - Override Precedence Policy 必须成为统一覆盖裁决规则
 - Execution Session 必须成为 Run 与平台适配器之间的正式对象
+- Runtime Persistence Model 必须明确配置 / 历史 / 派生结果分层
+- Runtime Event Taxonomy 必须覆盖 init / task / run / handoff / session / control plane
+- 第二阶段 project.json 必须只承载输入与显式覆盖
 
 ## 当前进度
 
@@ -118,3 +127,6 @@
 - [x] 已补交接产物目录
 - [x] 已补覆盖优先级策略
 - [x] 已补执行会话生命周期
+- [x] 已补 Runtime 持久化模型
+- [x] 已补 Runtime 事件分类体系
+- [x] 已补第二阶段项目配置结构

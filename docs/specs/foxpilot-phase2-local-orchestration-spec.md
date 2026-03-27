@@ -371,6 +371,22 @@ Execution Session
 
 来承接平台执行过程。
 
+### 5.6.5 配置、历史与派生结果必须分层
+
+第二阶段里，以下三层不能混：
+
+- `project.json` 里的显式输入
+- SQLite 里的运行历史
+- 页面消费的派生读模型
+
+否则后面会很难解释：
+
+```text
+用户选了什么
+系统算出了什么
+当前跑到了哪里
+```
+
 ### 5.5 决策顺序
 
 建议固定为：
@@ -560,6 +576,9 @@ Desktop / CLI
 - 交接产物目录
 - 覆盖优先级策略
 - Execution Session 生命周期
+- Runtime 持久化模型
+- Runtime 事件分类体系
+- 第二阶段项目配置结构
 - Desktop Bridge 契约
 - 桌面读模型契约
 - Init Wizard 状态机
@@ -594,3 +613,6 @@ Desktop / CLI
 - `Artifact Catalog` 作为 handoff 与平台消费的正式词表
 - `Override Precedence Policy` 作为所有覆盖来源的统一裁决规则
 - `Execution Session` 作为平台执行过程的正式对象
+- `Runtime Persistence Model` 作为配置 / 历史 / 派生结果分层规则
+- `Runtime Event Taxonomy` 作为正式事件流分类
+- `project.json` 的第二阶段结构只承载输入与显式覆盖

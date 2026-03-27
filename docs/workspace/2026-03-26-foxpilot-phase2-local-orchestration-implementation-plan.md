@@ -40,6 +40,9 @@
 - `docs/specs/foxpilot-phase2-handoff-artifact-catalog.md`
 - `docs/specs/foxpilot-phase2-override-precedence-policy.md`
 - `docs/specs/foxpilot-phase2-execution-session-lifecycle.md`
+- `docs/specs/foxpilot-phase2-runtime-persistence-model.md`
+- `docs/specs/foxpilot-phase2-runtime-event-taxonomy.md`
+- `docs/specs/foxpilot-phase2-project-config-schema.md`
 
 ---
 
@@ -143,6 +146,12 @@
   - 覆盖来源统一裁决规则
 - `src/runtime/sessions/execution-session-service.ts`
   - 平台执行会话生命周期管理
+- `src/runtime/events/runtime-event-taxonomy.ts`
+  - Runtime 正式事件分类与事件类型注册
+- `src/runtime/persistence/runtime-persistence-model.ts`
+  - 配置层、历史层与派生读模型分层规则
+- `src/project/project-config-schema.ts`
+  - 第二阶段 project.json 结构
 - `src/runtime/mutations/runtime-mutation-surface.ts`
   - Runtime 正式写接口与结果结构
 - `src/runtime/confirmation/risk-confirmation-policy.ts`
@@ -207,6 +216,12 @@
   - 覆盖优先级测试
 - `tests/runtime/execution-session-service.test.ts`
   - 执行会话生命周期测试
+- `tests/runtime/runtime-event-taxonomy.test.ts`
+  - Runtime 正式事件分类测试
+- `tests/runtime/runtime-persistence-model.test.ts`
+  - 持久化分层模型测试
+- `tests/project/project-config-schema.test.ts`
+  - 第二阶段项目配置结构测试
 - `tests/runtime/runtime-mutation-surface.test.ts`
   - Runtime 正式写接口测试
 - `tests/runtime/risk-confirmation-policy.test.ts`
@@ -249,6 +264,9 @@
 - Artifact Catalog 必须成为 handoff 与平台消费的统一词表
 - Override Precedence Policy 必须保证推荐值与生效值可解释
 - Execution Session 必须把平台执行过程从 Run 里独立出来
+- Runtime Persistence Model 必须明确哪些东西进 SQLite、哪些东西进 project.json
+- Runtime Event Taxonomy 必须统一 init / task / run / handoff / session / control plane 事件
+- 第二阶段 project.json 必须从最小配置升级为正式 orchestration 输入结构
 - 保持 TDD：先写失败测试，再补最小实现
 
 ### Task 0: 双入口与 Shared Runtime 基线
