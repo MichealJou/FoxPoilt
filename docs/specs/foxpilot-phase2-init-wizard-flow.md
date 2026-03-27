@@ -4,6 +4,10 @@
 
 这份文档用于把第二阶段 `Project Init Wizard` 的交互流程固定下来。
 
+配套约束文档：
+
+- `foxpilot-phase2-init-wizard-state-machine.md`
+
 它回答的问题是：
 
 - 用户第一次初始化项目时会看到什么

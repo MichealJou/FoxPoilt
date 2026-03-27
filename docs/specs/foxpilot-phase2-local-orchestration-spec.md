@@ -414,6 +414,9 @@ repair     -> fixer    -> trae
 - 平台解析结果模型
 - Desktop Bridge 契约
 - 桌面读模型契约
+- Init Wizard 状态机
+- 页面级数据契约
+- 中控注册表更新与事件模型
 
 ## 9. 当前结论
 

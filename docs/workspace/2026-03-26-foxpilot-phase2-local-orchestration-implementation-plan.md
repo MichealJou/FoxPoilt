@@ -25,6 +25,9 @@
 - `docs/specs/foxpilot-phase2-platform-resolution-model.md`
 - `docs/specs/foxpilot-phase2-desktop-bridge-contract.md`
 - `docs/specs/foxpilot-phase2-desktop-read-model-contract.md`
+- `docs/specs/foxpilot-phase2-init-wizard-state-machine.md`
+- `docs/specs/foxpilot-phase2-page-data-contracts.md`
+- `docs/specs/foxpilot-phase2-control-plane-registry-event-model.md`
 
 ---
 
