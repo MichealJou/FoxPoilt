@@ -16,7 +16,8 @@ set -euo pipefail
 # 10. 已安装包支持 dry-run 预演而不落库。
 
 workspace_root="$(pwd)"
-package_version="$(node -p "require('./package.json').version")"
+package_root="apps/cli"
+package_version="$(node -p "require('./${package_root}/package.json').version")"
 tmp_root="$(mktemp -d)"
 pack_dir="$tmp_root/pack"
 consumer_dir="$tmp_root/consumer"
@@ -31,12 +32,15 @@ trap cleanup EXIT
 
 mkdir -p "$pack_dir" "$consumer_dir" "$project_dir" "$home_dir" "$project_dir/.git" "$project_dir/frontend/.git"
 
-pnpm pack --pack-destination "$pack_dir" >/dev/null
+(
+  cd "$package_root"
+  pnpm pack --pack-destination "$pack_dir" >/dev/null
+)
 package_file="$(find "$pack_dir" -maxdepth 1 -name '*.tgz' | head -n 1)"
 
 cd "$consumer_dir"
 npm init -y >/dev/null 2>&1
-HOME="$home_dir" npm install --silent "$package_file" >/dev/null
+HOME="$home_dir" FOXPILOT_SKIP_FOUNDATION_PACK=1 npm install --silent "$package_file" >/dev/null
 
 ./node_modules/.bin/foxpilot init --help >/dev/null
 ./node_modules/.bin/fp init --help >/dev/null

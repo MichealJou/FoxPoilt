@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 
-import { AppLayout } from '@/ui/app/layout.js'
-import { isDesktopPageId, type DesktopPageId } from '@/ui/app/types.js'
-import { readDesktopRuntimeStatus } from '@/ui/desktop/tauri-bridge.js'
-import type { DesktopRuntimeStatus } from '@/ui/desktop/tauri-status.js'
+import { AppLayout } from '@desktop/ui/app/layout.js'
+import { isDesktopPageId, type DesktopPageId } from '@desktop/ui/app/types.js'
+import { readDesktopRuntimeStatus } from '@desktop/ui/desktop/tauri-bridge.js'
+import type { DesktopRuntimeStatus } from '@desktop/ui/desktop/tauri-status.js'
 
 function readCurrentPage(): DesktopPageId {
   if (typeof window === 'undefined') {

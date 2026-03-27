@@ -6,6 +6,7 @@ import type { InstallManifest } from '@/install/install-types.js'
 describe('postinstall integration', () => {
   afterEach(() => {
     delete process.env.INIT_CWD
+    delete process.env.FOXPILOT_SKIP_FOUNDATION_PACK
     vi.restoreAllMocks()
   })
 
@@ -139,5 +140,65 @@ describe('postinstall integration', () => {
         executablePath: '/tmp/consumer-root/node_modules/foxpilot/dist/cli/run.js',
       }),
     )
+  })
+
+  it('skips foundation setup when FOXPILOT_SKIP_FOUNDATION_PACK=1', async () => {
+    process.env.FOXPILOT_SKIP_FOUNDATION_PACK = '1'
+    const { runPostinstall } = await import('@/install/postinstall.js')
+
+    const registerCurrentInstallation = vi.fn(async () => ({
+      manifest: {
+        schemaVersion: 1,
+        installMethod: 'npm',
+        packageName: 'foxpilot',
+        packageVersion: '0.1.4',
+        channel: 'stable',
+        platform: process.platform,
+        arch: process.arch,
+        installRoot: '/tmp/global-install',
+        binPath: '/tmp/global-install/dist/cli/run.js',
+        updateTarget: {
+          npmPackage: 'foxpilot',
+        },
+        installedAt: '2026-03-27T00:00:00.000Z',
+        updatedAt: '2026-03-27T00:00:00.000Z',
+      } satisfies InstallManifest,
+      manifestPath: '/tmp/global-install/install-manifest.json',
+      indexPath: '/Users/demo/.foxpilot/installations.json',
+    }))
+    const readPackageMetadata = vi.fn(async () => ({
+      name: 'foxpilot',
+      version: '0.1.4',
+    }))
+    const setupFoundationPack = vi.fn(async (): Promise<FoundationSetupResult> => ({
+      packId: 'default-foundation',
+      items: [],
+      ready: [],
+      missing: [],
+      installed: [],
+    }))
+
+    const output: string[] = []
+    const write = vi.fn((chunk: string | Uint8Array) => {
+      output.push(String(chunk))
+      return true
+    })
+
+    await runPostinstall({
+      cwd: '/tmp/global-install',
+      packageRoot: '/tmp/global-install',
+      homeDir: '/Users/demo',
+      executablePath: '/tmp/global-install/dist/cli/run.js',
+      registerCurrentInstallation,
+      readPackageMetadata,
+      setupFoundationPack,
+      stdout: {
+        write,
+      },
+    })
+
+    expect(registerCurrentInstallation).toHaveBeenCalledTimes(1)
+    expect(setupFoundationPack).not.toHaveBeenCalled()
+    expect(output.join('')).toContain('skipped: true')
   })
 })

@@ -8,9 +8,9 @@
     "cssVariables": true
   },
   "aliases": {
-    "components": "@/ui/components",
-    "ui": "@/ui/components/ui",
-    "lib": "@/ui/lib",
-    "utils": "@/ui/lib"
+    "components": "@desktop/ui/components",
+    "ui": "@desktop/ui/components/ui",
+    "lib": "@desktop/ui/lib",
+    "utils": "@desktop/ui/lib"
   }
 }

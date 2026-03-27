@@ -3,7 +3,7 @@
 import { fireEvent, render, screen, within } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 
-import { AppRouter } from '@/ui/app/router.js'
+import { AppRouter } from '@desktop/ui/app/router.js'
 
 describe('desktop app layout', () => {
   it('renders the desktop shell with navigation and context panel', () => {

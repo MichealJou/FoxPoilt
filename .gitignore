@@ -5,6 +5,7 @@ node_modules/
 *.db
 dist/
 dist-ui/
-src-tauri/target/
-src-tauri/gen/
+apps/desktop/dist-ui/
+apps/desktop/src-tauri/target/
+apps/desktop/src-tauri/gen/
 install-manifest.json

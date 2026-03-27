@@ -13,6 +13,9 @@
       "@/*": [
         "src/*"
       ],
+      "@desktop/*": [
+        "apps/desktop/src/*"
+      ],
       "@tests/*": [
         "tests/*"
       ]
@@ -31,9 +34,10 @@
   "include": [
     "src/**/*.ts",
     "src/**/*.tsx",
+    "apps/desktop/src/**/*.ts",
+    "apps/desktop/src/**/*.tsx",
     "tests/**/*.ts",
     "tests/**/*.tsx",
-    "vite.config.ts",
     "vitest.config.ts"
   ]
 }

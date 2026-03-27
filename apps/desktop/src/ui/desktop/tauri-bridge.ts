@@ -1,5 +1,5 @@
-import type { DesktopRuntimeStatus } from '@/ui/desktop/tauri-status.js'
-import { getFallbackDesktopRuntimeStatus } from '@/ui/desktop/tauri-status.js'
+import type { DesktopRuntimeStatus } from '@desktop/ui/desktop/tauri-status.js'
+import { getFallbackDesktopRuntimeStatus } from '@desktop/ui/desktop/tauri-status.js'
 
 type TauriRuntimeStatusPayload = {
   shell: 'tauri'

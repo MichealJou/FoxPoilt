@@ -1,0 +1,32 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": "../..",
+    "paths": {
+      "@/*": [
+        "src/*"
+      ],
+      "@tests/*": [
+        "tests/*"
+      ],
+      "@desktop/*": [
+        "apps/desktop/src/*"
+      ]
+    },
+    "outDir": "./dist",
+    "rootDir": "../../src",
+    "types": [
+      "node"
+    ],
+    "declaration": false,
+    "sourceMap": false
+  },
+  "include": [
+    "../../src/**/*.ts",
+    "../../src/**/*.tsx"
+  ],
+  "exclude": [
+    "../../tests/**/*.ts",
+    "../../tests/**/*.tsx"
+  ]
+}

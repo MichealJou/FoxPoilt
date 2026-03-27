@@ -49,7 +49,7 @@ while [ "$#" -gt 0 ]; do
 done
 
 if [ -z "$version" ]; then
-  version="$(node -p "require('./package.json').version")"
+  version="$(node -p "require('./apps/cli/package.json').version")"
 fi
 
 if [ -z "$release_name" ]; then

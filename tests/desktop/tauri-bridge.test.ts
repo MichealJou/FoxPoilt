@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { getFallbackDesktopRuntimeStatus } from '@/ui/desktop/tauri-status.js'
+import { getFallbackDesktopRuntimeStatus } from '@desktop/ui/desktop/tauri-status.js'
 
 describe('desktop tauri bridge status', () => {
   it('exposes a deterministic fallback runtime status for web preview', () => {

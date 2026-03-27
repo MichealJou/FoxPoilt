@@ -30,6 +30,10 @@ function resolvePackageRoot(): string {
   return path.resolve(fileURLToPath(new URL('../..', import.meta.url)))
 }
 
+function shouldSkipFoundationSetup(): boolean {
+  return process.env.FOXPILOT_SKIP_FOUNDATION_PACK === '1'
+}
+
 type PostinstallDependencies = {
   registerCurrentInstallation: typeof registerCurrentInstallation
   readPackageMetadata: typeof readPackageMetadata
@@ -91,6 +95,17 @@ export async function runPostinstall(
       npmPackage: metadata.name,
     },
   })
+
+  if (shouldSkipFoundationSetup()) {
+    dependencies.stdout.write(
+      [
+        '[FoxPilot] Foundation Pack',
+        '- skipped: true',
+        '- reason: FOXPILOT_SKIP_FOUNDATION_PACK=1',
+      ].join('\n') + '\n',
+    )
+    return
+  }
 
   const foundation = await dependencies.setupFoundationPack({
     homeDir,

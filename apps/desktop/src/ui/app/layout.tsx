@@ -1,11 +1,11 @@
-import { desktopPageMeta } from '@/ui/app/mock-data.js'
-import { ContextPanel } from '@/ui/app/context-panel.js'
-import { Navigation } from '@/ui/app/navigation.js'
-import { PageContent } from '@/ui/app/page-content.js'
-import type { DesktopPageId } from '@/ui/app/types.js'
-import { Badge } from '@/ui/components/ui/badge.js'
-import { Button } from '@/ui/components/ui/button.js'
-import type { DesktopRuntimeStatus } from '@/ui/desktop/tauri-status.js'
+import { desktopPageMeta } from '@desktop/ui/app/mock-data.js'
+import { ContextPanel } from '@desktop/ui/app/context-panel.js'
+import { Navigation } from '@desktop/ui/app/navigation.js'
+import { PageContent } from '@desktop/ui/app/page-content.js'
+import type { DesktopPageId } from '@desktop/ui/app/types.js'
+import { Badge } from '@desktop/ui/components/ui/badge.js'
+import { Button } from '@desktop/ui/components/ui/button.js'
+import type { DesktopRuntimeStatus } from '@desktop/ui/desktop/tauri-status.js'
 
 export function AppLayout({
   currentPage = 'dashboard',

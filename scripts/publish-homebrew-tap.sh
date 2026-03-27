@@ -44,7 +44,7 @@ while [ "$#" -gt 0 ]; do
 done
 
 if [ -z "$version" ]; then
-  version="$(node -p "require('./package.json').version")"
+  version="$(node -p "require('./apps/cli/package.json').version")"
 fi
 
 darwin_arm64_asset="${assets_dir}/foxpilot-darwin-arm64.tar.gz"

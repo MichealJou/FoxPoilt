@@ -19,9 +19,26 @@ import { connectDb, type SqliteDatabase } from '@/db/connect.js'
  *
  * 因此这里改为以当前模块文件为基准回溯到包根目录，再定位文档里的 SQL 真源。
  */
-function resolveSchemaPath(): string {
+function resolveSchemaPaths(): string[] {
   const moduleDir = path.dirname(fileURLToPath(import.meta.url))
-  return path.resolve(moduleDir, '../../docs/specs/sql/foxpilot-phase1-init.sql')
+  return [
+    path.resolve(moduleDir, './foxpilot-phase1-init.sql'),
+    path.resolve(moduleDir, '../../docs/specs/sql/foxpilot-phase1-init.sql'),
+  ]
+}
+
+async function readSchemaSql(): Promise<string> {
+  let lastError: unknown
+
+  for (const schemaPath of resolveSchemaPaths()) {
+    try {
+      return await readFile(schemaPath, 'utf8')
+    } catch (error) {
+      lastError = error
+    }
+  }
+
+  throw lastError instanceof Error ? lastError : new Error('Missing foxpilot schema SQL')
 }
 
 type TableColumnInfoRow = {
@@ -75,7 +92,7 @@ function ensureTaskExternalReferenceColumns(db: SqliteDatabase): void {
  */
 export async function bootstrapDatabase(dbPath: string): Promise<SqliteDatabase> {
   const db = connectDb(dbPath)
-  const schema = await readFile(resolveSchemaPath(), 'utf8')
+  const schema = await readSchemaSql()
 
   /**
    * 兼容老版本数据库：

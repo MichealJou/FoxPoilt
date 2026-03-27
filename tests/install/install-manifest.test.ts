@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from 'node:fs/promises'
+import { mkdir, symlink, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 
 import { afterEach, describe, expect, it } from 'vitest'
@@ -89,6 +89,114 @@ describe('install manifest helpers', () => {
       packageName: 'foxpilot',
       packageVersion: '0.1.0',
       binPath: executablePath,
+      updateTarget: {
+        npmPackage: 'foxpilot',
+      },
+    })
+  })
+
+  it('follows a .bin symlink and reads the package-root install manifest', async () => {
+    const { readInstallManifest } = await import('@/install/install-manifest.js')
+
+    const tempDir = await createTempDir('foxpilot-install-symlink-')
+    tempDirs.push(tempDir)
+
+    const packageDir = path.join(tempDir, 'node_modules', 'foxpilot')
+    const packageBinDir = path.join(packageDir, 'dist', 'cli')
+    const shimDir = path.join(tempDir, 'node_modules', '.bin')
+    const executablePath = path.join(shimDir, 'foxpilot')
+
+    await mkdir(packageBinDir, { recursive: true })
+    await mkdir(shimDir, { recursive: true })
+    await writeFile(path.join(packageBinDir, 'run.js'), '#!/usr/bin/env node\n')
+    await writeFile(
+      path.join(packageDir, 'install-manifest.json'),
+      JSON.stringify(
+        {
+          schemaVersion: 1,
+          installMethod: 'npm',
+          packageName: 'foxpilot',
+          packageVersion: '0.1.4',
+          channel: 'stable',
+          platform: 'darwin',
+          arch: 'arm64',
+          installRoot: packageDir,
+          binPath: path.join(packageDir, 'dist', 'cli', 'run.js'),
+          updateTarget: {
+            npmPackage: 'foxpilot',
+          },
+          installedAt: '2026-03-27T00:00:00.000Z',
+          updatedAt: '2026-03-27T00:00:00.000Z',
+        },
+        null,
+        2,
+      ),
+    )
+    await symlink('../foxpilot/dist/cli/run.js', executablePath)
+
+    await expect(readInstallManifest({ executablePath })).resolves.toMatchObject({
+      installMethod: 'npm',
+      packageName: 'foxpilot',
+      packageVersion: '0.1.4',
+      installRoot: packageDir,
+      updateTarget: {
+        npmPackage: 'foxpilot',
+      },
+    })
+  })
+
+  it('follows an npm .bin shim script and reads the package-root install manifest', async () => {
+    const { readInstallManifest } = await import('@/install/install-manifest.js')
+
+    const tempDir = await createTempDir('foxpilot-install-shim-')
+    tempDirs.push(tempDir)
+
+    const packageDir = path.join(tempDir, 'node_modules', 'foxpilot')
+    const packageBinDir = path.join(packageDir, 'dist', 'cli')
+    const shimDir = path.join(tempDir, 'node_modules', '.bin')
+    const executablePath = path.join(shimDir, 'foxpilot')
+
+    await mkdir(packageBinDir, { recursive: true })
+    await mkdir(shimDir, { recursive: true })
+    await writeFile(path.join(packageBinDir, 'run.js'), '#!/usr/bin/env node\n')
+    await writeFile(
+      path.join(packageDir, 'install-manifest.json'),
+      JSON.stringify(
+        {
+          schemaVersion: 1,
+          installMethod: 'npm',
+          packageName: 'foxpilot',
+          packageVersion: '0.1.4',
+          channel: 'stable',
+          platform: 'darwin',
+          arch: 'arm64',
+          installRoot: packageDir,
+          binPath: path.join(packageDir, 'dist', 'cli', 'run.js'),
+          updateTarget: {
+            npmPackage: 'foxpilot',
+          },
+          installedAt: '2026-03-27T00:00:00.000Z',
+          updatedAt: '2026-03-27T00:00:00.000Z',
+        },
+        null,
+        2,
+      ),
+    )
+    await writeFile(
+      executablePath,
+      [
+        '#!/bin/sh',
+        'basedir=$(dirname "$(echo "$0" | sed -e \'s,\\\\,/,g\')")',
+        'exec node "$basedir/../foxpilot/dist/cli/run.js" "$@"',
+        '',
+      ].join('\n'),
+    )
+
+    await expect(readInstallManifest({ executablePath })).resolves.toMatchObject({
+      installMethod: 'npm',
+      packageName: 'foxpilot',
+      packageVersion: '0.1.4',
+      installRoot: packageDir,
       updateTarget: {
         npmPackage: 'foxpilot',
       },

@@ -3,7 +3,7 @@
  * @author michaeljou
  */
 
-import { readFile } from 'node:fs/promises'
+import { readFile, realpath } from 'node:fs/promises'
 import path from 'node:path'
 
 import type { InstallIndexEntry, InstallManifest } from '@/install/install-types.js'
@@ -22,12 +22,29 @@ export async function readInstallManifest({
 }: {
   executablePath: string
 }): Promise<InstallManifest | undefined> {
-  const manifestPaths = [
-    resolveInstallManifestPath(executablePath),
-    path.join(path.dirname(executablePath), '..', 'install-manifest.json'),
-    path.join(path.dirname(executablePath), '..', '..', 'install-manifest.json'),
-    path.join(path.dirname(executablePath), '..', '..', '..', 'install-manifest.json'),
-  ]
+  const executableCandidates = [executablePath]
+
+  try {
+    const resolvedExecutablePath = await realpath(executablePath)
+    if (resolvedExecutablePath !== executablePath) {
+      executableCandidates.push(resolvedExecutablePath)
+    }
+  } catch {
+    // `.bin/foxpilot` 在某些测试环境里可能不是可解析的真实链接。
+    // 这里保持静默回退到原始路径，不把“无法 realpath”视为错误。
+  }
+
+  const shimResolvedPath = await resolveExecutableFromShim(executablePath)
+  if (shimResolvedPath && !executableCandidates.includes(shimResolvedPath)) {
+    executableCandidates.push(shimResolvedPath)
+  }
+
+  const manifestPaths = executableCandidates.flatMap((candidatePath) => [
+    resolveInstallManifestPath(candidatePath),
+    path.join(path.dirname(candidatePath), '..', 'install-manifest.json'),
+    path.join(path.dirname(candidatePath), '..', '..', 'install-manifest.json'),
+    path.join(path.dirname(candidatePath), '..', '..', '..', 'install-manifest.json'),
+  ])
 
   for (const manifestPath of manifestPaths) {
     try {
@@ -40,6 +57,32 @@ export async function readInstallManifest({
 
       throw error
     }
+  }
+
+  return undefined
+}
+
+async function resolveExecutableFromShim(executablePath: string): Promise<string | undefined> {
+  try {
+    const raw = await readFile(executablePath, 'utf-8')
+    const basedirUnixMatch =
+      raw.match(/"\$basedir\/([^"\n]+)"/) ?? raw.match(/'\$basedir\/([^'\n]+)'/)
+    if (basedirUnixMatch?.[1]) {
+      return path.resolve(path.dirname(executablePath), basedirUnixMatch[1])
+    }
+
+    const basedirWindowsMatch =
+      raw.match(/"%~dp0\\([^"\r\n]+)"/) ?? raw.match(/'%~dp0\\([^'\r\n]+)'/)
+    if (basedirWindowsMatch?.[1]) {
+      const normalizedRelativePath = basedirWindowsMatch[1].replace(/\\/g, path.sep)
+      return path.resolve(path.dirname(executablePath), normalizedRelativePath)
+    }
+  } catch (error) {
+    if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
+      return undefined
+    }
+
+    throw error
   }
 
   return undefined
