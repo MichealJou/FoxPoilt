@@ -46,6 +46,9 @@
 - `docs/specs/foxpilot-phase2-project-scan-signal-model.md`
 - `docs/specs/foxpilot-phase2-init-recommendation-engine.md`
 - `docs/specs/foxpilot-phase2-doctor-repair-decision-matrix.md`
+- `docs/specs/foxpilot-phase2-dashboard-aggregation-model.md`
+- `docs/specs/foxpilot-phase2-task-run-detail-action-model.md`
+- `docs/specs/foxpilot-phase2-control-plane-bulk-action-policy.md`
 
 ---
 
@@ -161,6 +164,12 @@
   - init.preview 推荐引擎
 - `src/runtime/health/doctor-repair-decision-matrix.ts`
   - doctor / repair 正式决策矩阵
+- `src/runtime/read-models/dashboard-aggregation-service.ts`
+  - Dashboard 首页聚合服务
+- `src/runtime/actions/task-run-detail-action-service.ts`
+  - Tasks / Runs 详情动作服务
+- `src/runtime/actions/control-plane-bulk-action-policy.ts`
+  - Control Plane 批量动作策略
 - `src/runtime/mutations/runtime-mutation-surface.ts`
   - Runtime 正式写接口与结果结构
 - `src/runtime/confirmation/risk-confirmation-policy.ts`
@@ -237,6 +246,12 @@
   - init 推荐引擎测试
 - `tests/runtime/doctor-repair-decision-matrix.test.ts`
   - doctor / repair 决策矩阵测试
+- `tests/runtime/dashboard-aggregation-service.test.ts`
+  - Dashboard 聚合模型测试
+- `tests/runtime/task-run-detail-action-service.test.ts`
+  - Tasks / Runs 详情动作测试
+- `tests/runtime/control-plane-bulk-action-policy.test.ts`
+  - Control Plane 批量动作策略测试
 - `tests/runtime/runtime-mutation-surface.test.ts`
   - Runtime 正式写接口测试
 - `tests/runtime/risk-confirmation-policy.test.ts`
@@ -285,6 +300,9 @@
 - Project Scan Signals 必须成为 template / recommendation / doctor 的共同输入
 - Init Recommendation Engine 必须先于 preview 结果生成
 - Doctor / Repair Decision Matrix 必须统一 auto / suggest / manual 与确认级别
+- Dashboard Aggregation Model 必须统一首页聚合逻辑与 Focus Queue
+- Task / Run Detail Action Model 必须限制详情页动作边界
+- Control Plane Bulk Action Policy 必须防止首页批量写动作失控
 - 保持 TDD：先写失败测试，再补最小实现
 
 ### Task 0: 双入口与 Shared Runtime 基线

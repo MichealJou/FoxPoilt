@@ -540,6 +540,47 @@ Desktop / CLI
 - Project Init Wizard
 - Skills / MCP
 
+### 6.5 Dashboard 必须成为首页聚合层
+
+第二阶段里，Dashboard 不应只是几张统计卡。
+
+它必须成为：
+
+```text
+Portfolio + Tasks + Runs + Health + Control Plane + Focus Queue
+```
+
+的正式首页聚合层。
+
+### 6.6 Task / Run 详情页必须承接正式动作
+
+第二阶段里，Tasks 与 Runs 详情页不能只展示字段。
+
+它们还必须稳定承接：
+
+- 阶段推进
+- 角色 / 平台重分配
+- run cancel
+- handoff 详情解释
+- session 状态解释
+
+### 6.7 Control Plane 首页批量动作必须克制
+
+第二阶段里，Control Plane 首页第一批只应放开：
+
+```text
+批量 detect
+批量 doctor
+```
+
+不应一开始就放开：
+
+```text
+批量 repair
+批量 install / uninstall
+批量 add / remove
+```
+
 ## 7. 第二阶段不做什么
 
 为了控制复杂度，以下内容不进入第二阶段核心范围：
@@ -617,6 +658,9 @@ Desktop / CLI
 - 项目扫描信号模型
 - Init 推荐引擎模型
 - Doctor / Repair 决策矩阵
+- Dashboard 聚合模型
+- Tasks / Runs 详情动作模型
+- Control Plane 批量动作策略
 - Desktop Bridge 契约
 - 桌面读模型契约
 - Init Wizard 状态机
@@ -657,3 +701,6 @@ Desktop / CLI
 - `Project Scan Signals` 作为 init / doctor 的统一观测层
 - `Init Recommendation Engine` 作为 preview 建议层
 - `Doctor / Repair Decision Matrix` 作为修复判断总表
+- `Dashboard Aggregation Model` 作为首页聚合规则
+- `Task / Run Detail Action Model` 作为详情页动作边界
+- `Control Plane Bulk Action Policy` 作为中控批量动作约束

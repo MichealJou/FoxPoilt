@@ -41,6 +41,9 @@
 - 第二阶段项目扫描信号模型
 - 第二阶段 Init 推荐引擎模型
 - 第二阶段 Doctor / Repair 决策矩阵
+- 第二阶段 Dashboard 聚合模型
+- 第二阶段 Tasks / Runs 详情动作模型
+- 第二阶段 Control Plane 批量动作策略
 
 ## 设计约束
 
@@ -68,6 +71,9 @@
 - init.preview 不能绕过扫描信号与推荐引擎
 - doctor / repair 不能只返回问题描述
 - 推荐值与生效值必须继续分层
+- Dashboard 不能只是统计卡堆叠
+- Task / Run 详情动作不能无限扩张
+- Control Plane 首页批量动作不能过早放开
 
 ## 关键结论
 
@@ -95,6 +101,9 @@
 - Project Scan Signals 必须成为 init / doctor 的统一输入
 - Init Recommendation Engine 必须给出 profile / workflow / stagePlan / binding 推荐
 - Doctor / Repair 必须通过统一决策矩阵产出 repairMode 与 confirmationLevel
+- Dashboard 必须成为首页聚合层，而不是列表缩略图
+- Task / Run Detail 必须稳定承接 advance / reassign / cancel / handoff 解释
+- Control Plane 首页第一批批量动作必须限制在 detect / doctor
 
 ## 当前进度
 
@@ -142,3 +151,6 @@
 - [x] 已补项目扫描信号模型
 - [x] 已补 Init 推荐引擎模型
 - [x] 已补 Doctor / Repair 决策矩阵
+- [x] 已补 Dashboard 聚合模型
+- [x] 已补 Tasks / Runs 详情动作模型
+- [x] 已补 Control Plane 批量动作策略
