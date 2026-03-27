@@ -8,6 +8,6 @@
   },
   "dependencies": {
     "@foxpilot/contracts": "workspace:*",
-    "better-sqlite3": "^11.8.1"
+    "better-sqlite3": "catalog:"
   }
 }
