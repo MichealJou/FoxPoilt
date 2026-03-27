@@ -10,6 +10,7 @@ import { parseArgs } from '@/cli/parse-args.js'
 import { runConfigSetLanguageCommand } from '@/commands/config/config-set-language-command.js'
 import { runInitCommand } from '@/commands/init/init-command.js'
 import type { CliResult, InitCommandContext } from '@/commands/init/init-types.js'
+import { runSystemFoundationCommand } from '@/commands/system/system-foundation-command.js'
 import { runSystemInstallInfoCommand } from '@/commands/system/system-install-info-command.js'
 import { runSystemUninstallCommand } from '@/commands/system/system-uninstall-command.js'
 import { runSystemUpdateCommand } from '@/commands/system/system-update-command.js'
@@ -90,6 +91,16 @@ export async function main(
     return runSystemInstallInfoCommand(
       {
         command: 'install-info',
+        help: args.help,
+      },
+      runtimeContext,
+    )
+  }
+
+  if (args.command === 'foundation') {
+    return runSystemFoundationCommand(
+      {
+        command: 'foundation',
         help: args.help,
       },
       runtimeContext,
