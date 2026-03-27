@@ -58,6 +58,9 @@
 - `docs/specs/foxpilot-phase2-object-detail-drilldown-model.md`
 - `docs/specs/foxpilot-phase2-desktop-route-state-policy.md`
 - `docs/specs/foxpilot-phase2-dashboard-card-and-alert-entry-policy.md`
+- `docs/specs/foxpilot-phase2-tasks-list-view-policy.md`
+- `docs/specs/foxpilot-phase2-runs-page-coordination-model.md`
+- `docs/specs/foxpilot-phase2-health-issue-entry-hierarchy.md`
 
 ---
 
@@ -187,6 +190,12 @@
   - 对象详情钻取上下文
 - `src/ui/pages/dashboard/dashboard-alert-entry-policy.ts`
   - Dashboard 异常入口策略
+- `src/ui/pages/tasks/tasks-list-view-policy.ts`
+  - Tasks 列表主视图策略
+- `src/ui/pages/runs/runs-page-coordination.ts`
+  - Runs 页面列表 / 详情 / session 协同
+- `src/ui/pages/health/health-issue-entry-hierarchy.ts`
+  - Health 页面问题分层与导流
 - `src/runtime/actions/task-run-detail-action-service.ts`
   - Tasks / Runs 详情动作服务
 - `src/runtime/actions/control-plane-bulk-action-policy.ts`
@@ -287,6 +296,12 @@
   - 桌面端路由状态测试
 - `tests/ui/dashboard-card-and-alert-entry-policy.test.ts`
   - Dashboard 卡片与异常入口策略测试
+- `tests/ui/tasks-list-view-policy.test.ts`
+  - Tasks 列表视图策略测试
+- `tests/ui/runs-page-coordination-model.test.ts`
+  - Runs 页面协同模型测试
+- `tests/ui/health-issue-entry-hierarchy.test.ts`
+  - Health 页面问题层级测试
 - `tests/runtime/task-run-detail-action-service.test.ts`
   - Tasks / Runs 详情动作测试
 - `tests/runtime/control-plane-bulk-action-policy.test.ts`
@@ -355,6 +370,9 @@
 - Object Detail Drilldown Model 必须统一从摘要到详情的进入规则
 - Desktop Route State Policy 必须保证页面返回和恢复稳定
 - Dashboard Card and Alert Entry Policy 必须防止首页退化成告警墙
+- Tasks List View Policy 必须限制任务表格职责与列膨胀
+- Runs Page Coordination Model 必须统一运行列表、详情和 session 解释
+- Health Issue Entry Hierarchy 必须把健康页收敛成问题分层和修复导流页
 - 保持 TDD：先写失败测试，再补最小实现
 
 ### Task 0: 双入口与 Shared Runtime 基线
