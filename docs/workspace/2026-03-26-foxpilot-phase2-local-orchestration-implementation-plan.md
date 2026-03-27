@@ -37,6 +37,9 @@
 - `docs/specs/foxpilot-phase2-platform-capability-matrix.md`
 - `docs/specs/foxpilot-phase2-workflow-template-model.md`
 - `docs/specs/foxpilot-phase2-skills-mcp-binding-model.md`
+- `docs/specs/foxpilot-phase2-handoff-artifact-catalog.md`
+- `docs/specs/foxpilot-phase2-override-precedence-policy.md`
+- `docs/specs/foxpilot-phase2-execution-session-lifecycle.md`
 
 ---
 
@@ -134,6 +137,12 @@
   - Skills / MCP 正式绑定解析
 - `src/platforms/platform-capability-matrix.ts`
   - 平台能力矩阵定义
+- `src/runtime/artifacts/handoff-artifact-catalog.ts`
+  - 交接产物目录与类型词表
+- `src/runtime/overrides/override-precedence-policy.ts`
+  - 覆盖来源统一裁决规则
+- `src/runtime/sessions/execution-session-service.ts`
+  - 平台执行会话生命周期管理
 - `src/runtime/mutations/runtime-mutation-surface.ts`
   - Runtime 正式写接口与结果结构
 - `src/runtime/confirmation/risk-confirmation-policy.ts`
@@ -192,6 +201,12 @@
   - Skills / MCP 正式绑定解析测试
 - `tests/platforms/platform-capability-matrix.test.ts`
   - 平台能力矩阵测试
+- `tests/runtime/handoff-artifact-catalog.test.ts`
+  - 交接产物目录测试
+- `tests/runtime/override-precedence-policy.test.ts`
+  - 覆盖优先级测试
+- `tests/runtime/execution-session-service.test.ts`
+  - 执行会话生命周期测试
 - `tests/runtime/runtime-mutation-surface.test.ts`
   - Runtime 正式写接口测试
 - `tests/runtime/risk-confirmation-policy.test.ts`
@@ -231,6 +246,9 @@
 - Workflow Template 必须作为 Profile 与 Snapshot 之间的正式层
 - Platform Capability Matrix 必须作为 Detect 与 Resolve 之间的正式层
 - Skills / MCP 必须从清单管理升级为正式绑定模型
+- Artifact Catalog 必须成为 handoff 与平台消费的统一词表
+- Override Precedence Policy 必须保证推荐值与生效值可解释
+- Execution Session 必须把平台执行过程从 Run 里独立出来
 - 保持 TDD：先写失败测试，再补最小实现
 
 ### Task 0: 双入口与 Shared Runtime 基线

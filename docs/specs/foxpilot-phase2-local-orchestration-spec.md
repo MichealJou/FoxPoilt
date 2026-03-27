@@ -330,6 +330,47 @@ Platform Capability Matrix
 - 哪个平台依赖它
 - 缺失时是阻塞还是降级
 
+### 5.6.1 Workflow Template 必须独立存在
+
+第二阶段里，`Profile` 不能直接替代工作流模板。
+
+必须继续拆开：
+
+- Profile 决定协作强度
+- Workflow Template 决定阶段主链
+
+### 5.6.2 交接产物必须使用统一目录
+
+第二阶段里，`handoff.artifacts` 不能只是自由字符串集合。
+
+必须有正式：
+
+```text
+Artifact Catalog
+```
+
+### 5.6.3 覆盖优先级必须统一
+
+第二阶段里，模板、项目配置、用户覆盖和运行时临时覆盖都会同时影响结果。
+
+所以必须有正式：
+
+```text
+Override Precedence Policy
+```
+
+### 5.6.4 Run 与 Execution Session 必须分层
+
+第二阶段里，`Run` 不能直接吞掉所有平台执行细节。
+
+必须继续拆出：
+
+```text
+Execution Session
+```
+
+来承接平台执行过程。
+
 ### 5.5 决策顺序
 
 建议固定为：
@@ -513,6 +554,12 @@ Desktop / CLI
 - Runtime 变更面
 - 风险确认策略
 - 阶段 / 角色 / 平台交接模型
+- Workflow Template 模型
+- 平台能力矩阵
+- Skills / MCP 绑定模型
+- 交接产物目录
+- 覆盖优先级策略
+- Execution Session 生命周期
 - Desktop Bridge 契约
 - 桌面读模型契约
 - Init Wizard 状态机
@@ -544,3 +591,6 @@ Desktop / CLI
 - `Workflow Template` 作为 Profile 与快照之间的正式层
 - `Platform Capability Matrix` 作为 Detect 与 Resolve 之间的正式层
 - `Skills / MCP Binding` 作为 Runtime 正式依赖层
+- `Artifact Catalog` 作为 handoff 与平台消费的正式词表
+- `Override Precedence Policy` 作为所有覆盖来源的统一裁决规则
+- `Execution Session` 作为平台执行过程的正式对象

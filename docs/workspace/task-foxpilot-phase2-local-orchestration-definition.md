@@ -32,6 +32,9 @@
 - 第二阶段平台能力矩阵
 - 第二阶段工作流模板模型
 - 第二阶段 Skills / MCP 绑定模型
+- 第二阶段交接产物目录
+- 第二阶段覆盖优先级策略
+- 第二阶段执行会话生命周期
 
 ## 设计约束
 
@@ -50,6 +53,9 @@
 - 平台能力不能只靠 detect 结果表达
 - Skills / MCP 不能只做清单式管理
 - Workflow Template 不能和 profile 混成一层
+- handoff artifacts 不能用自由字符串
+- 覆盖来源不能各算各的
+- Run 不能直接代替平台执行会话
 
 ## 关键结论
 
@@ -68,6 +74,9 @@
 - 工作流模板必须作为 Profile 与项目快照之间的独立层
 - 平台能力矩阵必须作为 Detect 与 Resolve 之间的独立层
 - Skills / MCP 必须具备“被谁依赖”的正式绑定关系
+- Artifact Catalog 必须成为 handoff 与平台消费的正式词表
+- Override Precedence Policy 必须成为统一覆盖裁决规则
+- Execution Session 必须成为 Run 与平台适配器之间的正式对象
 
 ## 当前进度
 
@@ -106,3 +115,6 @@
 - [x] 已补平台能力矩阵
 - [x] 已补工作流模板模型
 - [x] 已补 Skills / MCP 绑定模型
+- [x] 已补交接产物目录
+- [x] 已补覆盖优先级策略
+- [x] 已补执行会话生命周期
