@@ -5,10 +5,12 @@
 
 import type { CliRuntimeContext } from '@/cli/runtime-context.js'
 import type { ensureGlobalConfig } from '@/config/global-config.js'
+import type { ProjectProfileId } from '@/contracts/orchestration-contract.js'
 import type { createCatalogStore } from '@/db/catalog-store.js'
 import type { bootstrapDatabase } from '@/db/bootstrap.js'
 import type { writeProjectConfig } from '@/project/project-config.js'
 import type { scanRepositories } from '@/project/scan-repositories.js'
+import type { resolveProjectPlatformResolution } from '@/runtime/orchestrators/platform-resolver.js'
 
 /**
  * 初始化流程支持的交互模式。
@@ -32,6 +34,8 @@ export type InitArgs = {
   name?: string
   /** 可选的工作区根目录覆盖值。 */
   workspaceRoot?: string
+  /** 第二阶段项目协作 profile。 */
+  profile?: ProjectProfileId
   /** 选定的执行模式。 */
   mode: InitMode
   /** 是否跳过仓库扫描。 */
@@ -67,6 +71,7 @@ export type InitCommandDependencies = {
   bootstrapDatabase: typeof bootstrapDatabase
   createCatalogStore: typeof createCatalogStore
   writeProjectConfig: typeof writeProjectConfig
+  resolvePlatformResolution: typeof resolveProjectPlatformResolution
 }
 
 /**

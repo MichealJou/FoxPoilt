@@ -87,9 +87,17 @@ describe('foxpilot init CLI', () => {
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('[FoxPilot] 初始化完成')
     expect(result.stdout).toContain('[FoxPilot] 已写入项目索引')
+    expect(result.stdout).toContain('- profile: default')
     await expectExists(path.join(projectRoot, '.foxpilot', 'project.json'))
     await expectExists(path.join(homeDir, '.foxpilot', 'foxpilot.config.json'))
     await expectExists(path.join(homeDir, '.foxpilot', 'foxpilot.db'))
+
+    const rawProjectConfig = await readFile(
+      path.join(projectRoot, '.foxpilot', 'project.json'),
+      'utf8',
+    )
+    expect(rawProjectConfig).toContain('"version": 2')
+    expect(rawProjectConfig).toContain('"selected": "default"')
   })
 
   it('initializes a project through the fp alias', async () => {
@@ -112,6 +120,39 @@ describe('foxpilot init CLI', () => {
 
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('[FoxPilot] 初始化完成')
+  })
+
+  it('writes the selected init profile into project config', async () => {
+    const homeDir = await createTempDir('foxpilot-home-')
+    const projectRoot = await createProjectFixture('foxpilot-project-')
+    tempDirs.push(homeDir)
+
+    const result = await runCli(
+      [
+        'init',
+        '--path',
+        projectRoot,
+        '--workspace-root',
+        path.dirname(projectRoot),
+        '--profile',
+        'collaboration',
+        '--mode',
+        'non-interactive',
+        '--no-scan',
+      ],
+      { homeDir },
+    )
+
+    expect(result.exitCode).toBe(0)
+    expect(result.stdout).toContain('- profile: collaboration')
+
+    const rawProjectConfig = await readFile(
+      path.join(projectRoot, '.foxpilot', 'project.json'),
+      'utf8',
+    )
+    expect(rawProjectConfig).toContain('"selected": "collaboration"')
+    expect(rawProjectConfig).toContain('"recommended": "manual"')
+    expect(rawProjectConfig).toContain('"source": "profile-rule"')
   })
 
   it('asks for interface language on first interactive init and persists the selection', async () => {

@@ -136,6 +136,7 @@ export async function main(
         path: args.path,
         name: args.name,
         workspaceRoot: args.workspaceRoot,
+        profile: args.profile,
         mode: args.mode,
         noScan: args.noScan,
       },

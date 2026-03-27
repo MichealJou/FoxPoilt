@@ -10,6 +10,7 @@ import type { ProjectConfig } from '@/project/project-config.js'
 
 function createProjectConfig(): ProjectConfig {
   return {
+    version: 2,
     name: 'foxpilot-workspace',
     displayName: 'Foxpilot Workspace',
     rootPath: '/workspace/foxpilot',
@@ -28,6 +29,15 @@ function createProjectConfig(): ProjectConfig {
         languageStack: 'React',
       },
     ],
+    orchestration: {
+      profile: {
+        selected: 'default',
+      },
+      platformResolution: {
+        generatedAt: '2026-03-27T00:00:00.000Z',
+        stages: [],
+      },
+    },
   }
 }
 

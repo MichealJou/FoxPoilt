@@ -7,6 +7,7 @@ import { access } from 'node:fs/promises'
 
 import { writeJsonFile } from '@/core/json-file.js'
 import { resolveProjectConfigPath } from '@/core/paths.js'
+import type { ProjectOrchestrationConfig } from '@/contracts/orchestration-contract.js'
 
 /**
  * 持久化在 `.foxpilot/project.json` 中的单仓库元数据。
@@ -52,6 +53,12 @@ export type ProjectRepositoryConfig = {
  */
 export type ProjectConfig = {
   /**
+   * 第二阶段项目配置版本。
+   *
+   * 显式写版本可以让后续迁移具备稳定起点。
+   */
+  version: 2
+  /**
    * 项目的稳定标识。
    *
    * 这个值主要用于项目级配置和全局索引之间保持一致的命名语义。
@@ -81,6 +88,12 @@ export type ProjectConfig = {
    * 这里保存的是项目内的局部仓库视图，供任务创建和仓库选择直接使用。
    */
   repositories: ProjectRepositoryConfig[]
+  /**
+   * 第二阶段最小编排配置块。
+   *
+   * 第一批只落 profile 和平台解析快照，后续再继续扩 workflow / bindings。
+   */
+  orchestration: ProjectOrchestrationConfig
 }
 
 /**
@@ -125,6 +138,7 @@ export async function writeProjectConfig(input: {
   projectRoot: string
   name: string
   repositories: ProjectRepositoryConfig[]
+  orchestration: ProjectOrchestrationConfig
 }): Promise<{ configPath: string; config: ProjectConfig }> {
   const configPath = resolveProjectConfigPath(input.projectRoot)
 
@@ -138,11 +152,13 @@ export async function writeProjectConfig(input: {
    * 2. 这样可以保证“命令看到的仓库集合”和“初始化时确认过的仓库集合”保持一致。
    */
   const config: ProjectConfig = {
+    version: 2,
     name: input.name,
     displayName: deriveProjectDisplayName(input.name),
     rootPath: input.projectRoot,
     status: 'managed',
     repositories: input.repositories,
+    orchestration: input.orchestration,
   }
 
   await writeJsonFile(configPath, config)

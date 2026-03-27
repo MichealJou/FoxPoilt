@@ -4,6 +4,8 @@
  */
 
 import type { InterfaceLanguage } from '@/i18n/interface-language.js'
+import type { ProjectProfileId } from '@/contracts/orchestration-contract.js'
+import { isProjectProfileId } from '@/commands/init/init-profile.js'
 
 /**
  * 解析后的 CLI 参数，会被标准化为 `main` 使用的命令模型。
@@ -24,6 +26,8 @@ export type CliArgs = {
   name?: string
   /** 可选的工作区根目录覆盖值。 */
   workspaceRoot?: string
+  /** 第二阶段项目协作 profile。 */
+  profile?: ProjectProfileId
   /** init 执行模式。 */
   mode: 'interactive' | 'non-interactive'
   /** 在 init 过程中是否跳过仓库扫描。 */
@@ -88,6 +92,7 @@ export function parseArgs(argv: string[]): CliArgs {
   let path: string | undefined
   let name: string | undefined
   let workspaceRoot: string | undefined
+  let profile: ProjectProfileId | undefined
   let mode: 'interactive' | 'non-interactive' = 'interactive'
   let noScan = false
   let title: string | undefined
@@ -156,6 +161,15 @@ export function parseArgs(argv: string[]): CliArgs {
 
     if (value === '--workspace-root') {
       workspaceRoot = rest[index + 1]
+      index += 1
+      continue
+    }
+
+    if (value === '--profile') {
+      const nextValue = rest[index + 1]
+      if (isProjectProfileId(nextValue)) {
+        profile = nextValue
+      }
       index += 1
       continue
     }
@@ -303,6 +317,7 @@ export function parseArgs(argv: string[]): CliArgs {
     path,
     name,
     workspaceRoot,
+    profile,
     mode,
     noScan,
     title,

@@ -31,6 +31,8 @@ import {
   type ProjectRepositoryConfig,
 } from '@/project/project-config.js'
 import { scanRepositories } from '@/project/scan-repositories.js'
+import { resolveProjectPlatformResolution } from '@/runtime/orchestrators/platform-resolver.js'
+import { resolveProjectProfileId } from '@/commands/init/init-profile.js'
 
 import type { CliResult, InitArgs, InitCommandContext, InitCommandDependencies } from '@/commands/init/init-types.js'
 
@@ -62,6 +64,7 @@ function getDependencies(
     bootstrapDatabase,
     createCatalogStore,
     writeProjectConfig,
+    resolvePlatformResolution: resolveProjectPlatformResolution,
     ...overrides,
   }
 }
@@ -285,6 +288,7 @@ function buildHelpText(messages: MessageCatalog): string {
     '--path <project-root>',
     '--name <project-name>',
     '--workspace-root <workspace-root>',
+    '--profile default|collaboration|minimal',
     '--mode interactive|non-interactive',
     '--no-scan',
   ].join('\n')
@@ -295,7 +299,9 @@ function buildSuccessOutput(input: {
   projectRoot: string
   projectName: string
   workspaceRoot: string
+  profile: string
   repositories: ProjectRepositoryConfig[]
+  platformStageCount: number
   projectConfigPath: string
   globalConfigPath: string
   dbPath: string
@@ -305,7 +311,9 @@ function buildSuccessOutput(input: {
     `- projectRoot: ${input.projectRoot}`,
     `- projectName: ${input.projectName}`,
     `- workspaceRoot: ${input.workspaceRoot}`,
+    `- profile: ${input.profile}`,
     `- repositories: ${input.repositories.length}`,
+    `- platformStages: ${input.platformStageCount}`,
     '',
     input.messages.init.projectConfigGenerated,
     `- ${input.projectConfigPath}`,
@@ -510,6 +518,7 @@ export async function runInitCommand(args: InitArgs, context: InitCommandContext
   const interactiveInput = [...context.stdin]
   let projectName = args.name ?? (path.basename(projectRoot) || 'project')
   let interfaceLanguage = globalConfigState.config.interfaceLanguage
+  const selectedProfile = resolveProjectProfileId(args.profile)
 
   /**
    * 设计逻辑：
@@ -562,6 +571,10 @@ export async function runInitCommand(args: InitArgs, context: InitCommandContext
       ]),
     }
   }
+
+  const platformResolution = await dependencies.resolvePlatformResolution({
+    profile: selectedProfile,
+  })
 
   let ensureResult: Awaited<ReturnType<typeof ensureGlobalConfig>>
   try {
@@ -634,6 +647,12 @@ export async function runInitCommand(args: InitArgs, context: InitCommandContext
       projectRoot,
       name: projectName,
       repositories,
+      orchestration: {
+        profile: {
+          selected: selectedProfile,
+        },
+        platformResolution,
+      },
     })
   } catch (error) {
     await cleanupAfterFailure({
@@ -668,7 +687,9 @@ export async function runInitCommand(args: InitArgs, context: InitCommandContext
       projectRoot,
       projectName,
       workspaceRoot,
+      profile: selectedProfile,
       repositories,
+      platformStageCount: platformResolution.stages.length,
       projectConfigPath,
       globalConfigPath: ensureResult.configPath,
       dbPath,
