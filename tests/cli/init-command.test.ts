@@ -155,6 +155,29 @@ describe('foxpilot init CLI', () => {
     expect(rawProjectConfig).toContain('"source": "profile-rule"')
   })
 
+  it('auto-selects collaboration profile for multi-repository projects', async () => {
+    const homeDir = await createTempDir('foxpilot-home-')
+    const projectRoot = await createProjectFixture('foxpilot-project-')
+    tempDirs.push(homeDir)
+
+    const result = await runCli(
+      [
+        'init',
+        '--path',
+        projectRoot,
+        '--workspace-root',
+        path.dirname(projectRoot),
+        '--mode',
+        'non-interactive',
+      ],
+      { homeDir },
+    )
+
+    expect(result.exitCode).toBe(0)
+    expect(result.stdout).toContain('- profile: collaboration')
+    expect(result.stdout).toContain('- recommendedProfile: collaboration')
+  })
+
   it('asks for interface language on first interactive init and persists the selection', async () => {
     const homeDir = await createTempDir('foxpilot-home-')
     const projectRoot = await createProjectFixture('foxpilot-project-')

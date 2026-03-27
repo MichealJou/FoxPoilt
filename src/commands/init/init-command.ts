@@ -33,6 +33,8 @@ import {
 import { scanRepositories } from '@/project/scan-repositories.js'
 import { resolveProjectPlatformResolution } from '@/runtime/orchestrators/platform-resolver.js'
 import { resolveProjectProfileId } from '@/commands/init/init-profile.js'
+import { collectProjectScanSignals } from '@/runtime/init/project-scan-signals.js'
+import { createInitRecommendation } from '@/runtime/init/init-recommendation-engine.js'
 
 import type { CliResult, InitArgs, InitCommandContext, InitCommandDependencies } from '@/commands/init/init-types.js'
 
@@ -300,6 +302,7 @@ function buildSuccessOutput(input: {
   projectName: string
   workspaceRoot: string
   profile: string
+  recommendedProfile: string
   repositories: ProjectRepositoryConfig[]
   platformStageCount: number
   projectConfigPath: string
@@ -312,6 +315,7 @@ function buildSuccessOutput(input: {
     `- projectName: ${input.projectName}`,
     `- workspaceRoot: ${input.workspaceRoot}`,
     `- profile: ${input.profile}`,
+    `- recommendedProfile: ${input.recommendedProfile}`,
     `- repositories: ${input.repositories.length}`,
     `- platformStages: ${input.platformStageCount}`,
     '',
@@ -518,7 +522,6 @@ export async function runInitCommand(args: InitArgs, context: InitCommandContext
   const interactiveInput = [...context.stdin]
   let projectName = args.name ?? (path.basename(projectRoot) || 'project')
   let interfaceLanguage = globalConfigState.config.interfaceLanguage
-  const selectedProfile = resolveProjectProfileId(args.profile)
 
   /**
    * 设计逻辑：
@@ -539,6 +542,12 @@ export async function runInitCommand(args: InitArgs, context: InitCommandContext
     existingWorkspaceRoots: globalConfigState.config.workspaceRoots,
   })
   let repositories = await dependencies.scanRepositories(projectRoot, { noScan: args.noScan })
+  const scanSignals = await collectProjectScanSignals({
+    projectRoot,
+    repositories,
+  })
+  const initRecommendation = createInitRecommendation(scanSignals)
+  const selectedProfile = resolveProjectProfileId(args.profile ?? initRecommendation.profile.recommended)
 
   if (args.mode === 'interactive') {
     const interactiveResult = await runInteractivePrompts({
@@ -688,6 +697,7 @@ export async function runInitCommand(args: InitArgs, context: InitCommandContext
       projectName,
       workspaceRoot,
       profile: selectedProfile,
+      recommendedProfile: initRecommendation.profile.recommended,
       repositories,
       platformStageCount: platformResolution.stages.length,
       projectConfigPath,
