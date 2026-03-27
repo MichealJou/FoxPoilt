@@ -43,6 +43,9 @@
 - `docs/specs/foxpilot-phase2-runtime-persistence-model.md`
 - `docs/specs/foxpilot-phase2-runtime-event-taxonomy.md`
 - `docs/specs/foxpilot-phase2-project-config-schema.md`
+- `docs/specs/foxpilot-phase2-project-scan-signal-model.md`
+- `docs/specs/foxpilot-phase2-init-recommendation-engine.md`
+- `docs/specs/foxpilot-phase2-doctor-repair-decision-matrix.md`
 
 ---
 
@@ -152,6 +155,12 @@
   - 配置层、历史层与派生读模型分层规则
 - `src/project/project-config-schema.ts`
   - 第二阶段 project.json 结构
+- `src/project/project-scan-signal-collector.ts`
+  - 项目扫描信号采集器
+- `src/runtime/recommendation/init-recommendation-engine.ts`
+  - init.preview 推荐引擎
+- `src/runtime/health/doctor-repair-decision-matrix.ts`
+  - doctor / repair 正式决策矩阵
 - `src/runtime/mutations/runtime-mutation-surface.ts`
   - Runtime 正式写接口与结果结构
 - `src/runtime/confirmation/risk-confirmation-policy.ts`
@@ -222,6 +231,12 @@
   - 持久化分层模型测试
 - `tests/project/project-config-schema.test.ts`
   - 第二阶段项目配置结构测试
+- `tests/project/project-scan-signal-collector.test.ts`
+  - 项目扫描信号采集测试
+- `tests/runtime/init-recommendation-engine.test.ts`
+  - init 推荐引擎测试
+- `tests/runtime/doctor-repair-decision-matrix.test.ts`
+  - doctor / repair 决策矩阵测试
 - `tests/runtime/runtime-mutation-surface.test.ts`
   - Runtime 正式写接口测试
 - `tests/runtime/risk-confirmation-policy.test.ts`
@@ -267,6 +282,9 @@
 - Runtime Persistence Model 必须明确哪些东西进 SQLite、哪些东西进 project.json
 - Runtime Event Taxonomy 必须统一 init / task / run / handoff / session / control plane 事件
 - 第二阶段 project.json 必须从最小配置升级为正式 orchestration 输入结构
+- Project Scan Signals 必须成为 template / recommendation / doctor 的共同输入
+- Init Recommendation Engine 必须先于 preview 结果生成
+- Doctor / Repair Decision Matrix 必须统一 auto / suggest / manual 与确认级别
 - 保持 TDD：先写失败测试，再补最小实现
 
 ### Task 0: 双入口与 Shared Runtime 基线

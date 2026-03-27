@@ -38,6 +38,9 @@
 - 第二阶段 Runtime 持久化模型
 - 第二阶段 Runtime 事件分类体系
 - 第二阶段项目配置结构
+- 第二阶段项目扫描信号模型
+- 第二阶段 Init 推荐引擎模型
+- 第二阶段 Doctor / Repair 决策矩阵
 
 ## 设计约束
 
@@ -62,6 +65,9 @@
 - project.json 不能承载运行历史
 - 事件不能只有 Control Plane 子集
 - 派生读模型不能作为真相源
+- init.preview 不能绕过扫描信号与推荐引擎
+- doctor / repair 不能只返回问题描述
+- 推荐值与生效值必须继续分层
 
 ## 关键结论
 
@@ -86,6 +92,9 @@
 - Runtime Persistence Model 必须明确配置 / 历史 / 派生结果分层
 - Runtime Event Taxonomy 必须覆盖 init / task / run / handoff / session / control plane
 - 第二阶段 project.json 必须只承载输入与显式覆盖
+- Project Scan Signals 必须成为 init / doctor 的统一输入
+- Init Recommendation Engine 必须给出 profile / workflow / stagePlan / binding 推荐
+- Doctor / Repair 必须通过统一决策矩阵产出 repairMode 与 confirmationLevel
 
 ## 当前进度
 
@@ -130,3 +139,6 @@
 - [x] 已补 Runtime 持久化模型
 - [x] 已补 Runtime 事件分类体系
 - [x] 已补第二阶段项目配置结构
+- [x] 已补项目扫描信号模型
+- [x] 已补 Init 推荐引擎模型
+- [x] 已补 Doctor / Repair 决策矩阵

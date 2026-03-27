@@ -161,6 +161,24 @@ FoxPilot 第一阶段已经完成本地 CLI 主线：
 - 探测阶段 / 角色 / 平台编排能力
 - 写项目配置
 
+### 4.1.1 init 必须先走扫描信号与推荐引擎
+
+第二阶段里，`init.preview` 不能直接从零拼结果。
+
+必须先经过：
+
+```text
+Project Scan Signals
+-> Init Recommendation Engine
+-> init.preview
+```
+
+这样才能保证：
+
+- 模板建议稳定
+- 平台建议可解释
+- binding 建议有依据
+
 ### 4.2 Profile 模型
 
 第二阶段 `init` 支持项目级 profile。
@@ -371,6 +389,23 @@ Execution Session
 
 来承接平台执行过程。
 
+### 5.6.6 doctor / repair 必须走正式决策矩阵
+
+第二阶段里，`doctor` 与 `repair` 不能只做零散问题检查。
+
+必须统一进入：
+
+```text
+Doctor / Repair Decision Matrix
+```
+
+这样才能稳定回答：
+
+- 这是什么问题
+- 影响是 degrade 还是 block
+- 是 auto、suggest 还是 manual
+- 需要什么确认级别
+
 ### 5.6.5 配置、历史与派生结果必须分层
 
 第二阶段里，以下三层不能混：
@@ -579,6 +614,9 @@ Desktop / CLI
 - Runtime 持久化模型
 - Runtime 事件分类体系
 - 第二阶段项目配置结构
+- 项目扫描信号模型
+- Init 推荐引擎模型
+- Doctor / Repair 决策矩阵
 - Desktop Bridge 契约
 - 桌面读模型契约
 - Init Wizard 状态机
@@ -616,3 +654,6 @@ Desktop / CLI
 - `Runtime Persistence Model` 作为配置 / 历史 / 派生结果分层规则
 - `Runtime Event Taxonomy` 作为正式事件流分类
 - `project.json` 的第二阶段结构只承载输入与显式覆盖
+- `Project Scan Signals` 作为 init / doctor 的统一观测层
+- `Init Recommendation Engine` 作为 preview 建议层
+- `Doctor / Repair Decision Matrix` 作为修复判断总表
