@@ -22,20 +22,7 @@
     "brew:formula": "node ./scripts/render-homebrew-formula.mjs",
     "brew:publish": "sh ./scripts/publish-homebrew-tap.sh"
   },
-  "dependencies": {
-    "@radix-ui/react-dialog": "^1.1.15",
-    "@tauri-apps/api": "^2.10.1",
-    "better-sqlite3": "^11.8.1",
-    "class-variance-authority": "^0.7.1",
-    "clsx": "^2.1.1",
-    "lucide-react": "^1.7.0",
-    "react": "^19.2.4",
-    "react-dom": "^19.2.4",
-    "tailwind-merge": "^3.5.0"
-  },
   "devDependencies": {
-    "@tailwindcss/vite": "^4.2.2",
-    "@tauri-apps/cli": "^2.10.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
@@ -43,14 +30,12 @@
     "@types/node": "^22.15.30",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^6.0.1",
     "jsdom": "^29.0.1",
-    "tailwindcss": "^4.2.2",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "better-sqlite3": "^11.8.1",
     "turbo": "^2.5.4",
-    "tsc-alias": "^1.8.16",
-    "tsx": "^4.19.4",
     "typescript": "^5.8.3",
-    "vite": "^8.0.3",
     "vitest": "^3.2.4"
   }
 }
