@@ -18,6 +18,7 @@ import { runPlatformsCapabilitiesCommand } from '@/commands/platforms/platforms-
 import { runPlatformsDoctorCommand } from '@/commands/platforms/platforms-doctor-command.js'
 import { runPlatformsInspectCommand } from '@/commands/platforms/platforms-inspect-command.js'
 import { runPlatformsListCommand } from '@/commands/platforms/platforms-list-command.js'
+import { runPlatformsResolveCommand } from '@/commands/platforms/platforms-resolve-command.js'
 import { runSkillsDoctorCommand } from '@/commands/skills/skills-doctor-command.js'
 import { runSkillsInspectCommand } from '@/commands/skills/skills-inspect-command.js'
 import { runSkillsListCommand } from '@/commands/skills/skills-list-command.js'
@@ -527,6 +528,20 @@ export async function main(
         subcommand: 'doctor',
         help: args.help,
         json: args.json,
+      },
+      runtimeContext,
+    )
+  }
+
+  if (args.command === 'platforms' && args.subcommand === 'resolve') {
+    return runPlatformsResolveCommand(
+      {
+        command: 'platforms',
+        subcommand: 'resolve',
+        help: args.help,
+        json: args.json,
+        path: args.path,
+        profile: args.profile,
       },
       runtimeContext,
     )
