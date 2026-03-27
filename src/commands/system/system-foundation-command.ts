@@ -3,6 +3,7 @@
  * @author michaeljou
  */
 
+import { toJsonSuccessOutput } from '@/cli/json-output.js'
 import type { CliResult } from '@/commands/init/init-types.js'
 import { runFoundationDoctor } from '@/foundation/foundation-doctor.js'
 
@@ -45,14 +46,16 @@ export async function runSystemFoundationCommand(
 
   return {
     exitCode: 0,
-    stdout: [
-      '[FoxPilot] Foundation Pack',
-      `- packId: ${result.packId}`,
-      `- ready: ${result.ready.length > 0 ? result.ready.join(', ') : 'none'}`,
-      `- missing: ${result.missing.length > 0 ? result.missing.join(', ') : 'none'}`,
-      ...result.items.map((item) =>
-        `- ${item.tool}: ${item.status}${item.version ? ` (${item.version})` : ''}`,
-      ),
-    ].join('\n'),
+    stdout: args.json
+      ? toJsonSuccessOutput('foundation', result)
+      : [
+          '[FoxPilot] Foundation Pack',
+          `- packId: ${result.packId}`,
+          `- ready: ${result.ready.length > 0 ? result.ready.join(', ') : 'none'}`,
+          `- missing: ${result.missing.length > 0 ? result.missing.join(', ') : 'none'}`,
+          ...result.items.map((item) =>
+            `- ${item.tool}: ${item.status}${item.version ? ` (${item.version})` : ''}`,
+          ),
+        ].join('\n'),
   }
 }

@@ -42,4 +42,39 @@ describe('foundation CLI', () => {
     expect(result.stdout).toContain('beads: ready')
     expect(result.stdout).toContain('superpowers: missing')
   })
+
+  it('returns structured json foundation status when called with --json', async () => {
+    const result = await runCli(['foundation', '--json'], {
+      dependencies: {
+        runFoundationDoctor: async () => ({
+          packId: 'default-foundation',
+          items: [
+            {
+              tool: 'beads',
+              status: 'ready',
+              version: '1.0.0',
+              checkTarget: 'bd',
+            },
+          ],
+          ready: ['beads'],
+          missing: [],
+        }),
+      },
+    })
+
+    const payload = JSON.parse(result.stdout) as {
+      ok: boolean
+      command: string
+      data: {
+        packId: string
+        ready: string[]
+      }
+    }
+
+    expect(result.exitCode).toBe(0)
+    expect(payload.ok).toBe(true)
+    expect(payload.command).toBe('foundation')
+    expect(payload.data.packId).toBe('default-foundation')
+    expect(payload.data.ready).toEqual(['beads'])
+  })
 })

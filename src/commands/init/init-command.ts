@@ -6,6 +6,7 @@
 import { access, readFile, rm, stat, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 
+import { toJsonErrorOutput, toJsonSuccessOutput } from '@/cli/json-output.js'
 import {
   GlobalConfigParseError,
   defaultGlobalConfig,
@@ -36,7 +37,13 @@ import { resolveProjectProfileId } from '@/commands/init/init-profile.js'
 import { collectProjectScanSignals } from '@/runtime/init/project-scan-signals.js'
 import { createInitRecommendation } from '@/runtime/init/init-recommendation-engine.js'
 
-import type { CliResult, InitArgs, InitCommandContext, InitCommandDependencies } from '@/commands/init/init-types.js'
+import type {
+  CliResult,
+  InitArgs,
+  InitCommandContext,
+  InitCommandDependencies,
+  InitPreviewResult,
+} from '@/commands/init/init-types.js'
 
 /**
  * 记录 init 开始修改本地或全局状态之前的文件快照。
@@ -292,7 +299,70 @@ function buildHelpText(messages: MessageCatalog): string {
     '--workspace-root <workspace-root>',
     '--profile default|collaboration|minimal',
     '--mode interactive|non-interactive',
+    '--preview',
+    '--json',
     '--no-scan',
+  ].join('\n')
+}
+
+function buildPlatformStagesSummary(
+  preview: InitPreviewResult['orchestrationPreview']['platformResolution'],
+): string {
+  return preview.stages
+    .map((stage) => `${stage.stage}:${stage.platform.effective}(${stage.platform.source})`)
+    .join(', ')
+}
+
+function createInitPreviewResult(input: {
+  projectRoot: string
+  projectName: string
+  workspaceRoot: string
+  repositories: ProjectRepositoryConfig[]
+  scanSignals: Awaited<ReturnType<typeof collectProjectScanSignals>>
+  recommendation: ReturnType<typeof createInitRecommendation>
+  selectedProfile: InitPreviewResult['orchestrationPreview']['selectedProfile']
+  platformResolution: InitPreviewResult['orchestrationPreview']['platformResolution']
+  outputs?: InitPreviewResult['outputs']
+}): InitPreviewResult {
+  return {
+    projectRoot: input.projectRoot,
+    projectName: input.projectName,
+    workspaceRoot: input.workspaceRoot,
+    repositories: input.repositories.map((repository) => ({
+      name: repository.name,
+      path: repository.path,
+      repoType: repository.repoType,
+      languageStack: repository.languageStack,
+    })),
+    scanSignals: input.scanSignals,
+    recommendation: input.recommendation,
+    orchestrationPreview: {
+      selectedProfile: input.selectedProfile,
+      recommendedProfile: input.recommendation.profile.recommended,
+      platformResolution: input.platformResolution,
+    },
+    outputs: input.outputs,
+  }
+}
+
+function buildPreviewOutput(input: {
+  messages: MessageCatalog
+  preview: InitPreviewResult
+}): string {
+  return [
+    '[FoxPilot] init 预览',
+    `- projectRoot: ${input.preview.projectRoot}`,
+    `- projectName: ${input.preview.projectName}`,
+    `- workspaceRoot: ${input.preview.workspaceRoot}`,
+    `- repositories: ${input.preview.repositories.length}`,
+    `- profile: ${input.preview.orchestrationPreview.selectedProfile}`,
+    `- recommendedProfile: ${input.preview.orchestrationPreview.recommendedProfile}`,
+    `- workflowTemplate: ${input.preview.recommendation.workflowTemplate.recommended}`,
+    `- repositoryLayout: ${input.preview.scanSignals.structure.repositoryLayout}`,
+    `- likelyProjectType: ${input.preview.scanSignals.workflow.likelyProjectType}`,
+    `- platformStages: ${buildPlatformStagesSummary(input.preview.orchestrationPreview.platformResolution)}`,
+    '',
+    input.messages.init.completedNextStep,
   ].join('\n')
 }
 
@@ -478,6 +548,45 @@ async function cleanupAfterFailure(input: {
  */
 export async function runInitCommand(args: InitArgs, context: InitCommandContext): Promise<CliResult> {
   let messages = getMessages(context.interfaceLanguage)
+  const commandName = args.preview ? 'init.preview' : 'init'
+
+  const createSuccessResult = (stdout: string, data: InitPreviewResult): CliResult => {
+    if (args.json) {
+      return {
+        exitCode: 0,
+        stdout: toJsonSuccessOutput(commandName, data),
+      }
+    }
+
+    return {
+      exitCode: 0,
+      stdout,
+    }
+  }
+
+  const createErrorResult = (input: {
+    exitCode: number
+    code: string
+    message: string
+    stdout: string
+    details?: Record<string, unknown>
+  }): CliResult => {
+    if (args.json) {
+      return {
+        exitCode: input.exitCode,
+        stdout: toJsonErrorOutput(commandName, {
+          code: input.code,
+          message: input.message,
+          details: input.details,
+        }),
+      }
+    }
+
+    return {
+      exitCode: input.exitCode,
+      stdout: input.stdout,
+    }
+  }
 
   if (args.help) {
     return {
@@ -492,14 +601,31 @@ export async function runInitCommand(args: InitArgs, context: InitCommandContext
   const validationError = await validateProjectRoot(projectRoot, messages)
 
   if (validationError) {
-    return validationError
+    return createErrorResult({
+      exitCode: validationError.exitCode,
+      code: validationError.stdout.includes(messages.init.pathNotFound)
+        ? 'PROJECT_PATH_NOT_FOUND'
+        : 'PROJECT_PATH_NOT_DIRECTORY',
+      message: validationError.stdout.includes(messages.init.pathNotFound)
+        ? messages.init.pathNotFound
+        : messages.init.pathNotDirectory,
+      stdout: validationError.stdout,
+      details: {
+        projectRoot,
+      },
+    })
   }
 
   if (await fileExists(projectConfigPath)) {
-    return {
+    return createErrorResult({
       exitCode: 2,
+      code: 'PROJECT_CONFIG_EXISTS',
+      message: messages.init.projectConfigExists,
       stdout: buildErrorOutput(messages.init.projectConfigExists, [`- ${projectConfigPath}`]),
-    }
+      details: {
+        projectConfigPath,
+      },
+    })
   }
 
   let globalConfigState: Awaited<ReturnType<typeof loadGlobalConfigSnapshot>>
@@ -507,12 +633,17 @@ export async function runInitCommand(args: InitArgs, context: InitCommandContext
     globalConfigState = await loadGlobalConfigSnapshot(context.homeDir)
   } catch (error) {
     if (error instanceof GlobalConfigParseError) {
-      return {
+      return createErrorResult({
         exitCode: 3,
+        code: 'GLOBAL_CONFIG_MALFORMED',
+        message: messages.init.malformedGlobalConfig,
         stdout: buildErrorOutput(messages.init.malformedGlobalConfig, [
           `- ${error.configPath}`,
         ]),
-      }
+        details: {
+          configPath: error.configPath,
+        },
+      })
     }
 
     throw error
@@ -528,7 +659,7 @@ export async function runInitCommand(args: InitArgs, context: InitCommandContext
    * 1. 只有首次交互式初始化才主动询问语言。
    * 2. 一旦语言已经被持久化，后续 init 不再重复打扰用户。
    */
-  if (args.mode === 'interactive' && !globalConfigState.hasStoredInterfaceLanguage) {
+  if (args.mode === 'interactive' && !args.preview && !globalConfigState.hasStoredInterfaceLanguage) {
     interfaceLanguage = selectInterfaceLanguage(lines, interactiveInput)
     messages = getMessages(interfaceLanguage)
   } else {
@@ -549,7 +680,7 @@ export async function runInitCommand(args: InitArgs, context: InitCommandContext
   const initRecommendation = createInitRecommendation(scanSignals)
   const selectedProfile = resolveProjectProfileId(args.profile ?? initRecommendation.profile.recommended)
 
-  if (args.mode === 'interactive') {
+  if (args.mode === 'interactive' && !args.preview) {
     const interactiveResult = await runInteractivePrompts({
       lines,
       stdin: interactiveInput,
@@ -561,10 +692,12 @@ export async function runInitCommand(args: InitArgs, context: InitCommandContext
     })
 
     if (interactiveResult.cancelled) {
-      return {
+      return createErrorResult({
         exitCode: 1,
+        code: 'INIT_CANCELLED',
+        message: messages.init.cancelled,
         stdout: [...lines, messages.init.cancelled].join('\n'),
-      }
+      })
     }
 
     projectName = interactiveResult.projectName
@@ -572,18 +705,45 @@ export async function runInitCommand(args: InitArgs, context: InitCommandContext
   }
 
   if (!isWithin(workspaceRoot, projectRoot)) {
-    return {
+    return createErrorResult({
       exitCode: 1,
+      code: 'WORKSPACE_ROOT_MISMATCH',
+      message: messages.init.workspaceRootMismatch,
       stdout: buildErrorOutput(messages.init.workspaceRootMismatch, [
         `- workspaceRoot: ${workspaceRoot}`,
         `- projectRoot: ${projectRoot}`,
       ]),
-    }
+      details: {
+        workspaceRoot,
+        projectRoot,
+      },
+    })
   }
 
   const platformResolution = await dependencies.resolvePlatformResolution({
     profile: selectedProfile,
   })
+
+  const previewResult = createInitPreviewResult({
+    projectRoot,
+    projectName,
+    workspaceRoot,
+    repositories,
+    scanSignals,
+    recommendation: initRecommendation,
+    selectedProfile,
+    platformResolution,
+  })
+
+  if (args.preview) {
+    return createSuccessResult(
+      buildPreviewOutput({
+        messages,
+        preview: previewResult,
+      }),
+      previewResult,
+    )
+  }
 
   let ensureResult: Awaited<ReturnType<typeof ensureGlobalConfig>>
   try {
@@ -594,19 +754,26 @@ export async function runInitCommand(args: InitArgs, context: InitCommandContext
     })
   } catch (error) {
     if (error instanceof GlobalConfigParseError) {
-      return {
+      return createErrorResult({
         exitCode: 3,
+        code: 'GLOBAL_CONFIG_MALFORMED',
+        message: messages.init.malformedGlobalConfig,
         stdout: buildErrorOutput(messages.init.malformedGlobalConfig, [
           `- ${error.configPath}`,
         ]),
-      }
+        details: {
+          configPath: error.configPath,
+        },
+      })
     }
 
     await restoreFileSnapshot(globalConfigState.configPath, globalConfigState.snapshot)
-    return {
+    return createErrorResult({
       exitCode: 1,
+      code: 'GLOBAL_CONFIG_WRITE_FAILED',
+      message: messages.init.globalConfigWriteFailed,
       stdout: messages.init.globalConfigWriteFailed,
-    }
+    })
   }
 
   const dbPath = resolveGlobalDatabasePath(context.homeDir)
@@ -620,10 +787,15 @@ export async function runInitCommand(args: InitArgs, context: InitCommandContext
     if (!dbSnapshot.exists) {
       await rm(dbPath, { force: true })
     }
-    return {
+    return createErrorResult({
       exitCode: 4,
+      code: 'DATABASE_BOOTSTRAP_FAILED',
+      message: messages.init.dbBootstrapFailed,
       stdout: buildErrorOutput(messages.init.dbBootstrapFailed, [`- ${dbPath}`]),
-    }
+      details: {
+        dbPath,
+      },
+    })
   }
 
   const store = dependencies.createCatalogStore(db)
@@ -645,10 +817,12 @@ export async function runInitCommand(args: InitArgs, context: InitCommandContext
       projectRoot,
       workspaceRoot,
     })
-    return {
+    return createErrorResult({
       exitCode: 1,
+      code: 'CATALOG_WRITE_FAILED',
+      message: messages.init.catalogWriteFailed,
       stdout: messages.init.catalogWriteFailed,
-    }
+    })
   }
 
   try {
@@ -675,23 +849,45 @@ export async function runInitCommand(args: InitArgs, context: InitCommandContext
     db.close()
 
     if (error instanceof ProjectAlreadyInitializedError) {
-      return {
+      return createErrorResult({
         exitCode: 2,
+        code: 'PROJECT_CONFIG_EXISTS',
+        message: messages.init.projectConfigExists,
         stdout: buildErrorOutput(messages.init.projectConfigExists, [`- ${error.configPath}`]),
-      }
+        details: {
+          projectConfigPath: error.configPath,
+        },
+      })
     }
 
-    return {
+    return createErrorResult({
       exitCode: 1,
+      code: 'PROJECT_CONFIG_WRITE_FAILED',
+      message: messages.init.projectConfigWriteFailed,
       stdout: messages.init.projectConfigWriteFailed,
-    }
+    })
   }
 
   db.close()
 
-  return {
-    exitCode: 0,
-    stdout: [...lines, buildSuccessOutput({
+  const appliedResult = createInitPreviewResult({
+    projectRoot,
+    projectName,
+    workspaceRoot,
+    repositories,
+    scanSignals,
+    recommendation: initRecommendation,
+    selectedProfile,
+    platformResolution,
+    outputs: {
+      projectConfigPath,
+      globalConfigPath: ensureResult.configPath,
+      dbPath,
+    },
+  })
+
+  return createSuccessResult(
+    [...lines, buildSuccessOutput({
       messages,
       projectRoot,
       projectName,
@@ -704,5 +900,6 @@ export async function runInitCommand(args: InitArgs, context: InitCommandContext
       globalConfigPath: ensureResult.configPath,
       dbPath,
     })].filter(Boolean).join('\n'),
-  }
+    appliedResult,
+  )
 }

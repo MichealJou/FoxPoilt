@@ -10,6 +10,8 @@ import type { createCatalogStore } from '@/db/catalog-store.js'
 import type { bootstrapDatabase } from '@/db/bootstrap.js'
 import type { writeProjectConfig } from '@/project/project-config.js'
 import type { scanRepositories } from '@/project/scan-repositories.js'
+import type { InitRecommendationResult } from '@/runtime/init/init-recommendation-engine.js'
+import type { ProjectScanSignals } from '@/runtime/init/project-scan-signals.js'
 import type { resolveProjectPlatformResolution } from '@/runtime/orchestrators/platform-resolver.js'
 
 /**
@@ -38,8 +40,36 @@ export type InitArgs = {
   profile?: ProjectProfileId
   /** 选定的执行模式。 */
   mode: InitMode
+  /** 是否只生成预览而不写入任何状态。 */
+  preview: boolean
+  /** 是否输出结构化 JSON。 */
+  json: boolean
   /** 是否跳过仓库扫描。 */
   noScan: boolean
+}
+
+export type InitPreviewResult = {
+  projectRoot: string
+  projectName: string
+  workspaceRoot: string
+  repositories: Array<{
+    name: string
+    path: string
+    repoType: 'git' | 'directory' | 'subrepo'
+    languageStack: string
+  }>
+  scanSignals: ProjectScanSignals
+  recommendation: InitRecommendationResult
+  orchestrationPreview: {
+    selectedProfile: ProjectProfileId
+    recommendedProfile: ProjectProfileId
+    platformResolution: Awaited<ReturnType<typeof resolveProjectPlatformResolution>>
+  }
+  outputs?: {
+    projectConfigPath: string
+    globalConfigPath: string
+    dbPath: string
+  }
 }
 
 /**

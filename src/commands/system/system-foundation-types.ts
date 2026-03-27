@@ -9,6 +9,7 @@ import type { runFoundationDoctor } from '@/foundation/foundation-doctor.js'
 export type SystemFoundationArgs = {
   command: 'foundation'
   help: boolean
+  json: boolean
 }
 
 export type SystemFoundationDependencies = {

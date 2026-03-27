@@ -30,6 +30,10 @@ export type CliArgs = {
   profile?: ProjectProfileId
   /** init 执行模式。 */
   mode: 'interactive' | 'non-interactive'
+  /** 是否只输出初始化预览而不写入任何状态。 */
+  preview: boolean
+  /** 是否输出结构化 JSON 结果。 */
+  json: boolean
   /** 在 init 过程中是否跳过仓库扫描。 */
   noScan: boolean
   /** 手动任务标题。 */
@@ -94,6 +98,8 @@ export function parseArgs(argv: string[]): CliArgs {
   let workspaceRoot: string | undefined
   let profile: ProjectProfileId | undefined
   let mode: 'interactive' | 'non-interactive' = 'interactive'
+  let preview = false
+  let json = false
   let noScan = false
   let title: string | undefined
   let description: string | undefined
@@ -180,6 +186,16 @@ export function parseArgs(argv: string[]): CliArgs {
         mode = nextValue
       }
       index += 1
+      continue
+    }
+
+    if (value === '--preview') {
+      preview = true
+      continue
+    }
+
+    if (value === '--json') {
+      json = true
       continue
     }
 
@@ -319,6 +335,8 @@ export function parseArgs(argv: string[]): CliArgs {
     workspaceRoot,
     profile,
     mode,
+    preview,
+    json,
     noScan,
     title,
     description,

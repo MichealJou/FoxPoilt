@@ -12,6 +12,7 @@ import type { InstallIndexEntry, InstallManifest } from '@/install/install-types
 export type SystemInstallInfoArgs = {
   command: 'install-info'
   help: boolean
+  json: boolean
 }
 
 /**

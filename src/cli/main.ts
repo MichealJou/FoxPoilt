@@ -92,6 +92,7 @@ export async function main(
       {
         command: 'install-info',
         help: args.help,
+        json: args.json,
       },
       runtimeContext,
     )
@@ -102,6 +103,7 @@ export async function main(
       {
         command: 'foundation',
         help: args.help,
+        json: args.json,
       },
       runtimeContext,
     )
@@ -138,6 +140,8 @@ export async function main(
         workspaceRoot: args.workspaceRoot,
         profile: args.profile,
         mode: args.mode,
+        preview: args.preview,
+        json: args.json,
         noScan: args.noScan,
       },
       {

@@ -178,6 +178,127 @@ describe('foxpilot init CLI', () => {
     expect(result.stdout).toContain('- recommendedProfile: collaboration')
   })
 
+  it('returns a read-only init preview without writing files', async () => {
+    const homeDir = await createTempDir('foxpilot-home-')
+    const projectRoot = await createProjectFixture('foxpilot-project-')
+    tempDirs.push(homeDir)
+
+    const result = await runCli(
+      [
+        'init',
+        '--path',
+        projectRoot,
+        '--workspace-root',
+        path.dirname(projectRoot),
+        '--mode',
+        'non-interactive',
+        '--preview',
+      ],
+      { homeDir },
+    )
+
+    expect(result.exitCode).toBe(0)
+    expect(result.stdout).toContain('[FoxPilot] init 预览')
+    expect(result.stdout).toContain('- recommendedProfile: collaboration')
+    await expectMissing(path.join(projectRoot, '.foxpilot', 'project.json'))
+    await expectMissing(path.join(homeDir, '.foxpilot', 'foxpilot.config.json'))
+    await expectMissing(path.join(homeDir, '.foxpilot', 'foxpilot.db'))
+  })
+
+  it('returns json preview payload when init is called with --preview --json', async () => {
+    const homeDir = await createTempDir('foxpilot-home-')
+    const projectRoot = await createProjectFixture('foxpilot-project-')
+    tempDirs.push(homeDir)
+
+    const result = await runCli(
+      [
+        'init',
+        '--path',
+        projectRoot,
+        '--workspace-root',
+        path.dirname(projectRoot),
+        '--mode',
+        'non-interactive',
+        '--profile',
+        'minimal',
+        '--preview',
+        '--json',
+      ],
+      { homeDir },
+    )
+
+    expect(result.exitCode).toBe(0)
+
+    const payload = JSON.parse(result.stdout) as {
+      ok: boolean
+      command: string
+      data: {
+        projectRoot: string
+        orchestrationPreview: {
+          selectedProfile: string
+          recommendedProfile: string
+          platformResolution: {
+            stages: Array<{
+              platform: {
+                effective: string
+              }
+            }>
+          }
+        }
+      }
+    }
+
+    expect(payload.ok).toBe(true)
+    expect(payload.command).toBe('init.preview')
+    expect(payload.data.projectRoot).toBe(projectRoot)
+    expect(payload.data.orchestrationPreview.selectedProfile).toBe('minimal')
+    expect(payload.data.orchestrationPreview.recommendedProfile).toBe('collaboration')
+    expect(payload.data.orchestrationPreview.platformResolution.stages.every((stage) => stage.platform.effective === 'manual')).toBe(true)
+    await expectMissing(path.join(projectRoot, '.foxpilot', 'project.json'))
+  })
+
+  it('returns json apply payload when init is called with --json', async () => {
+    const homeDir = await createTempDir('foxpilot-home-')
+    const projectRoot = await createProjectFixture('foxpilot-project-')
+    tempDirs.push(homeDir)
+
+    const result = await runCli(
+      [
+        'init',
+        '--path',
+        projectRoot,
+        '--workspace-root',
+        path.dirname(projectRoot),
+        '--mode',
+        'non-interactive',
+        '--no-scan',
+        '--json',
+      ],
+      { homeDir },
+    )
+
+    expect(result.exitCode).toBe(0)
+
+    const payload = JSON.parse(result.stdout) as {
+      ok: boolean
+      command: string
+      data: {
+        outputs: {
+          projectConfigPath: string
+          globalConfigPath: string
+          dbPath: string
+        }
+      }
+    }
+
+    expect(payload.ok).toBe(true)
+    expect(payload.command).toBe('init')
+    expect(payload.data.outputs.projectConfigPath).toBe(path.join(projectRoot, '.foxpilot', 'project.json'))
+    await expectExists(payload.data.outputs.projectConfigPath)
+    await expectExists(payload.data.outputs.globalConfigPath)
+    await expectExists(payload.data.outputs.dbPath)
+  })
+
   it('asks for interface language on first interactive init and persists the selection', async () => {
     const homeDir = await createTempDir('foxpilot-home-')
     const projectRoot = await createProjectFixture('foxpilot-project-')
