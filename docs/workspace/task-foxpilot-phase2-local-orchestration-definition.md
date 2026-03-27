@@ -44,6 +44,9 @@
 - 第二阶段 Dashboard 聚合模型
 - 第二阶段 Tasks / Runs 详情动作模型
 - 第二阶段 Control Plane 批量动作策略
+- 第二阶段桌面导航信息架构
+- 第二阶段右侧上下文面板模型
+- 第二阶段 Focus Queue 评分模型
 
 ## 设计约束
 
@@ -74,6 +77,9 @@
 - Dashboard 不能只是统计卡堆叠
 - Task / Run 详情动作不能无限扩张
 - Control Plane 首页批量动作不能过早放开
+- 左导航不能把条件流程和常驻工作区混在一起
+- 右侧面板不能退化成重复字段侧栏
+- Focus Queue 不能变成最近更新列表
 
 ## 关键结论
 
@@ -104,6 +110,9 @@
 - Dashboard 必须成为首页聚合层，而不是列表缩略图
 - Task / Run Detail 必须稳定承接 advance / reassign / cancel / handoff 解释
 - Control Plane 首页第一批批量动作必须限制在 detect / doctor
+- 左导航必须稳定收敛为常驻工作区入口，Init Wizard 只能做条件流程入口
+- 右侧上下文面板必须成为解释层、关系层、下一步动作入口
+- Focus Queue 必须有正式评分模型，而不是静态规则列表
 
 ## 当前进度
 
@@ -154,3 +163,6 @@
 - [x] 已补 Dashboard 聚合模型
 - [x] 已补 Tasks / Runs 详情动作模型
 - [x] 已补 Control Plane 批量动作策略
+- [x] 已补桌面导航信息架构
+- [x] 已补右侧上下文面板模型
+- [x] 已补 Focus Queue 评分模型

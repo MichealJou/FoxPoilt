@@ -49,6 +49,9 @@
 - `docs/specs/foxpilot-phase2-dashboard-aggregation-model.md`
 - `docs/specs/foxpilot-phase2-task-run-detail-action-model.md`
 - `docs/specs/foxpilot-phase2-control-plane-bulk-action-policy.md`
+- `docs/specs/foxpilot-phase2-desktop-navigation-information-architecture.md`
+- `docs/specs/foxpilot-phase2-context-panel-model.md`
+- `docs/specs/foxpilot-phase2-focus-queue-scoring-model.md`
 
 ---
 
@@ -166,6 +169,8 @@
   - doctor / repair 正式决策矩阵
 - `src/runtime/read-models/dashboard-aggregation-service.ts`
   - Dashboard 首页聚合服务
+- `src/runtime/read-models/focus-queue-scoring-service.ts`
+  - Focus Queue 首页排序服务
 - `src/runtime/actions/task-run-detail-action-service.ts`
   - Tasks / Runs 详情动作服务
 - `src/runtime/actions/control-plane-bulk-action-policy.ts`
@@ -200,6 +205,10 @@
   - 应用布局
 - `src/ui/app/navigation.tsx`
   - 左侧导航
+- `src/ui/app/navigation-schema.ts`
+  - 常驻导航与条件入口结构
+- `src/ui/context/context-panel-model.ts`
+  - 右侧上下文面板读模型
 - `src/ui/pages/init-wizard/project-init-wizard-page.tsx`
   - 项目初始化向导主页面
 - `src/ui/pages/tasks/tasks-page.tsx`
@@ -248,10 +257,16 @@
   - doctor / repair 决策矩阵测试
 - `tests/runtime/dashboard-aggregation-service.test.ts`
   - Dashboard 聚合模型测试
+- `tests/runtime/focus-queue-scoring-service.test.ts`
+  - Focus Queue 排序测试
 - `tests/runtime/task-run-detail-action-service.test.ts`
   - Tasks / Runs 详情动作测试
 - `tests/runtime/control-plane-bulk-action-policy.test.ts`
   - Control Plane 批量动作策略测试
+- `tests/ui/navigation-schema.test.ts`
+  - 左导航信息架构测试
+- `tests/ui/context-panel-model.test.ts`
+  - 右侧面板模型测试
 - `tests/runtime/runtime-mutation-surface.test.ts`
   - Runtime 正式写接口测试
 - `tests/runtime/risk-confirmation-policy.test.ts`
@@ -303,6 +318,9 @@
 - Dashboard Aggregation Model 必须统一首页聚合逻辑与 Focus Queue
 - Task / Run Detail Action Model 必须限制详情页动作边界
 - Control Plane Bulk Action Policy 必须防止首页批量写动作失控
+- Desktop Navigation Information Architecture 必须限制常驻导航与条件流程入口
+- Context Panel Model 必须统一右侧解释层边界
+- Focus Queue Scoring Model 必须解释首页高优事项排序
 - 保持 TDD：先写失败测试，再补最小实现
 
 ### Task 0: 双入口与 Shared Runtime 基线

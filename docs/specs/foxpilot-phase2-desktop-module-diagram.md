@@ -27,7 +27,6 @@ flowchart TD
   Layout --> Events["Event Timeline"]
   Layout --> Control["Control Plane<br/>Platforms / Skills / MCP"]
   Layout --> Settings["Settings / Health"]
-  Layout --> Wizard["Project Init Wizard"]
 
   Dashboard --> ReadModel["前端读模型层"]
   Projects --> ReadModel
@@ -36,6 +35,7 @@ flowchart TD
   Events --> ReadModel
   Control --> ReadModel
   Settings --> ReadModel
+  App --> Wizard["Project Init Wizard<br/>条件流程入口"]
   Wizard --> ReadModel
 
   ReadModel --> Bridge
@@ -121,7 +121,7 @@ Run Detail            看单次运行上下文
 Event Timeline        看事件 -> 动作 -> 结果链路
 Control Plane         看平台、Skills、MCP 的统一管理视图
 Settings / Health     看安装方式、环境、doctor 结果
-Project Init Wizard   做项目级初始化接管
+Project Init Wizard   作为条件流程做项目级初始化接管
 ```
 
 ## 5. 推荐组件分组
@@ -163,7 +163,7 @@ Project Init Wizard   做项目级初始化接管
 2  Dashboard
 3  Tasks
 4  Run Detail
-5  Project Init Wizard
+5  Project Init Wizard（条件入口）
 6  Control Plane
 7  Settings / Health
 ```
@@ -182,3 +182,4 @@ Project Init Wizard   做项目级初始化接管
 - `Desktop Bridge` 做 Runtime 适配
 - 读模型层做界面聚合
 - 页面层承接第一阶段已完成的 CLI 能力
+- `Project Init Wizard` 不进入常驻一级导航

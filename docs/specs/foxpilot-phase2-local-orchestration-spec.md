@@ -661,6 +661,9 @@ Portfolio + Tasks + Runs + Health + Control Plane + Focus Queue
 - Dashboard 聚合模型
 - Tasks / Runs 详情动作模型
 - Control Plane 批量动作策略
+- 桌面导航信息架构
+- 右侧上下文面板模型
+- Focus Queue 评分模型
 - Desktop Bridge 契约
 - 桌面读模型契约
 - Init Wizard 状态机
@@ -704,3 +707,6 @@ Portfolio + Tasks + Runs + Health + Control Plane + Focus Queue
 - `Dashboard Aggregation Model` 作为首页聚合规则
 - `Task / Run Detail Action Model` 作为详情页动作边界
 - `Control Plane Bulk Action Policy` 作为中控批量动作约束
+- `Desktop Navigation Information Architecture` 作为常驻导航边界
+- `Context Panel Model` 作为右侧解释层边界
+- `Focus Queue Scoring Model` 作为首页高优事项排序规则
