@@ -18,13 +18,13 @@ describe('install manifest helpers', () => {
   })
 
   it('resolves the default install index path for unix-style platforms', async () => {
-    const { resolveInstallIndexPath } = await import('@/install/install-paths.js')
+    const { resolveInstallIndexPath } = await import('@infra/install/install-paths.js')
 
     expect(resolveInstallIndexPath('/tmp/demo-home')).toBe('/tmp/demo-home/.foxpilot/installations.json')
   })
 
   it('resolves the default install index path for windows', async () => {
-    const { resolveInstallIndexPath } = await import('@/install/install-paths.js')
+    const { resolveInstallIndexPath } = await import('@infra/install/install-paths.js')
 
     expect(resolveInstallIndexPath('C:\\Users\\demo', 'win32')).toBe(
       'C:\\Users\\demo\\.foxpilot\\installations.json',
@@ -32,13 +32,13 @@ describe('install manifest helpers', () => {
   })
 
   it('resolves the sibling manifest path from the current executable path', async () => {
-    const { resolveInstallManifestPath } = await import('@/install/install-paths.js')
+    const { resolveInstallManifestPath } = await import('@infra/install/install-paths.js')
 
     expect(resolveInstallManifestPath('/usr/local/bin/foxpilot')).toBe('/usr/local/bin/install-manifest.json')
   })
 
   it('returns undefined when the current executable has no manifest file', async () => {
-    const { readInstallManifest } = await import('@/install/install-manifest.js')
+    const { readInstallManifest } = await import('@infra/install/install-manifest.js')
 
     const tempDir = await createTempDir('foxpilot-install-missing-')
     tempDirs.push(tempDir)
@@ -51,7 +51,7 @@ describe('install manifest helpers', () => {
   })
 
   it('reads a valid install manifest from the current executable directory', async () => {
-    const { readInstallManifest } = await import('@/install/install-manifest.js')
+    const { readInstallManifest } = await import('@infra/install/install-manifest.js')
 
     const tempDir = await createTempDir('foxpilot-install-read-')
     tempDirs.push(tempDir)
@@ -96,13 +96,13 @@ describe('install manifest helpers', () => {
   })
 
   it('follows a .bin symlink and reads the package-root install manifest', async () => {
-    const { readInstallManifest } = await import('@/install/install-manifest.js')
+    const { readInstallManifest } = await import('@infra/install/install-manifest.js')
 
     const tempDir = await createTempDir('foxpilot-install-symlink-')
     tempDirs.push(tempDir)
 
     const packageDir = path.join(tempDir, 'node_modules', 'foxpilot')
-    const packageBinDir = path.join(packageDir, 'dist', 'cli')
+    const packageBinDir = path.join(packageDir, 'dist', 'src', 'cli')
     const shimDir = path.join(tempDir, 'node_modules', '.bin')
     const executablePath = path.join(shimDir, 'foxpilot')
 
@@ -121,7 +121,7 @@ describe('install manifest helpers', () => {
           platform: 'darwin',
           arch: 'arm64',
           installRoot: packageDir,
-          binPath: path.join(packageDir, 'dist', 'cli', 'run.js'),
+          binPath: path.join(packageDir, 'dist', 'src', 'cli', 'run.js'),
           updateTarget: {
             npmPackage: 'foxpilot',
           },
@@ -132,7 +132,7 @@ describe('install manifest helpers', () => {
         2,
       ),
     )
-    await symlink('../foxpilot/dist/cli/run.js', executablePath)
+    await symlink('../foxpilot/dist/src/cli/run.js', executablePath)
 
     await expect(readInstallManifest({ executablePath })).resolves.toMatchObject({
       installMethod: 'npm',
@@ -146,13 +146,13 @@ describe('install manifest helpers', () => {
   })
 
   it('follows an npm .bin shim script and reads the package-root install manifest', async () => {
-    const { readInstallManifest } = await import('@/install/install-manifest.js')
+    const { readInstallManifest } = await import('@infra/install/install-manifest.js')
 
     const tempDir = await createTempDir('foxpilot-install-shim-')
     tempDirs.push(tempDir)
 
     const packageDir = path.join(tempDir, 'node_modules', 'foxpilot')
-    const packageBinDir = path.join(packageDir, 'dist', 'cli')
+    const packageBinDir = path.join(packageDir, 'dist', 'src', 'cli')
     const shimDir = path.join(tempDir, 'node_modules', '.bin')
     const executablePath = path.join(shimDir, 'foxpilot')
 
@@ -171,7 +171,7 @@ describe('install manifest helpers', () => {
           platform: 'darwin',
           arch: 'arm64',
           installRoot: packageDir,
-          binPath: path.join(packageDir, 'dist', 'cli', 'run.js'),
+          binPath: path.join(packageDir, 'dist', 'src', 'cli', 'run.js'),
           updateTarget: {
             npmPackage: 'foxpilot',
           },
@@ -187,7 +187,7 @@ describe('install manifest helpers', () => {
       [
         '#!/bin/sh',
         'basedir=$(dirname "$(echo "$0" | sed -e \'s,\\\\,/,g\')")',
-        'exec node "$basedir/../foxpilot/dist/cli/run.js" "$@"',
+        'exec node "$basedir/../foxpilot/dist/src/cli/run.js" "$@"',
         '',
       ].join('\n'),
     )

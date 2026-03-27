@@ -4,10 +4,10 @@
  */
 
 import type { CliRuntimeContext } from '@/cli/runtime-context.js'
-import type { readGlobalConfig } from '@/config/global-config.js'
-import type { bootstrapDatabase } from '@/db/bootstrap.js'
-import type { createTaskStore } from '@/db/task-store.js'
-import type { resolveManagedProject } from '@/project/resolve-project.js'
+import type { readGlobalConfig } from '@infra/config/global-config.js'
+import type { bootstrapDatabase } from '@infra/db/bootstrap.js'
+import type { createTaskStore } from '@infra/db/task-store.js'
+import type { resolveManagedProject } from '@infra/project/resolve-project.js'
 
 /**
  * `task create` 的标准化参数。

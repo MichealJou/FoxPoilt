@@ -13,16 +13,16 @@ import {
   ensureGlobalConfig,
   findMatchingWorkspaceRoot,
   type GlobalConfig,
-} from '@/config/global-config.js'
+} from '@infra/config/global-config.js'
 import {
   createCatalogStore,
   type ProjectCatalogInput,
   type ProjectRow,
   type RepositoryRow,
   type WorkspaceRootRow,
-} from '@/db/catalog-store.js'
-import { bootstrapDatabase } from '@/db/bootstrap.js'
-import { resolveGlobalConfigPath, resolveGlobalDatabasePath, resolveProjectConfigPath } from '@/core/paths.js'
+} from '@infra/db/catalog-store.js'
+import { bootstrapDatabase } from '@infra/db/bootstrap.js'
+import { resolveGlobalConfigPath, resolveGlobalDatabasePath, resolveProjectConfigPath } from '@infra/core/paths.js'
 import { isInterfaceLanguage, type InterfaceLanguage } from '@/i18n/interface-language.js'
 import { getMessages, type MessageCatalog } from '@/i18n/messages.js'
 import {
@@ -30,12 +30,12 @@ import {
   deriveProjectDisplayName,
   writeProjectConfig,
   type ProjectRepositoryConfig,
-} from '@/project/project-config.js'
-import { scanRepositories } from '@/project/scan-repositories.js'
-import { resolveProjectPlatformResolution } from '@/runtime/orchestrators/platform-resolver.js'
+} from '@infra/project/project-config.js'
+import { scanRepositories } from '@infra/project/scan-repositories.js'
+import { resolveProjectPlatformResolution } from '@runtime/orchestrators/platform-resolver.js'
 import { resolveProjectProfileId } from '@/commands/init/init-profile.js'
-import { collectProjectScanSignals } from '@/runtime/init/project-scan-signals.js'
-import { createInitRecommendation } from '@/runtime/init/init-recommendation-engine.js'
+import { collectProjectScanSignals } from '@runtime/init/project-scan-signals.js'
+import { createInitRecommendation } from '@runtime/init/init-recommendation-engine.js'
 
 import type {
   CliResult,

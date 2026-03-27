@@ -1,0 +1,5 @@
+{
+  "name": "@foxpilot/infra",
+  "private": true,
+  "type": "module"
+}

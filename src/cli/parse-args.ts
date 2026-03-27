@@ -4,7 +4,7 @@
  */
 
 import type { InterfaceLanguage } from '@/i18n/interface-language.js'
-import type { ProjectProfileId } from '@/contracts/orchestration-contract.js'
+import type { ProjectProfileId } from '@contracts/orchestration-contract.js'
 import { isProjectProfileId } from '@/commands/init/init-profile.js'
 
 /**

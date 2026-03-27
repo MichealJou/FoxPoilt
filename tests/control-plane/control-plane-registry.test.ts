@@ -7,7 +7,7 @@ import {
   collectControlPlaneOverview,
   collectMcpRegistry,
   collectSkillRegistry,
-} from '@/control-plane/control-plane-registry.js'
+} from '@control-plane/control-plane-registry.js'
 import { createTempDir, removeTempDir } from '@tests/helpers/tmp-dir.js'
 
 describe('control-plane registry', () => {

@@ -208,9 +208,9 @@ async function loadModules(): Promise<{
   }
   createTaskStore: (db: unknown) => TaskStore
 }> {
-  const bootstrap = await import('@/db/bootstrap.js')
-  const catalogStore = await import('@/db/catalog-store.js')
-  const taskStore = await import('@/db/task-store.js')
+  const bootstrap = await import('@infra/db/bootstrap.js')
+  const catalogStore = await import('@infra/db/catalog-store.js')
+  const taskStore = await import('@infra/db/task-store.js')
 
   return {
     bootstrapDatabase: bootstrap.bootstrapDatabase,

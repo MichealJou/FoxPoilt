@@ -8,10 +8,10 @@ import path from 'node:path'
 
 import type { CliResult } from '@/commands/init/init-types.js'
 import { toJsonErrorOutput, toJsonSuccessOutput } from '@/cli/json-output.js'
-import { dispatchUninstall } from '@/install/uninstall-dispatcher.js'
-import { readInstallManifest } from '@/install/install-manifest.js'
-import { unregisterCurrentInstallation } from '@/install/install-index.js'
-import { runBrewUninstall, runNpmUninstall, runReleaseUninstall } from '@/install/uninstall-runner.js'
+import { dispatchUninstall } from '@infra/install/uninstall-dispatcher.js'
+import { readInstallManifest } from '@infra/install/install-manifest.js'
+import { unregisterCurrentInstallation } from '@infra/install/install-index.js'
+import { runBrewUninstall, runNpmUninstall, runReleaseUninstall } from '@infra/install/uninstall-runner.js'
 
 import type {
   SystemUninstallArgs,

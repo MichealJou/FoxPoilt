@@ -1,5 +1,5 @@
 import type { CliRuntimeContext } from '@/cli/runtime-context.js'
-import type { collectSkillRegistry } from '@/control-plane/control-plane-registry.js'
+import type { collectSkillRegistry } from '@control-plane/control-plane-registry.js'
 
 export type SkillsListArgs = {
   command: 'skills'

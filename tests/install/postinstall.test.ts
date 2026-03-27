@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import type { FoundationSetupResult } from '@/foundation/foundation-installer.js'
-import type { InstallManifest } from '@/install/install-types.js'
+import type { FoundationSetupResult } from '@integrations/foundation/foundation-installer.js'
+import type { InstallManifest } from '@infra/install/install-types.js'
 
 describe('postinstall integration', () => {
   afterEach(() => {
@@ -11,7 +11,7 @@ describe('postinstall integration', () => {
   })
 
   it('runs foundation setup during install flow', async () => {
-    const { runPostinstall } = await import('@/install/postinstall.js')
+    const { runPostinstall } = await import('@infra/install/postinstall.js')
 
     const registerCurrentInstallation = vi.fn(async () => ({
       manifest: {
@@ -23,7 +23,7 @@ describe('postinstall integration', () => {
         platform: process.platform,
         arch: process.arch,
         installRoot: '/tmp/global-install',
-        binPath: '/tmp/global-install/dist/cli/run.js',
+        binPath: '/tmp/global-install/dist/src/cli/run.js',
         updateTarget: {
           npmPackage: 'foxpilot',
         },
@@ -68,7 +68,7 @@ describe('postinstall integration', () => {
       cwd: '/tmp/global-install',
       packageRoot: '/tmp/global-install',
       homeDir: '/Users/demo',
-      executablePath: '/tmp/global-install/dist/cli/run.js',
+      executablePath: '/tmp/global-install/dist/src/cli/run.js',
       registerCurrentInstallation,
       readPackageMetadata,
       setupFoundationPack,
@@ -87,7 +87,7 @@ describe('postinstall integration', () => {
 
   it('does not skip consumer install when INIT_CWD equals consumer root but package root differs', async () => {
     process.env.INIT_CWD = '/tmp/consumer-root'
-    const { runPostinstall } = await import('@/install/postinstall.js')
+    const { runPostinstall } = await import('@infra/install/postinstall.js')
 
     const registerCurrentInstallation = vi.fn(async () => ({
       manifest: {
@@ -99,7 +99,7 @@ describe('postinstall integration', () => {
         platform: process.platform,
         arch: process.arch,
         installRoot: '/tmp/consumer-root/node_modules/foxpilot',
-        binPath: '/tmp/consumer-root/node_modules/foxpilot/dist/cli/run.js',
+        binPath: '/tmp/consumer-root/node_modules/foxpilot/dist/src/cli/run.js',
         updateTarget: {
           npmPackage: 'foxpilot',
         },
@@ -137,14 +137,14 @@ describe('postinstall integration', () => {
     expect(registerCurrentInstallation).toHaveBeenCalledWith(
       expect.objectContaining({
         installRoot: '/tmp/consumer-root/node_modules/foxpilot',
-        executablePath: '/tmp/consumer-root/node_modules/foxpilot/dist/cli/run.js',
+        executablePath: '/tmp/consumer-root/node_modules/foxpilot/dist/src/cli/run.js',
       }),
     )
   })
 
   it('skips foundation setup when FOXPILOT_SKIP_FOUNDATION_PACK=1', async () => {
     process.env.FOXPILOT_SKIP_FOUNDATION_PACK = '1'
-    const { runPostinstall } = await import('@/install/postinstall.js')
+    const { runPostinstall } = await import('@infra/install/postinstall.js')
 
     const registerCurrentInstallation = vi.fn(async () => ({
       manifest: {
@@ -156,7 +156,7 @@ describe('postinstall integration', () => {
         platform: process.platform,
         arch: process.arch,
         installRoot: '/tmp/global-install',
-        binPath: '/tmp/global-install/dist/cli/run.js',
+        binPath: '/tmp/global-install/dist/src/cli/run.js',
         updateTarget: {
           npmPackage: 'foxpilot',
         },
@@ -188,7 +188,7 @@ describe('postinstall integration', () => {
       cwd: '/tmp/global-install',
       packageRoot: '/tmp/global-install',
       homeDir: '/Users/demo',
-      executablePath: '/tmp/global-install/dist/cli/run.js',
+      executablePath: '/tmp/global-install/dist/src/cli/run.js',
       registerCurrentInstallation,
       readPackageMetadata,
       setupFoundationPack,

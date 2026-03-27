@@ -4,7 +4,7 @@
  */
 
 import type { CliRuntimeContext } from '@/cli/runtime-context.js'
-import type { InstallManifest } from '@/install/install-types.js'
+import type { InstallManifest } from '@infra/install/install-types.js'
 
 /**
  * `uninstall` 命令接受的标准化参数。

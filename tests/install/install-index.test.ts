@@ -3,7 +3,7 @@ import path from 'node:path'
 
 import { afterEach, describe, expect, it } from 'vitest'
 
-import { registerCurrentInstallation } from '@/install/install-index.js'
+import { registerCurrentInstallation } from '@infra/install/install-index.js'
 import { createTempDir, removeTempDir } from '@tests/helpers/tmp-dir.js'
 
 describe('install index registration', () => {

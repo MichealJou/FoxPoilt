@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 describe('uninstall runner', () => {
   it('builds the npm uninstall command', async () => {
-    const { runNpmUninstall } = await import('@/install/uninstall-runner.js')
+    const { runNpmUninstall } = await import('@infra/install/uninstall-runner.js')
 
     const calls: Array<{ command: string; args: string[] }> = []
     const pathCleanupCalls: Array<{ homeDir: string; binDir: string }> = []
@@ -46,7 +46,7 @@ describe('uninstall runner', () => {
   })
 
   it('builds the brew uninstall command', async () => {
-    const { runBrewUninstall } = await import('@/install/uninstall-runner.js')
+    const { runBrewUninstall } = await import('@infra/install/uninstall-runner.js')
 
     const calls: Array<{ command: string; args: string[] }> = []
     const result = await runBrewUninstall(
@@ -75,7 +75,7 @@ describe('uninstall runner', () => {
   })
 
   it('removes release install files and default command shims', async () => {
-    const { runReleaseUninstall } = await import('@/install/uninstall-runner.js')
+    const { runReleaseUninstall } = await import('@infra/install/uninstall-runner.js')
 
     const removedPaths: string[] = []
     const pathCleanupCalls: Array<{ homeDir: string; binDir: string }> = []
@@ -113,7 +113,7 @@ describe('uninstall runner', () => {
   })
 
   it('removes the Windows user PATH entry for npm installs', async () => {
-    const { runNpmUninstall } = await import('@/install/uninstall-runner.js')
+    const { runNpmUninstall } = await import('@infra/install/uninstall-runner.js')
 
     const removedEntries: string[] = []
     const result = await runNpmUninstall(

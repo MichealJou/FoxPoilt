@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { resolveProjectPlatformResolution } from '@/runtime/orchestrators/platform-resolver.js'
+import { resolveProjectPlatformResolution } from '@runtime/orchestrators/platform-resolver.js'
 
 describe('platform resolver', () => {
   it('falls back to manual when the recommended platform is missing', async () => {

@@ -1,0 +1,5 @@
+{
+  "name": "@foxpilot/integrations",
+  "private": true,
+  "type": "module"
+}

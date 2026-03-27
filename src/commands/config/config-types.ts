@@ -4,7 +4,7 @@
  */
 
 import type { CliRuntimeContext } from '@/cli/runtime-context.js'
-import type { ensureGlobalConfig } from '@/config/global-config.js'
+import type { ensureGlobalConfig } from '@infra/config/global-config.js'
 import type { InterfaceLanguage } from '@/i18n/interface-language.js'
 
 /**

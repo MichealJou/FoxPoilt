@@ -4,7 +4,7 @@
  */
 
 import type { CliRuntimeContext } from '@/cli/runtime-context.js'
-import type { runFoundationDoctor } from '@/foundation/foundation-doctor.js'
+import type { runFoundationDoctor } from '@integrations/foundation/foundation-doctor.js'
 
 export type SystemFoundationArgs = {
   command: 'foundation'

@@ -39,14 +39,14 @@ build_unix_archive() {
 #!/usr/bin/env sh
 set -eu
 SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
-exec node "${SCRIPT_DIR}/dist/cli/run.js" "$@"
+exec node "${SCRIPT_DIR}/dist/src/cli/run.js" "$@"
 EOF
 
   cat >"${stage_dir}/fp" <<'EOF'
 #!/usr/bin/env sh
 set -eu
 SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
-exec node "${SCRIPT_DIR}/dist/cli/run.js" "$@"
+exec node "${SCRIPT_DIR}/dist/src/cli/run.js" "$@"
 EOF
 
   chmod +x "${stage_dir}/foxpilot" "${stage_dir}/fp"
@@ -67,12 +67,12 @@ build_windows_archive() {
 
   cat >"${stage_dir}/foxpilot.cmd" <<'EOF'
 @echo off
-node "%~dp0dist\cli\run.js" %*
+node "%~dp0dist\src\cli\run.js" %*
 EOF
 
   cat >"${stage_dir}/fp.cmd" <<'EOF'
 @echo off
-node "%~dp0dist\cli\run.js" %*
+node "%~dp0dist\src\cli\run.js" %*
 EOF
 
   (

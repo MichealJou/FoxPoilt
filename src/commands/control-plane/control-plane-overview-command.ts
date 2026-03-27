@@ -1,6 +1,6 @@
 import { toJsonSuccessOutput } from '@/cli/json-output.js'
 import type { CliResult } from '@/commands/init/init-types.js'
-import { collectControlPlaneOverview } from '@/control-plane/control-plane-registry.js'
+import { collectControlPlaneOverview } from '@control-plane/control-plane-registry.js'
 
 import type {
   ControlPlaneOverviewArgs,

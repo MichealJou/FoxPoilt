@@ -13,6 +13,21 @@
       "@/*": [
         "src/*"
       ],
+      "@contracts/*": [
+        "packages/contracts/src/*"
+      ],
+      "@runtime/*": [
+        "packages/runtime/src/*"
+      ],
+      "@control-plane/*": [
+        "packages/runtime/src/read-models/*"
+      ],
+      "@infra/*": [
+        "packages/infra/src/*"
+      ],
+      "@integrations/*": [
+        "packages/integrations/src/*"
+      ],
       "@desktop/*": [
         "apps/desktop/src/*"
       ],
@@ -34,6 +49,8 @@
   "include": [
     "src/**/*.ts",
     "src/**/*.tsx",
+    "packages/**/*.ts",
+    "packages/**/*.tsx",
     "apps/desktop/src/**/*.ts",
     "apps/desktop/src/**/*.tsx",
     "tests/**/*.ts",

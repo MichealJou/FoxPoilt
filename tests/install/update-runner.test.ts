@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 describe('update runner', () => {
   it('builds the npm update command', async () => {
-    const { runNpmUpdate } = await import('@/install/update-runner.js')
+    const { runNpmUpdate } = await import('@infra/install/update-runner.js')
 
     const calls: Array<{ command: string; args: string[] }> = []
     const result = await runNpmUpdate(
@@ -30,7 +30,7 @@ describe('update runner', () => {
   })
 
   it('builds the brew update command', async () => {
-    const { runBrewUpdate } = await import('@/install/update-runner.js')
+    const { runBrewUpdate } = await import('@infra/install/update-runner.js')
 
     const calls: Array<{ command: string; args: string[] }> = []
     const result = await runBrewUpdate(
@@ -58,7 +58,7 @@ describe('update runner', () => {
   })
 
   it('builds the unix release update command', async () => {
-    const { runReleaseUpdate } = await import('@/install/update-runner.js')
+    const { runReleaseUpdate } = await import('@infra/install/update-runner.js')
 
     const calls: Array<{ command: string; args: string[] }> = []
     const result = await runReleaseUpdate(

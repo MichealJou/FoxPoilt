@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 describe('update dispatcher', () => {
   it('maps npm manifests to the npm update branch', async () => {
-    const { dispatchUpdate } = await import('@/install/update-dispatcher.js')
+    const { dispatchUpdate } = await import('@infra/install/update-dispatcher.js')
 
     const result = await dispatchUpdate(
       {
@@ -22,7 +22,7 @@ describe('update dispatcher', () => {
   })
 
   it('maps brew manifests to the brew update branch', async () => {
-    const { dispatchUpdate } = await import('@/install/update-dispatcher.js')
+    const { dispatchUpdate } = await import('@infra/install/update-dispatcher.js')
 
     const result = await dispatchUpdate(
       {
@@ -42,7 +42,7 @@ describe('update dispatcher', () => {
   })
 
   it('maps release manifests to the release update branch', async () => {
-    const { dispatchUpdate } = await import('@/install/update-dispatcher.js')
+    const { dispatchUpdate } = await import('@infra/install/update-dispatcher.js')
 
     const result = await dispatchUpdate(
       {

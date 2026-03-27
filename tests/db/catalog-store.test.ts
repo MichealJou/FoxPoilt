@@ -55,8 +55,8 @@ async function loadModules(): Promise<{
   createCatalogStore: (db: unknown) => CatalogStore
 }> {
   try {
-    const bootstrap = await import('@/db/bootstrap.js')
-    const store = await import('@/db/catalog-store.js')
+    const bootstrap = await import('@infra/db/bootstrap.js')
+    const store = await import('@infra/db/catalog-store.js')
 
     return {
       bootstrapDatabase: bootstrap.bootstrapDatabase,

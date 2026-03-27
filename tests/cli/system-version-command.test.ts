@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { readPackageVersion } from '@/install/package-info.js'
+import { readPackageVersion } from '@infra/install/package-info.js'
 import { runCli } from '@tests/helpers/run-cli.js'
 
 describe('version CLI', () => {

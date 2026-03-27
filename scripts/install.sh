@@ -70,7 +70,7 @@ path_config_output=""
 path_config_exit_code=0
 
 if path_config_output="$(
-  node "${install_dir}/dist/install/configure-shell-path.js" \
+  node "${install_dir}/dist/packages/infra/src/install/configure-shell-path.js" \
     --bin-dir "${bin_dir}" \
     --shell-path "${SHELL:-}" 2>&1
 )"; then

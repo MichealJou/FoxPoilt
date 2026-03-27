@@ -5,7 +5,7 @@
 
 import type { CliResult } from '@/commands/init/init-types.js'
 import { toJsonSuccessOutput } from '@/cli/json-output.js'
-import { readPackageVersion } from '@/install/package-info.js'
+import { readPackageVersion } from '@infra/install/package-info.js'
 
 import type { SystemVersionArgs, SystemVersionContext } from '@/commands/system/system-version-types.js'
 

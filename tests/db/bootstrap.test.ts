@@ -16,7 +16,7 @@ async function loadBootstrapModule(): Promise<{
   bootstrapDatabase: BootstrapDatabase
 }> {
   try {
-    return await import('@/db/bootstrap.js')
+    return await import('@infra/db/bootstrap.js')
   } catch {
     return {
       bootstrapDatabase: async () => ({

@@ -4,9 +4,9 @@ import {
   collectDeclaredBeadsExternalTaskIds,
   decideBeadsImportAction,
   normalizeBeadsSnapshot,
-} from '@/sync/beads-import-service.js'
+} from '@integrations/sync/beads-import-service.js'
 
-import type { ProjectConfig } from '@/project/project-config.js'
+import type { ProjectConfig } from '@infra/project/project-config.js'
 
 function createProjectConfig(): ProjectConfig {
   return {

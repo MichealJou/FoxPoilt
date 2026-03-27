@@ -6,6 +6,21 @@
       "@/*": [
         "../../src/*"
       ],
+      "@contracts/*": [
+        "../../packages/contracts/src/*"
+      ],
+      "@runtime/*": [
+        "../../packages/runtime/src/*"
+      ],
+      "@control-plane/*": [
+        "../../packages/runtime/src/read-models/*"
+      ],
+      "@infra/*": [
+        "../../packages/infra/src/*"
+      ],
+      "@integrations/*": [
+        "../../packages/integrations/src/*"
+      ],
       "@desktop/*": [
         "./src/*"
       ],
@@ -17,6 +32,8 @@
   "include": [
     "src/**/*.ts",
     "src/**/*.tsx",
-    "vite.config.ts"
+    "vite.config.ts",
+    "../../packages/**/*.ts",
+    "../../packages/**/*.tsx"
   ]
 }

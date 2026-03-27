@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
-import { createInitRecommendation } from '@/runtime/init/init-recommendation-engine.js'
-import type { ProjectScanSignals } from '@/runtime/init/project-scan-signals.js'
+import { createInitRecommendation } from '@runtime/init/init-recommendation-engine.js'
+import type { ProjectScanSignals } from '@runtime/init/project-scan-signals.js'
 
 function createSignals(overrides: Partial<ProjectScanSignals> = {}): ProjectScanSignals {
   return {

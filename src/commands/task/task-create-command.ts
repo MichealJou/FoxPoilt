@@ -8,17 +8,17 @@ import path from 'node:path'
 
 import { toJsonErrorOutput, toJsonSuccessOutput } from '@/cli/json-output.js'
 import type { CliResult } from '@/commands/init/init-types.js'
-import { readGlobalConfig, GlobalConfigParseError } from '@/config/global-config.js'
-import { bootstrapDatabase } from '@/db/bootstrap.js'
-import { createTaskStore, type TaskTargetRow } from '@/db/task-store.js'
-import { resolveGlobalDatabasePath } from '@/core/paths.js'
+import { readGlobalConfig, GlobalConfigParseError } from '@infra/config/global-config.js'
+import { bootstrapDatabase } from '@infra/db/bootstrap.js'
+import { createTaskStore, type TaskTargetRow } from '@infra/db/task-store.js'
+import { resolveGlobalDatabasePath } from '@infra/core/paths.js'
 import { getMessages } from '@/i18n/messages.js'
 import {
   ProjectNotInitializedError,
   RepositoryTargetNotFoundError,
   resolveManagedProject,
   resolveRepositoryTarget,
-} from '@/project/resolve-project.js'
+} from '@infra/project/resolve-project.js'
 
 import type { TaskCreateArgs, TaskCreateContext, TaskCreateDependencies } from '@/commands/task/task-create-types.js'
 

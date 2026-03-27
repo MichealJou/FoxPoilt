@@ -4,7 +4,7 @@
  */
 
 import type { CliRuntimeContext } from '@/cli/runtime-context.js'
-import type { InstallIndexEntry, InstallManifest } from '@/install/install-types.js'
+import type { InstallIndexEntry, InstallManifest } from '@infra/install/install-types.js'
 
 /**
  * `install-info` 命令只接受帮助开关。

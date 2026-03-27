@@ -4,8 +4,8 @@
   "private": false,
   "type": "module",
   "bin": {
-    "foxpilot": "dist/cli/run.js",
-    "fp": "dist/cli/run.js"
+    "foxpilot": "dist/src/cli/run.js",
+    "fp": "dist/src/cli/run.js"
   },
   "files": [
     "dist",
@@ -17,7 +17,7 @@
     "README.ja.md"
   ],
   "scripts": {
-    "build": "pnpm clean && tsc -p tsconfig.build.json && tsc-alias -p tsconfig.build.json && mkdir -p dist/db && cp ../../docs/specs/sql/foxpilot-phase1-init.sql dist/db/foxpilot-phase1-init.sql",
+    "build": "pnpm clean && tsc -p tsconfig.build.json && tsc-alias -p tsconfig.build.json && mkdir -p dist/packages/infra/src/db && cp ../../docs/specs/sql/foxpilot-phase1-init.sql dist/packages/infra/src/db/foxpilot-phase1-init.sql",
     "clean": "rm -rf dist",
     "cli": "tsx ../../src/cli/run.ts",
     "postinstall": "node scripts/postinstall.js"

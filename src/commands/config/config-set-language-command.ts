@@ -3,7 +3,7 @@
  * @author michaeljou
  */
 
-import { ensureGlobalConfig, GlobalConfigParseError } from '@/config/global-config.js'
+import { ensureGlobalConfig, GlobalConfigParseError } from '@infra/config/global-config.js'
 import { getMessages } from '@/i18n/messages.js'
 
 import type { CliResult } from '@/commands/init/init-types.js'

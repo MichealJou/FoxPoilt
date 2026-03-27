@@ -7,25 +7,25 @@ import path from 'node:path'
 
 import { toJsonErrorOutput, toJsonSuccessOutput } from '@/cli/json-output.js'
 import type { CliResult } from '@/commands/init/init-types.js'
-import { resolveGlobalDatabasePath } from '@/core/paths.js'
-import { bootstrapDatabase } from '@/db/bootstrap.js'
-import { createTaskStore } from '@/db/task-store.js'
+import { resolveGlobalDatabasePath } from '@infra/core/paths.js'
+import { bootstrapDatabase } from '@infra/db/bootstrap.js'
+import { createTaskStore } from '@infra/db/task-store.js'
 import { getMessages } from '@/i18n/messages.js'
 import {
   ProjectNotInitializedError,
   RepositoryTargetNotFoundError,
   resolveManagedProject,
   resolveRepositoryTarget,
-} from '@/project/resolve-project.js'
+} from '@infra/project/resolve-project.js'
 import {
   hasLocalBeadsRepository,
   normalizeBdIssueList,
   runBdList,
-} from '@/sync/beads-bd-service.js'
+} from '@integrations/sync/beads-bd-service.js'
 import {
   applyBeadsImportSnapshot,
   buildRepositoryId,
-} from '@/sync/beads-import-service.js'
+} from '@integrations/sync/beads-import-service.js'
 
 import type {
   TaskSyncBeadsArgs,

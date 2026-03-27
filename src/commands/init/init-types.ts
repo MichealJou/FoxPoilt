@@ -4,15 +4,15 @@
  */
 
 import type { CliRuntimeContext } from '@/cli/runtime-context.js'
-import type { ensureGlobalConfig } from '@/config/global-config.js'
-import type { ProjectProfileId } from '@/contracts/orchestration-contract.js'
-import type { createCatalogStore } from '@/db/catalog-store.js'
-import type { bootstrapDatabase } from '@/db/bootstrap.js'
-import type { writeProjectConfig } from '@/project/project-config.js'
-import type { scanRepositories } from '@/project/scan-repositories.js'
-import type { InitRecommendationResult } from '@/runtime/init/init-recommendation-engine.js'
-import type { ProjectScanSignals } from '@/runtime/init/project-scan-signals.js'
-import type { resolveProjectPlatformResolution } from '@/runtime/orchestrators/platform-resolver.js'
+import type { ensureGlobalConfig } from '@infra/config/global-config.js'
+import type { ProjectProfileId } from '@contracts/orchestration-contract.js'
+import type { createCatalogStore } from '@infra/db/catalog-store.js'
+import type { bootstrapDatabase } from '@infra/db/bootstrap.js'
+import type { writeProjectConfig } from '@infra/project/project-config.js'
+import type { scanRepositories } from '@infra/project/scan-repositories.js'
+import type { InitRecommendationResult } from '@runtime/init/init-recommendation-engine.js'
+import type { ProjectScanSignals } from '@runtime/init/project-scan-signals.js'
+import type { resolveProjectPlatformResolution } from '@runtime/orchestrators/platform-resolver.js'
 
 /**
  * 初始化流程支持的交互模式。

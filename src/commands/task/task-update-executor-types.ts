@@ -5,9 +5,9 @@
 
 import type { CliRuntimeContext } from '@/cli/runtime-context.js'
 import type { TaskReferenceArgs } from '@/commands/task/task-reference.js'
-import type { bootstrapDatabase } from '@/db/bootstrap.js'
-import type { createTaskStore } from '@/db/task-store.js'
-import type { resolveManagedProject } from '@/project/resolve-project.js'
+import type { bootstrapDatabase } from '@infra/db/bootstrap.js'
+import type { createTaskStore } from '@infra/db/task-store.js'
+import type { resolveManagedProject } from '@infra/project/resolve-project.js'
 
 /**
  * `task update-executor` 接受的执行器集合。

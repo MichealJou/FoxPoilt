@@ -1,6 +1,6 @@
 import { toJsonSuccessOutput } from '@/cli/json-output.js'
 import type { CliResult } from '@/commands/init/init-types.js'
-import { collectSkillRegistry } from '@/control-plane/control-plane-registry.js'
+import { collectSkillRegistry } from '@control-plane/control-plane-registry.js'
 
 import type {
   SkillsDoctorArgs,

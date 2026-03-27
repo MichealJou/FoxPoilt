@@ -3,7 +3,7 @@
  * @author michaeljou
  */
 
-import type { createTaskStore } from '@/db/task-store.js'
+import type { createTaskStore } from '@infra/db/task-store.js'
 
 /**
  * 当前 CLI 支持的外部任务来源键。
