@@ -55,6 +55,9 @@
 - `docs/specs/foxpilot-phase2-workspace-page-selection-model.md`
 - `docs/specs/foxpilot-phase2-event-timeline-grouping-model.md`
 - `docs/specs/foxpilot-phase2-control-plane-status-summary-model.md`
+- `docs/specs/foxpilot-phase2-object-detail-drilldown-model.md`
+- `docs/specs/foxpilot-phase2-desktop-route-state-policy.md`
+- `docs/specs/foxpilot-phase2-dashboard-card-and-alert-entry-policy.md`
 
 ---
 
@@ -178,6 +181,12 @@
   - 事件时间线分组服务
 - `src/runtime/read-models/control-plane-status-summary-service.ts`
   - Control Plane 状态汇总服务
+- `src/ui/navigation/route-state-policy.ts`
+  - 桌面端可恢复路由状态规则
+- `src/ui/navigation/drilldown-context.ts`
+  - 对象详情钻取上下文
+- `src/ui/pages/dashboard/dashboard-alert-entry-policy.ts`
+  - Dashboard 异常入口策略
 - `src/runtime/actions/task-run-detail-action-service.ts`
   - Tasks / Runs 详情动作服务
 - `src/runtime/actions/control-plane-bulk-action-policy.ts`
@@ -272,6 +281,12 @@
   - 事件时间线分组测试
 - `tests/runtime/control-plane-status-summary-service.test.ts`
   - 中控状态汇总测试
+- `tests/ui/object-detail-drilldown-model.test.ts`
+  - 对象详情钻取测试
+- `tests/ui/desktop-route-state-policy.test.ts`
+  - 桌面端路由状态测试
+- `tests/ui/dashboard-card-and-alert-entry-policy.test.ts`
+  - Dashboard 卡片与异常入口策略测试
 - `tests/runtime/task-run-detail-action-service.test.ts`
   - Tasks / Runs 详情动作测试
 - `tests/runtime/control-plane-bulk-action-policy.test.ts`
@@ -337,6 +352,9 @@
 - Workspace Page Selection Model 必须统一项目与仓库选择语义
 - Event Timeline Grouping Model 必须防止事件页退化成日志墙
 - Control Plane Status Summary Model 必须统一 Dashboard 与中控首页的状态口径
+- Object Detail Drilldown Model 必须统一从摘要到详情的进入规则
+- Desktop Route State Policy 必须保证页面返回和恢复稳定
+- Dashboard Card and Alert Entry Policy 必须防止首页退化成告警墙
 - 保持 TDD：先写失败测试，再补最小实现
 
 ### Task 0: 双入口与 Shared Runtime 基线

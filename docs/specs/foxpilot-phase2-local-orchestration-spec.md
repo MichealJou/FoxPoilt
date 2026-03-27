@@ -667,6 +667,9 @@ Portfolio + Tasks + Runs + Health + Control Plane + Focus Queue
 - Workspace 页面选择模型
 - 事件时间线分组模型
 - Control Plane 状态汇总模型
+- 对象详情钻取模型
+- 桌面路由状态策略
+- Dashboard 卡片与异常入口策略
 - Desktop Bridge 契约
 - 桌面读模型契约
 - Init Wizard 状态机
@@ -716,3 +719,6 @@ Portfolio + Tasks + Runs + Health + Control Plane + Focus Queue
 - `Workspace Page Selection Model` 作为项目 / 仓库统一视图规则
 - `Event Timeline Grouping Model` 作为事件页链路分组规则
 - `Control Plane Status Summary Model` 作为中控首页汇总口径
+- `Object Detail Drilldown Model` 作为跨页面详情进入规则
+- `Desktop Route State Policy` 作为可恢复页面状态规则
+- `Dashboard Card and Alert Entry Policy` 作为首页块状信息与异常导向规则
