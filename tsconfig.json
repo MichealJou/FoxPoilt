@@ -3,6 +3,11 @@
     "target": "ES2022",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
     "baseUrl": ".",
     "paths": {
       "@/*": [
@@ -12,6 +17,8 @@
         "tests/*"
       ]
     },
+    "jsx": "react-jsx",
+    "resolveJsonModule": true,
     "strict": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
@@ -23,7 +30,10 @@
   },
   "include": [
     "src/**/*.ts",
+    "src/**/*.tsx",
     "tests/**/*.ts",
+    "tests/**/*.tsx",
+    "vite.config.ts",
     "vitest.config.ts"
   ]
 }
