@@ -3,7 +3,7 @@
  * @author michaeljou
  */
 
-import type { SqliteDatabase } from '@infra/db/connect.js'
+import type { SqliteDatabase } from '@foxpilot/infra/db/connect.js'
 
 /**
  * `task` 表的行模型。

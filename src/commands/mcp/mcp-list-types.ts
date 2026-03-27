@@ -1,5 +1,5 @@
 import type { CliRuntimeContext } from '@/cli/runtime-context.js'
-import type { collectMcpRegistry } from '@control-plane/control-plane-registry.js'
+import type { collectMcpRegistry } from '@foxpilot/runtime/read-models/control-plane-registry.js'
 
 export type McpListArgs = {
   command: 'mcp'

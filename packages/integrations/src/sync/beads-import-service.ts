@@ -10,13 +10,13 @@ import type {
   ExternalTaskSnapshotRow,
   TaskRow,
   TaskTargetRow,
-} from '@infra/db/task-store.js'
-import type { createTaskStore } from '@infra/db/task-store.js'
-import type { ProjectConfig } from '@infra/project/project-config.js'
+} from '@foxpilot/infra/db/task-store.js'
+import type { createTaskStore } from '@foxpilot/infra/db/task-store.js'
+import type { ProjectConfig } from '@foxpilot/infra/project/project-config.js'
 import {
   RepositoryTargetNotFoundError,
   resolveRepositoryTarget,
-} from '@infra/project/resolve-project.js'
+} from '@foxpilot/infra/project/resolve-project.js'
 
 type BeadsSnapshotRecord = {
   externalTaskId?: unknown

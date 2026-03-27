@@ -6,7 +6,7 @@
 import { exec } from 'node:child_process'
 import { promisify } from 'node:util'
 
-import type { FoundationTool } from '@integrations/foundation/foundation-profile.js'
+import type { FoundationTool } from '@foxpilot/integrations/foundation/foundation-profile.js'
 
 const execAsync = promisify(exec)
 

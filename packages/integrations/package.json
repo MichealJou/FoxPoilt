@@ -1,5 +1,12 @@
 {
   "name": "@foxpilot/integrations",
+  "version": "0.1.4",
   "private": true,
-  "type": "module"
+  "type": "module",
+  "exports": {
+    "./*": "./src/*"
+  },
+  "dependencies": {
+    "@foxpilot/infra": "workspace:*"
+  }
 }

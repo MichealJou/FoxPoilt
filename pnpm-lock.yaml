@@ -96,9 +96,28 @@ importers:
       better-sqlite3:
         specifier: ^11.8.1
         version: 11.10.0
+    devDependencies:
+      '@foxpilot/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
+      '@foxpilot/infra':
+        specifier: workspace:*
+        version: link:../../packages/infra
+      '@foxpilot/integrations':
+        specifier: workspace:*
+        version: link:../../packages/integrations
+      '@foxpilot/runtime':
+        specifier: workspace:*
+        version: link:../../packages/runtime
 
   apps/desktop:
     dependencies:
+      '@foxpilot/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
+      '@foxpilot/runtime':
+        specifier: workspace:*
+        version: link:../../packages/runtime
       '@tauri-apps/api':
         specifier: ^2.10.1
         version: 2.10.1
@@ -145,6 +164,29 @@ importers:
       vite:
         specifier: ^8.0.3
         version: 8.0.3(@types/node@22.19.15)(esbuild@0.27.4)(jiti@2.6.1)(tsx@4.21.0)
+
+  packages/contracts: {}
+
+  packages/infra:
+    dependencies:
+      '@foxpilot/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+
+  packages/integrations:
+    dependencies:
+      '@foxpilot/infra':
+        specifier: workspace:*
+        version: link:../infra
+
+  packages/runtime:
+    dependencies:
+      '@foxpilot/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@foxpilot/infra':
+        specifier: workspace:*
+        version: link:../infra
 
 packages:
 

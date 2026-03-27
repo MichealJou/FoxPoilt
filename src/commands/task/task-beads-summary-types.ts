@@ -4,9 +4,9 @@
  */
 
 import type { CliRuntimeContext } from '@/cli/runtime-context.js'
-import type { bootstrapDatabase } from '@infra/db/bootstrap.js'
-import type { createTaskStore } from '@infra/db/task-store.js'
-import type { resolveManagedProject } from '@infra/project/resolve-project.js'
+import type { bootstrapDatabase } from '@foxpilot/infra/db/bootstrap.js'
+import type { createTaskStore } from '@foxpilot/infra/db/task-store.js'
+import type { resolveManagedProject } from '@foxpilot/infra/project/resolve-project.js'
 
 /**
  * `task beads-summary` 的标准化参数。

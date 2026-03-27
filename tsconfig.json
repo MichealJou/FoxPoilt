@@ -13,19 +13,16 @@
       "@/*": [
         "src/*"
       ],
-      "@contracts/*": [
+      "@foxpilot/contracts/*": [
         "packages/contracts/src/*"
       ],
-      "@runtime/*": [
+      "@foxpilot/runtime/*": [
         "packages/runtime/src/*"
       ],
-      "@control-plane/*": [
-        "packages/runtime/src/read-models/*"
-      ],
-      "@infra/*": [
+      "@foxpilot/infra/*": [
         "packages/infra/src/*"
       ],
-      "@integrations/*": [
+      "@foxpilot/integrations/*": [
         "packages/integrations/src/*"
       ],
       "@desktop/*": [

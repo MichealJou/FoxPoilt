@@ -5,7 +5,7 @@
 
 import { toJsonSuccessOutput } from '@/cli/json-output.js'
 import type { CliResult } from '@/commands/init/init-types.js'
-import { readInstallIndex, readInstallManifest } from '@infra/install/install-manifest.js'
+import { readInstallIndex, readInstallManifest } from '@foxpilot/infra/install/install-manifest.js'
 
 import type {
   SystemInstallInfoArgs,

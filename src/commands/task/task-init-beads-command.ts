@@ -13,8 +13,8 @@ import {
   RepositoryTargetNotFoundError,
   resolveManagedProject,
   resolveRepositoryTarget,
-} from '@infra/project/resolve-project.js'
-import { hasLocalBeadsRepository, runBdInit } from '@integrations/sync/beads-bd-service.js'
+} from '@foxpilot/infra/project/resolve-project.js'
+import { hasLocalBeadsRepository, runBdInit } from '@foxpilot/integrations/sync/beads-bd-service.js'
 
 import type {
   TaskInitBeadsArgs,

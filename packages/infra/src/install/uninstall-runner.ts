@@ -7,8 +7,8 @@ import { rm, unlink } from 'node:fs/promises'
 import path from 'node:path'
 import { spawn } from 'node:child_process'
 
-import { removeUnixShellPath, removeWindowsPathEntry } from '@infra/install/shell-path.js'
-import type { InstallManifest } from '@infra/install/install-types.js'
+import { removeUnixShellPath, removeWindowsPathEntry } from '@foxpilot/infra/install/shell-path.js'
+import type { InstallManifest } from '@foxpilot/infra/install/install-types.js'
 
 export type UninstallCommandResult = {
   exitCode: number

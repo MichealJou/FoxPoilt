@@ -1,6 +1,6 @@
 import { toJsonErrorOutput, toJsonSuccessOutput } from '@/cli/json-output.js'
 import type { CliResult } from '@/commands/init/init-types.js'
-import { collectSkillRegistry } from '@control-plane/control-plane-registry.js'
+import { collectSkillRegistry } from '@foxpilot/runtime/read-models/control-plane-registry.js'
 
 import type {
   SkillsInspectArgs,

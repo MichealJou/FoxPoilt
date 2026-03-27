@@ -5,9 +5,9 @@
 
 import type { CliResult } from '@/commands/init/init-types.js'
 import { toJsonErrorOutput, toJsonSuccessOutput } from '@/cli/json-output.js'
-import { dispatchUpdate } from '@infra/install/update-dispatcher.js'
-import { readInstallManifest } from '@infra/install/install-manifest.js'
-import { runBrewUpdate, runNpmUpdate, runReleaseUpdate } from '@infra/install/update-runner.js'
+import { dispatchUpdate } from '@foxpilot/infra/install/update-dispatcher.js'
+import { readInstallManifest } from '@foxpilot/infra/install/install-manifest.js'
+import { runBrewUpdate, runNpmUpdate, runReleaseUpdate } from '@foxpilot/infra/install/update-runner.js'
 
 import type { SystemUpdateArgs, SystemUpdateContext, SystemUpdateDependencies } from '@/commands/system/system-update-types.js'
 

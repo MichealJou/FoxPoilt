@@ -7,7 +7,7 @@ import {
   ensureFoundationPack,
   type EnsureFoundationPackDependencies,
   type FoundationInspectionResult,
-} from '@integrations/foundation/foundation-installer.js'
+} from '@foxpilot/integrations/foundation/foundation-installer.js'
 
 /**
  * 当前第一批 doctor 先复用基础组合探测结果。

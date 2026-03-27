@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 
 import { createTempDir, removeTempDir } from '@tests/helpers/tmp-dir.js'
 
-import type { ProjectOrchestrationConfig } from '@contracts/orchestration-contract.js'
+import type { ProjectOrchestrationConfig } from '@foxpilot/contracts/orchestration-contract.js'
 
 type WriteProjectConfig = (input: {
   projectRoot: string
@@ -59,7 +59,7 @@ async function loadProjectConfigModule(): Promise<{
   ProjectAlreadyInitializedError: ErrorClass
 }> {
   try {
-    return await import('@infra/project/project-config.js')
+    return await import('@foxpilot/infra/project/project-config.js')
   } catch {
     return {
       writeProjectConfig: async () => ({

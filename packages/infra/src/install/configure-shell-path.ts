@@ -5,7 +5,7 @@
 
 import os from 'node:os'
 
-import { ensureUnixShellPath } from '@infra/install/shell-path.js'
+import { ensureUnixShellPath } from '@foxpilot/infra/install/shell-path.js'
 
 type ConfigureShellPathArgs = {
   binDir?: string

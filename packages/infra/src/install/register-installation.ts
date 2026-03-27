@@ -5,10 +5,10 @@
 
 import os from 'node:os'
 
-import { registerCurrentInstallation } from '@infra/install/install-index.js'
-import { readPackageMetadata } from '@infra/install/package-info.js'
-import { buildReleaseAssetName } from '@infra/install/release-asset.js'
-import type { InstallManifest } from '@infra/install/install-types.js'
+import { registerCurrentInstallation } from '@foxpilot/infra/install/install-index.js'
+import { readPackageMetadata } from '@foxpilot/infra/install/package-info.js'
+import { buildReleaseAssetName } from '@foxpilot/infra/install/release-asset.js'
+import type { InstallManifest } from '@foxpilot/infra/install/install-types.js'
 
 type RegisterInstallArgs = {
   method?: InstallManifest['installMethod']

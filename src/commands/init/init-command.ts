@@ -13,16 +13,16 @@ import {
   ensureGlobalConfig,
   findMatchingWorkspaceRoot,
   type GlobalConfig,
-} from '@infra/config/global-config.js'
+} from '@foxpilot/infra/config/global-config.js'
 import {
   createCatalogStore,
   type ProjectCatalogInput,
   type ProjectRow,
   type RepositoryRow,
   type WorkspaceRootRow,
-} from '@infra/db/catalog-store.js'
-import { bootstrapDatabase } from '@infra/db/bootstrap.js'
-import { resolveGlobalConfigPath, resolveGlobalDatabasePath, resolveProjectConfigPath } from '@infra/core/paths.js'
+} from '@foxpilot/infra/db/catalog-store.js'
+import { bootstrapDatabase } from '@foxpilot/infra/db/bootstrap.js'
+import { resolveGlobalConfigPath, resolveGlobalDatabasePath, resolveProjectConfigPath } from '@foxpilot/infra/core/paths.js'
 import { isInterfaceLanguage, type InterfaceLanguage } from '@/i18n/interface-language.js'
 import { getMessages, type MessageCatalog } from '@/i18n/messages.js'
 import {
@@ -30,12 +30,12 @@ import {
   deriveProjectDisplayName,
   writeProjectConfig,
   type ProjectRepositoryConfig,
-} from '@infra/project/project-config.js'
-import { scanRepositories } from '@infra/project/scan-repositories.js'
-import { resolveProjectPlatformResolution } from '@runtime/orchestrators/platform-resolver.js'
+} from '@foxpilot/infra/project/project-config.js'
+import { scanRepositories } from '@foxpilot/infra/project/scan-repositories.js'
+import { resolveProjectPlatformResolution } from '@foxpilot/runtime/orchestrators/platform-resolver.js'
 import { resolveProjectProfileId } from '@/commands/init/init-profile.js'
-import { collectProjectScanSignals } from '@runtime/init/project-scan-signals.js'
-import { createInitRecommendation } from '@runtime/init/init-recommendation-engine.js'
+import { collectProjectScanSignals } from '@foxpilot/runtime/init/project-scan-signals.js'
+import { createInitRecommendation } from '@foxpilot/runtime/init/init-recommendation-engine.js'
 
 import type {
   CliResult,

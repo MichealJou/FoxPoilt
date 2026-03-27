@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { buildReleaseAssetName, buildReleaseDownloadUrl } from '@infra/install/release-asset.js'
+import { buildReleaseAssetName, buildReleaseDownloadUrl } from '@foxpilot/infra/install/release-asset.js'
 
 describe('release asset helpers', () => {
   it('builds tar.gz asset names for unix platforms', () => {

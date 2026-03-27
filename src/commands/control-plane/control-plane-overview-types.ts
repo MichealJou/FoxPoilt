@@ -1,5 +1,5 @@
 import type { CliRuntimeContext } from '@/cli/runtime-context.js'
-import type { collectControlPlaneOverview } from '@control-plane/control-plane-registry.js'
+import type { collectControlPlaneOverview } from '@foxpilot/runtime/read-models/control-plane-registry.js'
 
 export type ControlPlaneOverviewArgs = {
   command: 'control-plane'

@@ -4,8 +4,8 @@
  */
 
 import type { CliRuntimeContext } from '@/cli/runtime-context.js'
-import type { resolveManagedProject } from '@infra/project/resolve-project.js'
-import type { hasLocalBeadsRepository, runBdInit } from '@integrations/sync/beads-bd-service.js'
+import type { resolveManagedProject } from '@foxpilot/infra/project/resolve-project.js'
+import type { hasLocalBeadsRepository, runBdInit } from '@foxpilot/integrations/sync/beads-bd-service.js'
 
 /**
  * `task init-beads` 的标准化参数。

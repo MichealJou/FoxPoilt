@@ -19,7 +19,7 @@ async function loadScanRepositoriesModule(): Promise<{
   scanRepositories: ScanRepositories
 }> {
   try {
-    return await import('@infra/project/scan-repositories.js')
+    return await import('@foxpilot/infra/project/scan-repositories.js')
   } catch {
     return {
       scanRepositories: async () => [],

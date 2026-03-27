@@ -5,9 +5,9 @@
 
 import { access } from 'node:fs/promises'
 
-import { writeJsonFile } from '@infra/core/json-file.js'
-import { resolveProjectConfigPath } from '@infra/core/paths.js'
-import type { ProjectOrchestrationConfig } from '@contracts/orchestration-contract.js'
+import { writeJsonFile } from '@foxpilot/infra/core/json-file.js'
+import { resolveProjectConfigPath } from '@foxpilot/infra/core/paths.js'
+import type { ProjectOrchestrationConfig } from '@foxpilot/contracts/orchestration-contract.js'
 
 /**
  * 持久化在 `.foxpilot/project.json` 中的单仓库元数据。

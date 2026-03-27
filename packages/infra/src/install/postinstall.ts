@@ -8,9 +8,8 @@ import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { setupFoundationPack } from '@integrations/foundation/foundation-installer.js'
-import { registerCurrentInstallation } from '@infra/install/install-index.js'
-import { readPackageMetadata } from '@infra/install/package-info.js'
+import { registerCurrentInstallation } from '@foxpilot/infra/install/install-index.js'
+import { readPackageMetadata } from '@foxpilot/infra/install/package-info.js'
 
 /**
  * npm postinstall 只在“当前包根目录不是开发仓库根目录”时登记安装元数据。
@@ -50,19 +49,30 @@ function shouldSkipFoundationSetup(): boolean {
 type PostinstallDependencies = {
   registerCurrentInstallation: typeof registerCurrentInstallation
   readPackageMetadata: typeof readPackageMetadata
-  setupFoundationPack: typeof setupFoundationPack
+  setupFoundationPack: (
+    context: { homeDir: string; platform: NodeJS.Platform },
+  ) => Promise<{
+    items: Array<{ tool: string }>
+    ready: string[]
+    installed: string[]
+    missing: string[]
+  }>
   stdout: Pick<NodeJS.WriteStream, 'write'>
 }
 
 function getDependencies(
   overrides: Partial<PostinstallDependencies> = {},
 ): PostinstallDependencies {
+  if (!overrides.setupFoundationPack) {
+    throw new Error('Missing setupFoundationPack dependency')
+  }
+
   return {
     registerCurrentInstallation,
     readPackageMetadata,
-    setupFoundationPack,
     stdout: process.stdout,
     ...overrides,
+    setupFoundationPack: overrides.setupFoundationPack,
   }
 }
 

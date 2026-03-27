@@ -12,7 +12,7 @@ import type {
   ProjectProfileId,
   ProjectRoleId,
   ProjectStageId,
-} from '@contracts/orchestration-contract.js'
+} from '@foxpilot/contracts/orchestration-contract.js'
 
 type StagePlatformSeed = {
   stage: ProjectStageId

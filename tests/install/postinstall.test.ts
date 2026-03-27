@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import type { FoundationSetupResult } from '@integrations/foundation/foundation-installer.js'
-import type { InstallManifest } from '@infra/install/install-types.js'
+import type { FoundationSetupResult } from '@foxpilot/integrations/foundation/foundation-installer.js'
+import type { InstallManifest } from '@foxpilot/infra/install/install-types.js'
 
 describe('postinstall integration', () => {
   afterEach(() => {
@@ -11,7 +11,7 @@ describe('postinstall integration', () => {
   })
 
   it('runs foundation setup during install flow', async () => {
-    const { runPostinstall } = await import('@infra/install/postinstall.js')
+    const { runPostinstall } = await import('@foxpilot/infra/install/postinstall.js')
 
     const registerCurrentInstallation = vi.fn(async () => ({
       manifest: {
@@ -87,7 +87,7 @@ describe('postinstall integration', () => {
 
   it('does not skip consumer install when INIT_CWD equals consumer root but package root differs', async () => {
     process.env.INIT_CWD = '/tmp/consumer-root'
-    const { runPostinstall } = await import('@infra/install/postinstall.js')
+    const { runPostinstall } = await import('@foxpilot/infra/install/postinstall.js')
 
     const registerCurrentInstallation = vi.fn(async () => ({
       manifest: {
@@ -144,7 +144,7 @@ describe('postinstall integration', () => {
 
   it('skips foundation setup when FOXPILOT_SKIP_FOUNDATION_PACK=1', async () => {
     process.env.FOXPILOT_SKIP_FOUNDATION_PACK = '1'
-    const { runPostinstall } = await import('@infra/install/postinstall.js')
+    const { runPostinstall } = await import('@foxpilot/infra/install/postinstall.js')
 
     const registerCurrentInstallation = vi.fn(async () => ({
       manifest: {

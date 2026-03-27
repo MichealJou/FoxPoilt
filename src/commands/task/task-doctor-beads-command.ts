@@ -7,16 +7,16 @@ import path from 'node:path'
 
 import { toJsonErrorOutput, toJsonSuccessOutput } from '@/cli/json-output.js'
 import type { CliResult } from '@/commands/init/init-types.js'
-import { resolveGlobalDatabasePath } from '@infra/core/paths.js'
-import { bootstrapDatabase } from '@infra/db/bootstrap.js'
+import { resolveGlobalDatabasePath } from '@foxpilot/infra/core/paths.js'
+import { bootstrapDatabase } from '@foxpilot/infra/db/bootstrap.js'
 import { getMessages } from '@/i18n/messages.js'
 import {
   ProjectNotInitializedError,
   RepositoryTargetNotFoundError,
   resolveManagedProject,
   resolveRepositoryTarget,
-} from '@infra/project/resolve-project.js'
-import { hasLocalBeadsRepository, runBdList } from '@integrations/sync/beads-bd-service.js'
+} from '@foxpilot/infra/project/resolve-project.js'
+import { hasLocalBeadsRepository, runBdList } from '@foxpilot/integrations/sync/beads-bd-service.js'
 
 import type {
   TaskDoctorBeadsArgs,

@@ -1,4 +1,4 @@
-import { createRuntimeCommand } from '@contracts/runtime-contract.js'
+import { createRuntimeCommand } from '@foxpilot/contracts/runtime-contract.js'
 
 export function buildRuntimeBridgeRequest(
   name: string,

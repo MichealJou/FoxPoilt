@@ -3,7 +3,7 @@
  * @author michaeljou
  */
 
-import type { InstallManifest } from '@infra/install/install-types.js'
+import type { InstallManifest } from '@foxpilot/infra/install/install-types.js'
 
 /**
  * update 分派器依赖集合。

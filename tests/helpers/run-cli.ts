@@ -15,10 +15,10 @@ type RunCliOptions = {
 
 export async function runCli(argv: string[], options: RunCliOptions = {}) {
   const { main } = await import('@/cli/main.js')
-  const globalConfigModule = await import('@infra/config/global-config.js')
-  const bootstrapModule = await import('@infra/db/bootstrap.js')
-  const catalogStoreModule = await import('@infra/db/catalog-store.js')
-  const projectConfigModule = await import('@infra/project/project-config.js')
+  const globalConfigModule = await import('@foxpilot/infra/config/global-config.js')
+  const bootstrapModule = await import('@foxpilot/infra/db/bootstrap.js')
+  const catalogStoreModule = await import('@foxpilot/infra/db/catalog-store.js')
+  const projectConfigModule = await import('@foxpilot/infra/project/project-config.js')
 
   const dependencies: Record<string, unknown> = {
     ensureGlobalConfig: globalConfigModule.ensureGlobalConfig,

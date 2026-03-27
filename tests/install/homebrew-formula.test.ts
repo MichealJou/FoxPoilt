@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { renderHomebrewFormula } from '@infra/install/homebrew-formula.js'
+import { renderHomebrewFormula } from '@foxpilot/infra/install/homebrew-formula.js'
 
 describe('homebrew formula renderer', () => {
   it('renders a stable formula with versioned release urls', () => {

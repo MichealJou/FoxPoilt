@@ -6,7 +6,7 @@
 import { spawn } from 'node:child_process'
 import path from 'node:path'
 
-import type { InstallManifest } from '@infra/install/install-types.js'
+import type { InstallManifest } from '@foxpilot/infra/install/install-types.js'
 
 export type UpdateCommandResult = {
   exitCode: number

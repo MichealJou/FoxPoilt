@@ -3,7 +3,7 @@ import path from 'node:path'
 
 import { afterEach, describe, expect, it } from 'vitest'
 
-import { collectProjectScanSignals } from '@runtime/init/project-scan-signals.js'
+import { collectProjectScanSignals } from '@foxpilot/runtime/init/project-scan-signals.js'
 import { createTempDir, removeTempDir } from '@tests/helpers/tmp-dir.js'
 
 describe('project scan signals', () => {

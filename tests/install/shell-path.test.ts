@@ -18,7 +18,7 @@ describe('shell path helper', () => {
   })
 
   it('writes foxpilot bin path into the detected zsh profile', async () => {
-    const { ensureUnixShellPath } = await import('@infra/install/shell-path.js')
+    const { ensureUnixShellPath } = await import('@foxpilot/infra/install/shell-path.js')
     const homeDir = await createTempDir('foxpilot-shell-home-')
     const binDir = path.join(homeDir, '.foxpilot/bin')
     tempDirs.push(homeDir)
@@ -56,7 +56,7 @@ describe('shell path helper', () => {
   })
 
   it('falls back to profile when shell cannot be recognized', async () => {
-    const { ensureUnixShellPath } = await import('@infra/install/shell-path.js')
+    const { ensureUnixShellPath } = await import('@foxpilot/infra/install/shell-path.js')
     const homeDir = await createTempDir('foxpilot-shell-home-')
     tempDirs.push(homeDir)
 
@@ -71,7 +71,7 @@ describe('shell path helper', () => {
   })
 
   it('removes the managed foxpilot path block from shell profiles', async () => {
-    const { ensureUnixShellPath, removeUnixShellPath } = await import('@infra/install/shell-path.js')
+    const { ensureUnixShellPath, removeUnixShellPath } = await import('@foxpilot/infra/install/shell-path.js')
     const homeDir = await createTempDir('foxpilot-shell-home-')
     const binDir = path.join(homeDir, '.foxpilot/bin')
     tempDirs.push(homeDir)

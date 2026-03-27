@@ -23,7 +23,7 @@ async function loadGlobalConfigModule(): Promise<{
   GlobalConfigParseError: ErrorClass
 }> {
   try {
-    return await import('@infra/config/global-config.js')
+    return await import('@foxpilot/infra/config/global-config.js')
   } catch {
     return {
       ensureGlobalConfig: async () => ({

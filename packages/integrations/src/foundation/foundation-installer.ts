@@ -13,8 +13,8 @@ import {
   getFoundationToolMetadata,
   type FoundationPack,
   type FoundationTool,
-} from '@integrations/foundation/foundation-profile.js'
-import { installFoundationTool } from '@integrations/foundation/foundation-official-installers.js'
+} from '@foxpilot/integrations/foundation/foundation-profile.js'
+import { installFoundationTool } from '@foxpilot/integrations/foundation/foundation-official-installers.js'
 
 const execFileAsync = promisify(execFile)
 

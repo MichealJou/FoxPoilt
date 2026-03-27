@@ -6,10 +6,10 @@
 import { access } from 'node:fs/promises'
 import path from 'node:path'
 
-import { readJsonFile } from '@infra/core/json-file.js'
-import { resolveProjectConfigPath } from '@infra/core/paths.js'
+import { readJsonFile } from '@foxpilot/infra/core/json-file.js'
+import { resolveProjectConfigPath } from '@foxpilot/infra/core/paths.js'
 
-import type { ProjectConfig, ProjectRepositoryConfig } from '@infra/project/project-config.js'
+import type { ProjectConfig, ProjectRepositoryConfig } from '@foxpilot/infra/project/project-config.js'
 
 /**
  * 当 CLI 命令在未初始化的受管项目之外执行时抛出。

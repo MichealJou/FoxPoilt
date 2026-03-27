@@ -4,15 +4,15 @@
  */
 
 import type { CliRuntimeContext } from '@/cli/runtime-context.js'
-import type { ensureGlobalConfig } from '@infra/config/global-config.js'
-import type { ProjectProfileId } from '@contracts/orchestration-contract.js'
-import type { createCatalogStore } from '@infra/db/catalog-store.js'
-import type { bootstrapDatabase } from '@infra/db/bootstrap.js'
-import type { writeProjectConfig } from '@infra/project/project-config.js'
-import type { scanRepositories } from '@infra/project/scan-repositories.js'
-import type { InitRecommendationResult } from '@runtime/init/init-recommendation-engine.js'
-import type { ProjectScanSignals } from '@runtime/init/project-scan-signals.js'
-import type { resolveProjectPlatformResolution } from '@runtime/orchestrators/platform-resolver.js'
+import type { ensureGlobalConfig } from '@foxpilot/infra/config/global-config.js'
+import type { ProjectProfileId } from '@foxpilot/contracts/orchestration-contract.js'
+import type { createCatalogStore } from '@foxpilot/infra/db/catalog-store.js'
+import type { bootstrapDatabase } from '@foxpilot/infra/db/bootstrap.js'
+import type { writeProjectConfig } from '@foxpilot/infra/project/project-config.js'
+import type { scanRepositories } from '@foxpilot/infra/project/scan-repositories.js'
+import type { InitRecommendationResult } from '@foxpilot/runtime/init/init-recommendation-engine.js'
+import type { ProjectScanSignals } from '@foxpilot/runtime/init/project-scan-signals.js'
+import type { resolveProjectPlatformResolution } from '@foxpilot/runtime/orchestrators/platform-resolver.js'
 
 /**
  * 初始化流程支持的交互模式。

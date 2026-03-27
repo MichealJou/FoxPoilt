@@ -6,8 +6,8 @@
 import { access } from 'node:fs/promises'
 import path from 'node:path'
 
-import { readJsonFile, writeJsonFile } from '@infra/core/json-file.js'
-import { resolveGlobalConfigPath } from '@infra/core/paths.js'
+import { readJsonFile, writeJsonFile } from '@foxpilot/infra/core/json-file.js'
+import { resolveGlobalConfigPath } from '@foxpilot/infra/core/paths.js'
 import { isInterfaceLanguage, type InterfaceLanguage } from '@/i18n/interface-language.js'
 
 /**

@@ -6,8 +6,8 @@
 import { access, readFile } from 'node:fs/promises'
 import path from 'node:path'
 
-import { resolveProjectConfigPath } from '@infra/core/paths.js'
-import type { ProjectRepositoryConfig } from '@infra/project/project-config.js'
+import { resolveProjectConfigPath } from '@foxpilot/infra/core/paths.js'
+import type { ProjectRepositoryConfig } from '@foxpilot/infra/project/project-config.js'
 
 export type ProjectScanSignals = {
   projectPath: string

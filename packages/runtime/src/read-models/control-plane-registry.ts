@@ -7,8 +7,8 @@ import type {
   DetectablePlatformId,
   ProjectRoleId,
   ProjectStageId,
-} from '@contracts/orchestration-contract.js'
-import { detectPlatformAvailability } from '@runtime/orchestrators/platform-resolver.js'
+} from '@foxpilot/contracts/orchestration-contract.js'
+import { detectPlatformAvailability } from '@foxpilot/runtime/orchestrators/platform-resolver.js'
 
 export type ControlPlaneStatus = 'ready' | 'degraded' | 'unavailable'
 export type ControlPlaneKind = 'platform' | 'skill' | 'mcp'

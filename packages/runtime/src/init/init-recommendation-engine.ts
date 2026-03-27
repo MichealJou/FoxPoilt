@@ -3,9 +3,9 @@
  * @author michaeljou
  */
 
-import type { DetectablePlatformId, ProjectProfileId, ProjectRoleId, ProjectStageId } from '@contracts/orchestration-contract.js'
-import { DEFAULT_STAGE_PLATFORM_SEEDS } from '@runtime/orchestrators/platform-resolver.js'
-import type { ProjectScanSignals } from '@runtime/init/project-scan-signals.js'
+import type { DetectablePlatformId, ProjectProfileId, ProjectRoleId, ProjectStageId } from '@foxpilot/contracts/orchestration-contract.js'
+import { DEFAULT_STAGE_PLATFORM_SEEDS } from '@foxpilot/runtime/orchestrators/platform-resolver.js'
+import type { ProjectScanSignals } from '@foxpilot/runtime/init/project-scan-signals.js'
 
 export type InitRecommendationResult = {
   profile: {

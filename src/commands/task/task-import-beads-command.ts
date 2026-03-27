@@ -7,20 +7,20 @@ import path from 'node:path'
 
 import { toJsonErrorOutput, toJsonSuccessOutput } from '@/cli/json-output.js'
 import type { CliResult } from '@/commands/init/init-types.js'
-import { readJsonFile } from '@infra/core/json-file.js'
-import { resolveGlobalDatabasePath } from '@infra/core/paths.js'
-import { bootstrapDatabase } from '@infra/db/bootstrap.js'
-import { createTaskStore } from '@infra/db/task-store.js'
+import { readJsonFile } from '@foxpilot/infra/core/json-file.js'
+import { resolveGlobalDatabasePath } from '@foxpilot/infra/core/paths.js'
+import { bootstrapDatabase } from '@foxpilot/infra/db/bootstrap.js'
+import { createTaskStore } from '@foxpilot/infra/db/task-store.js'
 import { getMessages } from '@/i18n/messages.js'
 import {
   ProjectNotInitializedError,
   resolveManagedProject,
-} from '@infra/project/resolve-project.js'
+} from '@foxpilot/infra/project/resolve-project.js'
 import {
   applyBeadsImportSnapshot,
   collectDeclaredBeadsExternalTaskIds,
   normalizeBeadsSnapshot,
-} from '@integrations/sync/beads-import-service.js'
+} from '@foxpilot/integrations/sync/beads-import-service.js'
 
 import type {
   TaskImportBeadsArgs,

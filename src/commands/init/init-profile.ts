@@ -3,7 +3,7 @@
  * @author michaeljou
  */
 
-import type { ProjectProfileId } from '@contracts/orchestration-contract.js'
+import type { ProjectProfileId } from '@foxpilot/contracts/orchestration-contract.js'
 
 /**
  * 当前阶段可选的项目协作 profile。

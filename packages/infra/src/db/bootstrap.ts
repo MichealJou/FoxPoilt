@@ -7,7 +7,7 @@ import { readFile } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { connectDb, type SqliteDatabase } from '@infra/db/connect.js'
+import { connectDb, type SqliteDatabase } from '@foxpilot/infra/db/connect.js'
 
 /**
  * 解析仓库内置的 Schema 文件，用于初始化新的 FoxPilot 数据库。

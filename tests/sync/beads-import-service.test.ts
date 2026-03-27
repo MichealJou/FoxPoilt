@@ -4,9 +4,9 @@ import {
   collectDeclaredBeadsExternalTaskIds,
   decideBeadsImportAction,
   normalizeBeadsSnapshot,
-} from '@integrations/sync/beads-import-service.js'
+} from '@foxpilot/integrations/sync/beads-import-service.js'
 
-import type { ProjectConfig } from '@infra/project/project-config.js'
+import type { ProjectConfig } from '@foxpilot/infra/project/project-config.js'
 
 function createProjectConfig(): ProjectConfig {
   return {

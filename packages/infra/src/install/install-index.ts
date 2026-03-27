@@ -6,9 +6,9 @@
 import { mkdir, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 
-import { readInstallIndex } from '@infra/install/install-manifest.js'
-import { resolveInstallIndexPath } from '@infra/install/install-paths.js'
-import type { InstallIndexEntry, InstallManifest } from '@infra/install/install-types.js'
+import { readInstallIndex } from '@foxpilot/infra/install/install-manifest.js'
+import { resolveInstallIndexPath } from '@foxpilot/infra/install/install-paths.js'
+import type { InstallIndexEntry, InstallManifest } from '@foxpilot/infra/install/install-types.js'
 
 /**
  * 根据实例关键信息生成稳定的安装记录 ID。

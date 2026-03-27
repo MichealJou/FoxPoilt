@@ -5,7 +5,7 @@
 
 import { toJsonSuccessOutput } from '@/cli/json-output.js'
 import type { CliResult } from '@/commands/init/init-types.js'
-import { runFoundationDoctor } from '@integrations/foundation/foundation-doctor.js'
+import { runFoundationDoctor } from '@foxpilot/integrations/foundation/foundation-doctor.js'
 
 import type {
   SystemFoundationArgs,

@@ -6,7 +6,7 @@
 import { access, readdir } from 'node:fs/promises'
 import path from 'node:path'
 
-import type { ProjectRepositoryConfig } from '@infra/project/project-config.js'
+import type { ProjectRepositoryConfig } from '@foxpilot/infra/project/project-config.js'
 
 /**
  * 检查目录中是否包含 Git 仓库标记。

@@ -4,11 +4,11 @@
  */
 
 import type { CliRuntimeContext } from '@/cli/runtime-context.js'
-import type { readJsonFile } from '@infra/core/json-file.js'
-import type { bootstrapDatabase } from '@infra/db/bootstrap.js'
-import type { createTaskStore } from '@infra/db/task-store.js'
-import type { resolveManagedProject } from '@infra/project/resolve-project.js'
-import type { hasLocalBeadsRepository, runBdList } from '@integrations/sync/beads-bd-service.js'
+import type { readJsonFile } from '@foxpilot/infra/core/json-file.js'
+import type { bootstrapDatabase } from '@foxpilot/infra/db/bootstrap.js'
+import type { createTaskStore } from '@foxpilot/infra/db/task-store.js'
+import type { resolveManagedProject } from '@foxpilot/infra/project/resolve-project.js'
+import type { hasLocalBeadsRepository, runBdList } from '@foxpilot/integrations/sync/beads-bd-service.js'
 
 /**
  * `task diff-beads` 的标准化参数。

@@ -8,8 +8,8 @@ import { access } from 'node:fs/promises'
 import path from 'node:path'
 import { promisify } from 'node:util'
 
-import type { TaskRow } from '@infra/db/task-store.js'
-import type { NormalizedBeadsRecord } from '@integrations/sync/beads-import-service.js'
+import type { TaskRow } from '@foxpilot/infra/db/task-store.js'
+import type { NormalizedBeadsRecord } from '@foxpilot/integrations/sync/beads-import-service.js'
 
 const execFileAsync = promisify(execFile)
 

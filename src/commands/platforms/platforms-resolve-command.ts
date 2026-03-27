@@ -1,11 +1,11 @@
 import { toJsonErrorOutput, toJsonSuccessOutput } from '@/cli/json-output.js'
 import type { CliResult } from '@/commands/init/init-types.js'
-import type { ProjectProfileId } from '@contracts/orchestration-contract.js'
+import type { ProjectProfileId } from '@foxpilot/contracts/orchestration-contract.js'
 import {
   ProjectNotInitializedError,
   resolveManagedProject,
-} from '@infra/project/resolve-project.js'
-import { resolveProjectPlatformResolution } from '@runtime/orchestrators/platform-resolver.js'
+} from '@foxpilot/infra/project/resolve-project.js'
+import { resolveProjectPlatformResolution } from '@foxpilot/runtime/orchestrators/platform-resolver.js'
 
 import type {
   PlatformsResolveArgs,

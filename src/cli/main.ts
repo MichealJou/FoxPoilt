@@ -45,7 +45,7 @@ import { runTaskSyncBeadsCommand } from '@/commands/task/task-sync-beads-command
 import { runTaskUpdateExecutorCommand } from '@/commands/task/task-update-executor-command.js'
 import { runTaskUpdatePriorityCommand } from '@/commands/task/task-update-priority-command.js'
 import { runTaskUpdateStatusCommand } from '@/commands/task/task-update-status-command.js'
-import { resolveInterfaceLanguage } from '@infra/config/global-config.js'
+import { resolveInterfaceLanguage } from '@foxpilot/infra/config/global-config.js'
 import { getMessages } from '@/i18n/messages.js'
 
 /**

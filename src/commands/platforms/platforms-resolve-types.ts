@@ -1,7 +1,7 @@
 import type { CliRuntimeContext } from '@/cli/runtime-context.js'
-import type { ProjectProfileId } from '@contracts/orchestration-contract.js'
-import type { resolveManagedProject } from '@infra/project/resolve-project.js'
-import type { resolveProjectPlatformResolution } from '@runtime/orchestrators/platform-resolver.js'
+import type { ProjectProfileId } from '@foxpilot/contracts/orchestration-contract.js'
+import type { resolveManagedProject } from '@foxpilot/infra/project/resolve-project.js'
+import type { resolveProjectPlatformResolution } from '@foxpilot/runtime/orchestrators/platform-resolver.js'
 
 export type PlatformsResolveArgs = {
   command: 'platforms'
