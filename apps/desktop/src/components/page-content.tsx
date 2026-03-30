@@ -1,30 +1,32 @@
-import { AlertTriangle, ArrowRight, CheckCircle2, ChevronRight, Sparkles } from 'lucide-react'
+import type { ReactNode } from 'react'
 
 import {
-  dashboardStats,
-  eventGroups,
-  focusQueue,
-  healthIssues,
-  mcpRegistry,
-  platformRegistry,
-  runTimeline,
-  skillRegistry,
-  tasksTable,
-  workspaceSummary,
-} from '@desktop/lib/mock-data.js'
-import type { DesktopPageId } from '@desktop/lib/desktop-pages.js'
-import { Badge } from '@desktop/components/ui/badge.js'
-import { Button } from '@desktop/components/ui/button.js'
-import {
+  Alert,
+  Button,
   Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@desktop/components/ui/card.js'
-import { Separator } from '@desktop/components/ui/separator.js'
+  Col,
+  Descriptions,
+  Flex,
+  List,
+  Progress,
+  Row,
+  Space,
+  Table,
+  Tag,
+  Timeline,
+  Typography,
+} from 'antd'
+import { ArrowRight, ChevronRight } from 'lucide-react'
 
-function statusVariant(status: string): 'default' | 'success' | 'warning' | 'danger' | 'outline' {
+import type { DesktopPageId } from '@desktop/lib/desktop-pages.js'
+import type { getDesktopViewModel } from '@desktop/lib/mock-data.js'
+import type { DesktopRuntimeStatus } from '@desktop/lib/tauri-status.js'
+
+const { Paragraph, Text } = Typography
+
+type DesktopViewModel = ReturnType<typeof getDesktopViewModel>
+
+function statusColor(status: string) {
   if (status === 'ready' || status === 'success') {
     return 'success'
   }
@@ -34,321 +36,504 @@ function statusVariant(status: string): 'default' | 'success' | 'warning' | 'dan
   }
 
   if (status === 'unavailable' || status === 'danger') {
-    return 'danger'
+    return 'error'
+  }
+
+  if (status === 'running' || status === 'analyzing' || status === 'implementing') {
+    return 'processing'
   }
 
   return 'default'
 }
 
-export function PageContent({ page }: { page: DesktopPageId }) {
+function issueStatus(severity: string): 'error' | 'warning' | 'info' {
+  if (severity === 'danger') {
+    return 'error'
+  }
+
+  if (severity === 'warning') {
+    return 'warning'
+  }
+
+  return 'info'
+}
+
+function Panel({
+  description,
+  extra,
+  title,
+  children,
+  className,
+}: {
+  description?: string
+  extra?: ReactNode
+  title: string
+  children: ReactNode
+  className?: string
+}) {
+  return (
+    <Card
+      className={className ? `foxpilot-panel ${className}` : 'foxpilot-panel'}
+      title={
+        <div className="foxpilot-panel-heading">
+          <div className="foxpilot-panel-title">{title}</div>
+          {description ? <div className="foxpilot-panel-description">{description}</div> : null}
+        </div>
+      }
+      extra={extra}
+      styles={{
+        header: { padding: '16px 18px 0', minHeight: 0, borderBottom: 'none' },
+        body: { padding: '16px 18px 18px' },
+      }}
+    >
+      {children}
+    </Card>
+  )
+}
+
+export function PageContent({
+  page,
+  runtimeStatus,
+  viewModel,
+}: {
+  page: DesktopPageId
+  runtimeStatus?: DesktopRuntimeStatus
+  viewModel: DesktopViewModel
+}) {
+  const platformRegistry = viewModel.controlPlane.registries[0]?.items ?? []
+  const taskRows = viewModel.tasks.rows
+  const taskCounts = {
+    active: taskRows.filter((item) => item.status === 'analyzing' || item.status === 'implementing')
+      .length,
+    blocked: taskRows.filter((item) => item.status === 'awaiting_plan_confirm').length,
+    queued: taskRows.filter((item) => item.status === 'todo').length,
+  }
+
   switch (page) {
     case 'dashboard':
       return (
-        <div className="flex flex-col gap-6">
-          <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            {dashboardStats.map((stat) => (
-              <Card key={stat.label}>
-                <CardHeader>
-                  <CardDescription>{stat.label}</CardDescription>
-                  <CardTitle className="text-3xl">{stat.value}</CardTitle>
-                </CardHeader>
-                <CardContent className="text-xs text-muted-foreground">{stat.delta}</CardContent>
-              </Card>
+        <Flex vertical gap={12}>
+          <Row gutter={[12, 12]}>
+            {viewModel.dashboardStats.map((stat) => (
+              <Col key={stat.label} xs={24} md={12} xl={6}>
+                <Panel className="foxpilot-panel-stat" title={stat.label}>
+                  <div className="foxpilot-stat-value">{stat.value}</div>
+                  <Text className="foxpilot-subtle-text">{stat.delta}</Text>
+                </Panel>
+              </Col>
             ))}
-          </section>
+          </Row>
 
-          <section className="grid gap-4 xl:grid-cols-[1.3fr_0.9fr]">
-            <Card>
-              <CardHeader>
-                <CardTitle>Focus Queue</CardTitle>
-                <CardDescription>
-                  基于优先级、阻塞性和阶段交接计算出的当前焦点列表。
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="flex flex-col gap-3">
-                {focusQueue.map((item) => (
-                  <div
-                    key={item.title}
-                    className="flex items-center justify-between rounded-lg border border-border/80 bg-background/50 px-4 py-3"
-                  >
-                    <div className="flex flex-col gap-1">
-                      <span className="font-medium">{item.title}</span>
-                      <span className="text-xs text-muted-foreground">
-                        {item.stage} · {item.platform}
-                      </span>
-                    </div>
-                    <Badge variant={item.priority === 'P0' ? 'danger' : 'warning'}>
-                      {item.priority}
-                    </Badge>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
+          <Row gutter={[12, 12]}>
+            <Col xs={24} xl={15}>
+              <Panel
+                title={viewModel.focusQueueTitle}
+                description={viewModel.focusQueueDescription}
+                extra={<Text className="foxpilot-subtle-text">{viewModel.focusQueue.length}</Text>}
+              >
+                <Table
+                  size="small"
+                  pagination={false}
+                  rowKey="title"
+                  className="foxpilot-flat-table"
+                  columns={[
+                    {
+                      title: 'Priority',
+                      dataIndex: 'priority',
+                      key: 'priority',
+                      width: 96,
+                      render: (value: string) => (
+                        <Tag bordered={false} color={value === 'P0' ? 'error' : 'warning'}>
+                          {value}
+                        </Tag>
+                      ),
+                    },
+                    {
+                      title: 'Title',
+                      dataIndex: 'title',
+                      key: 'title',
+                      render: (value: string) => <Text strong>{value}</Text>,
+                    },
+                    { title: 'Stage', dataIndex: 'stage', key: 'stage', width: 120 },
+                    { title: 'Platform', dataIndex: 'platform', key: 'platform', width: 140 },
+                  ]}
+                  dataSource={viewModel.focusQueue}
+                />
+              </Panel>
+            </Col>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>异常入口</CardTitle>
-                <CardDescription>高风险和待确认事项优先暴露到首屏。</CardDescription>
-              </CardHeader>
-              <CardContent className="flex flex-col gap-3">
-                {healthIssues.map((issue) => (
-                  <div
-                    key={issue.title}
-                    className="rounded-lg border border-border/80 bg-background/40 p-4"
-                  >
-                    <div className="flex items-center gap-2">
-                      <AlertTriangle className="size-4 text-warning" />
-                      <span className="font-medium">{issue.title}</span>
-                    </div>
-                    <p className="mt-2 text-sm text-muted-foreground">{issue.detail}</p>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          </section>
-        </div>
+            <Col xs={24} xl={9}>
+              <Flex vertical gap={12}>
+                <Panel title={viewModel.anomalyTitle} description={viewModel.anomalyDescription}>
+                  <Flex vertical gap={10}>
+                    {viewModel.healthIssues.map((issue) => (
+                      <Alert
+                        key={issue.title}
+                        message={issue.title}
+                        description={issue.detail}
+                        type={issueStatus(issue.severity)}
+                        showIcon
+                        className="foxpilot-flat-alert"
+                      />
+                    ))}
+                  </Flex>
+                </Panel>
+
+                <Panel title="平台概览" description="当前平台接入与健康状态。">
+                  <List
+                    split={false}
+                    dataSource={platformRegistry}
+                    renderItem={(item) => (
+                      <List.Item className="foxpilot-list-row">
+                        <List.Item.Meta title={item.name} description={item.detail} />
+                        <Tag bordered={false} color={statusColor(item.status)}>
+                          {item.status}
+                        </Tag>
+                      </List.Item>
+                    )}
+                  />
+                </Panel>
+              </Flex>
+            </Col>
+          </Row>
+        </Flex>
       )
 
     case 'workspace':
       return (
-        <div className="grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
-          <Card>
-            <CardHeader>
-              <CardTitle>当前项目</CardTitle>
-              <CardDescription>项目级接管结果和 profile 生效状态。</CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-4 text-sm">
-              <div>
-                <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Root</div>
-                <div className="mt-1 break-all font-medium" data-mono="true">
-                  {workspaceSummary.root}
-                </div>
-              </div>
-              <Separator />
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <div className="text-xs text-muted-foreground">Profile</div>
-                  <div className="mt-1 font-medium">{workspaceSummary.profile}</div>
-                </div>
-                <div>
-                  <div className="text-xs text-muted-foreground">Executor</div>
-                  <div className="mt-1 font-medium">{workspaceSummary.executorStrategy}</div>
-                </div>
-                <div>
-                  <div className="text-xs text-muted-foreground">Repositories</div>
-                  <div className="mt-1 font-medium">{workspaceSummary.repositories}</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>扫描信号</CardTitle>
-              <CardDescription>初始化推荐引擎和执行器解析依赖的项目信号。</CardDescription>
-            </CardHeader>
-            <CardContent className="grid gap-3 sm:grid-cols-2">
-              {[
-                'package.json',
-                'pnpm-lock.yaml',
-                'turbo.json',
-                'vitest.config.ts',
-                'docs/specs',
-                'src-tauri',
-              ].map((signal) => (
-                <div
-                  key={signal}
-                  className="rounded-lg border border-border/80 bg-background/50 px-4 py-3 text-sm"
-                >
-                  {signal}
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        </div>
+        <Row gutter={[12, 12]}>
+          <Col xs={24} xl={11}>
+            <Panel title={viewModel.workspace.title} description={viewModel.workspace.description}>
+              <Descriptions column={1} size="small" className="foxpilot-flat-descriptions">
+                <Descriptions.Item label={viewModel.workspace.fieldRoot}>
+                  <Text code>{viewModel.workspace.root}</Text>
+                </Descriptions.Item>
+                <Descriptions.Item label={viewModel.workspace.fieldProfile}>
+                  {viewModel.workspace.profile}
+                </Descriptions.Item>
+                <Descriptions.Item label={viewModel.workspace.fieldExecutor}>
+                  {viewModel.workspace.executorStrategy}
+                </Descriptions.Item>
+                <Descriptions.Item label={viewModel.workspace.fieldRepositories}>
+                  {viewModel.workspace.repositories}
+                </Descriptions.Item>
+              </Descriptions>
+            </Panel>
+          </Col>
+
+          <Col xs={24} xl={13}>
+            <Flex vertical gap={12}>
+              <Panel
+                title={viewModel.workspace.scanTitle}
+                description={viewModel.workspace.scanDescription}
+              >
+                <Flex wrap gap={8}>
+                  {viewModel.workspace.scanSignals.map((signal) => (
+                    <Tag key={signal} bordered={false} className="foxpilot-inline-tag">
+                      {signal}
+                    </Tag>
+                  ))}
+                </Flex>
+              </Panel>
+
+              <Panel title="建议动作" description="先把项目接管和执行策略确认清楚。">
+                <Flex vertical gap={10}>
+                  {['重新扫描当前工作区', '预览 Profile 推荐结果', '打开 project.json'].map(
+                    (action) => (
+                      <Button key={action} block className="foxpilot-flat-action">
+                        <span>{action}</span>
+                        <ChevronRight className="size-4" />
+                      </Button>
+                    ),
+                  )}
+                </Flex>
+              </Panel>
+            </Flex>
+          </Col>
+        </Row>
       )
 
     case 'tasks':
       return (
-        <Card>
-          <CardHeader>
-            <CardTitle>任务中心</CardTitle>
-            <CardDescription>当前任务以表格优先呈现，方便桌面端高密度筛选。</CardDescription>
-          </CardHeader>
-          <CardContent className="overflow-hidden rounded-lg border border-border/80 bg-background/40">
-            <div className="grid grid-cols-[2fr_0.8fr_1fr_1fr_0.8fr] border-b border-border/80 px-4 py-3 text-xs uppercase tracking-[0.16em] text-muted-foreground">
-              <span>名称</span>
-              <span>来源</span>
-              <span>状态</span>
-              <span>平台</span>
-              <span>优先级</span>
-            </div>
-            {tasksTable.map((task) => (
-              <div
-                key={task.title}
-                className="grid grid-cols-[2fr_0.8fr_1fr_1fr_0.8fr] items-center px-4 py-3 text-sm even:bg-background/30"
-              >
-                <span className="font-medium">{task.title}</span>
-                <span className="text-muted-foreground">{task.source}</span>
-                <Badge variant={task.status === 'todo' ? 'outline' : 'default'}>
-                  {task.status}
-                </Badge>
-                <span className="text-muted-foreground">{task.owner}</span>
-                <Badge variant={task.priority === 'P0' ? 'danger' : 'warning'}>
-                  {task.priority}
-                </Badge>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+        <Row gutter={[12, 12]}>
+          <Col xs={24} xl={17}>
+            <Panel title={viewModel.tasks.title} description={viewModel.tasks.description}>
+              <Table
+                pagination={false}
+                rowKey="title"
+                className="foxpilot-flat-table"
+                columns={[
+                  {
+                    title: viewModel.tasks.headers[0],
+                    dataIndex: 'title',
+                    key: 'title',
+                    render: (value: string) => <Text strong>{value}</Text>,
+                  },
+                  {
+                    title: viewModel.tasks.headers[1],
+                    dataIndex: 'source',
+                    key: 'source',
+                    width: 108,
+                  },
+                  {
+                    title: viewModel.tasks.headers[2],
+                    dataIndex: 'status',
+                    key: 'status',
+                    width: 168,
+                    render: (value: string) => (
+                      <Tag bordered={false} color={statusColor(value)}>
+                        {value}
+                      </Tag>
+                    ),
+                  },
+                  {
+                    title: viewModel.tasks.headers[3],
+                    dataIndex: 'owner',
+                    key: 'owner',
+                    width: 152,
+                  },
+                  {
+                    title: viewModel.tasks.headers[4],
+                    dataIndex: 'priority',
+                    key: 'priority',
+                    width: 92,
+                    render: (value: string) => (
+                      <Tag
+                        bordered={false}
+                        color={value === 'P0' ? 'error' : value === 'P1' ? 'warning' : 'default'}
+                      >
+                        {value}
+                      </Tag>
+                    ),
+                  },
+                ]}
+                dataSource={taskRows}
+              />
+            </Panel>
+          </Col>
+
+          <Col xs={24} xl={7}>
+            <Flex vertical gap={12}>
+              <Panel title="任务摘要" description="按当前状态压缩成三个判断入口。">
+                <Flex vertical gap={14}>
+                  <div>
+                    <div className="foxpilot-metric-label">活跃任务</div>
+                    <div className="foxpilot-metric-value">{taskCounts.active}</div>
+                  </div>
+                  <div>
+                    <div className="foxpilot-metric-label">待确认</div>
+                    <div className="foxpilot-metric-value">{taskCounts.blocked}</div>
+                  </div>
+                  <div>
+                    <div className="foxpilot-metric-label">排队中</div>
+                    <div className="foxpilot-metric-value">{taskCounts.queued}</div>
+                  </div>
+                </Flex>
+              </Panel>
+
+              <Panel title="任务流动" description="当前优先级分配。">
+                <Progress
+                  percent={72}
+                  showInfo={false}
+                  strokeColor="#88b7ff"
+                  trailColor="rgba(255,255,255,0.08)"
+                />
+                <Paragraph className="!mb-0 !mt-3 foxpilot-subtle-text">
+                  {'重点任务主要集中在 design -> implement 两段。'}
+                </Paragraph>
+              </Panel>
+            </Flex>
+          </Col>
+        </Row>
       )
 
     case 'runs':
       return (
-        <Card>
-          <CardHeader>
-            <CardTitle>运行详情概览</CardTitle>
-            <CardDescription>按阶段和角色串起多平台交接过程。</CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-4">
-            {runTimeline.map((item, index) => (
-              <div key={item.stage} className="flex items-center gap-4">
-                <div className="flex size-10 items-center justify-center rounded-full border border-border bg-background/70">
-                  {item.status === 'success' ? (
-                    <CheckCircle2 className="size-4 text-success" />
-                  ) : (
-                    <Sparkles className="size-4 text-primary" />
+        <Row gutter={[12, 12]}>
+          <Col xs={24} xl={15}>
+            <Panel title={viewModel.runs.title} description={viewModel.runs.description}>
+              <Timeline
+                items={viewModel.runs.timeline.map((item, index) => ({
+                  color:
+                    item.status === 'success'
+                      ? 'green'
+                      : item.status === 'queued'
+                        ? 'orange'
+                        : item.status === 'running'
+                          ? 'blue'
+                          : 'gray',
+                  children: (
+                    <Flex align="center" justify="space-between" gap={16}>
+                      <div>
+                        <Text strong>{item.stage}</Text>
+                        <br />
+                        <Text className="foxpilot-subtle-text">
+                          {item.role} · {item.platform}
+                        </Text>
+                      </div>
+                      <Space>
+                        <Tag bordered={false} color={statusColor(item.status)}>
+                          {item.status}
+                        </Tag>
+                        {index < viewModel.runs.timeline.length - 1 ? (
+                          <ArrowRight className="size-4 text-[color:var(--color-muted-foreground)]" />
+                        ) : null}
+                      </Space>
+                    </Flex>
+                  ),
+                }))}
+              />
+            </Panel>
+          </Col>
+
+          <Col xs={24} xl={9}>
+            <Flex vertical gap={12}>
+              <Panel title="当前交接" description="本轮最关键的阶段 handoff。">
+                <List
+                  split={false}
+                  dataSource={viewModel.runs.timeline.slice(0, 3)}
+                  renderItem={(item) => (
+                    <List.Item className="foxpilot-list-row">
+                      <List.Item.Meta
+                        title={item.stage}
+                        description={`${item.role} -> ${item.platform}`}
+                      />
+                      <Tag bordered={false} color={statusColor(item.status)}>
+                        {item.status}
+                      </Tag>
+                    </List.Item>
                   )}
-                </div>
-                <div className="flex-1">
-                  <div className="font-medium">{item.stage}</div>
-                  <div className="text-sm text-muted-foreground">
-                    {item.role} · {item.platform}
-                  </div>
-                </div>
-                <Badge variant={statusVariant(item.status)}>{item.status}</Badge>
-                {index < runTimeline.length - 1 ? (
-                  <ArrowRight className="size-4 text-muted-foreground" />
-                ) : null}
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+                />
+              </Panel>
+
+              <Panel title="建议下一步" description="优先把验证和修复入口衔接好。">
+                <Flex vertical gap={10}>
+                  {['打开运行详情', '查看阶段交接', '导出执行摘要'].map((action) => (
+                    <Button key={action} block className="foxpilot-flat-action">
+                      <span>{action}</span>
+                      <ChevronRight className="size-4" />
+                    </Button>
+                  ))}
+                </Flex>
+              </Panel>
+            </Flex>
+          </Col>
+        </Row>
       )
 
     case 'events':
       return (
-        <div className="grid gap-4 lg:grid-cols-3">
-          {eventGroups.map((group) => (
-            <Card key={group.title}>
-              <CardHeader>
-                <CardDescription>{group.title}</CardDescription>
-                <CardTitle className="text-3xl">{group.count}</CardTitle>
-              </CardHeader>
-              <CardContent className="text-sm text-muted-foreground">{group.detail}</CardContent>
-            </Card>
-          ))}
-        </div>
+        <Flex vertical gap={12}>
+          <Row gutter={[12, 12]}>
+            {viewModel.events.groups.map((group) => (
+              <Col key={group.title} xs={24} lg={8}>
+                <Panel className="foxpilot-panel-stat" title={group.title}>
+                  <div className="foxpilot-stat-value">{group.count}</div>
+                  <Paragraph className="!mb-0 foxpilot-subtle-text">{group.detail}</Paragraph>
+                </Panel>
+              </Col>
+            ))}
+          </Row>
+
+          <Panel title="最近事件趋势" description="事件按来源聚合后直接显示判断结论。">
+            <List
+              split={false}
+              dataSource={viewModel.events.groups}
+              renderItem={(group) => (
+                <List.Item className="foxpilot-list-row">
+                  <List.Item.Meta title={group.title} description={group.detail} />
+                  <Tag bordered={false} className="foxpilot-inline-tag">
+                    {group.count}
+                  </Tag>
+                </List.Item>
+              )}
+            />
+          </Panel>
+        </Flex>
       )
 
     case 'control-plane':
       return (
-        <div className="grid gap-4 xl:grid-cols-3">
-          <RegistryCard
-            title="Platforms"
-            description="多 agent 平台按角色能力统一纳入中控。"
-            items={platformRegistry}
-          />
-          <RegistryCard
-            title="Skills"
-            description="平台可绑定的技能集合，供阶段模板和动作协议引用。"
-            items={skillRegistry}
-          />
-          <RegistryCard
-            title="MCP"
-            description="统一观察和修复各类 MCP 入口状态。"
-            items={mcpRegistry}
-          />
-        </div>
+        <Row gutter={[12, 12]}>
+          {viewModel.controlPlane.registries.map((registry) => (
+            <Col key={registry.title} xs={24} xl={8}>
+              <Panel title={registry.title} description={registry.description}>
+                <List
+                  split={false}
+                  dataSource={registry.items}
+                  renderItem={(item) => (
+                    <List.Item className="foxpilot-list-row">
+                      <List.Item.Meta title={item.name} description={item.detail} />
+                      <Tag bordered={false} color={statusColor(item.status)}>
+                        {item.status}
+                      </Tag>
+                    </List.Item>
+                  )}
+                />
+              </Panel>
+            </Col>
+          ))}
+        </Row>
       )
 
     case 'health':
       return (
-        <div className="grid gap-4 xl:grid-cols-[1fr_0.9fr]">
-          <Card>
-            <CardHeader>
-              <CardTitle>Doctor / Repair</CardTitle>
-              <CardDescription>Foundation、绑定和平台探测都统一纳入健康决策矩阵。</CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-3">
-              {healthIssues.map((issue) => (
-                <div
-                  key={issue.title}
-                  className="rounded-lg border border-border/80 bg-background/40 p-4"
-                >
-                  <div className="flex items-center justify-between gap-4">
-                    <span className="font-medium">{issue.title}</span>
-                    <Badge variant={statusVariant(issue.severity)}>{issue.severity}</Badge>
-                  </div>
-                  <p className="mt-2 text-sm text-muted-foreground">{issue.detail}</p>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>建议动作</CardTitle>
-              <CardDescription>把修复入口压到操作面板，减少 CLI 记忆负担。</CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-3">
-              {['运行 foundation doctor', '刷新 Skills 注册表', '重新探测 Trae 平台'].map(
-                (action) => (
-                  <Button key={action} variant="outline" className="justify-between">
-                    {action}
-                    <ChevronRight className="size-4" />
-                  </Button>
-                ),
-              )}
-            </CardContent>
-          </Card>
-        </div>
+        <Row gutter={[12, 12]}>
+          <Col xs={24} xl={14}>
+            <Panel title={viewModel.health.title} description={viewModel.health.description}>
+              <Flex vertical gap={10}>
+                {viewModel.healthIssues.map((issue) => (
+                  <Alert
+                    key={issue.title}
+                    message={issue.title}
+                    description={issue.detail}
+                    type={issueStatus(issue.severity)}
+                    showIcon
+                    className="foxpilot-flat-alert"
+                  />
+                ))}
+              </Flex>
+            </Panel>
+          </Col>
+
+          <Col xs={24} xl={10}>
+            <Flex vertical gap={12}>
+              <Panel
+                title={viewModel.health.runtimeLabel}
+                description={viewModel.health.runtimeDescription}
+              >
+                <Space wrap>
+                  <Tag
+                    bordered={false}
+                    color={runtimeStatus?.shell === 'tauri' ? 'success' : 'default'}
+                  >
+                    {runtimeStatus?.shell === 'tauri' ? 'Tauri' : 'Web Preview'}
+                  </Tag>
+                  <Tag bordered={false} className="foxpilot-inline-tag">
+                    {runtimeStatus?.runtime ?? 'shared-runtime-core'}
+                  </Tag>
+                </Space>
+                <Paragraph className="!mb-0 !mt-3 foxpilot-subtle-text">
+                  {viewModel.health.appearanceDescription}
+                </Paragraph>
+              </Panel>
+
+              <Panel
+                title={viewModel.health.suggestedActionsTitle}
+                description={viewModel.health.suggestedActionsDescription}
+              >
+                <Flex vertical gap={10}>
+                  {viewModel.health.suggestedActions.map((action) => (
+                    <Button key={action} block className="foxpilot-flat-action">
+                      <span>{action}</span>
+                      <ChevronRight className="size-4" />
+                    </Button>
+                  ))}
+                </Flex>
+              </Panel>
+            </Flex>
+          </Col>
+        </Row>
       )
   }
-}
-
-function RegistryCard({
-  title,
-  description,
-  items,
-}: {
-  title: string
-  description: string
-  items: ReadonlyArray<{
-    name: string
-    role?: string
-    scope?: string
-    endpoint?: string
-    status: string
-  }>
-}) {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
-        <CardDescription>{description}</CardDescription>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-3">
-        {items.map((item) => (
-          <div key={item.name} className="rounded-lg border border-border/80 bg-background/40 p-4">
-            <div className="flex items-center justify-between gap-3">
-              <div className="font-medium">{item.name}</div>
-              <Badge variant={statusVariant(item.status)}>{item.status}</Badge>
-            </div>
-            <div className="mt-2 text-sm text-muted-foreground">
-              {item.role ?? item.scope ?? item.endpoint}
-            </div>
-          </div>
-        ))}
-      </CardContent>
-    </Card>
-  )
 }

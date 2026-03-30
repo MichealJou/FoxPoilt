@@ -3,6 +3,7 @@ packages:
   - packages/*
 
 catalog:
+  antd: ^5.26.2
   '@tailwindcss/vite': ^4.2.2
   '@tauri-apps/api': ^2.10.1
   '@tauri-apps/cli': ^2.10.1

@@ -15,6 +15,7 @@
     "@foxpilot/contracts": "workspace:*",
     "@foxpilot/runtime": "workspace:*",
     "@tauri-apps/api": "catalog:",
+    "antd": "catalog:",
     "class-variance-authority": "catalog:",
     "clsx": "catalog:",
     "lucide-react": "catalog:",
