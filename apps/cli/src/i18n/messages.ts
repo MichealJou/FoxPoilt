@@ -3,7 +3,7 @@
  * @author michaeljou
  */
 
-import type { InterfaceLanguage } from '@/i18n/interface-language.js'
+import type { InterfaceLanguage } from '@foxpilot/contracts/interface-language.js'
 
 /**
  * 命令处理器使用的完整本地化消息集合。

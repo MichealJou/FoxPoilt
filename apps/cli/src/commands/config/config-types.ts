@@ -5,7 +5,7 @@
 
 import type { CliRuntimeContext } from '@/cli/runtime-context.js'
 import type { ensureGlobalConfig } from '@foxpilot/infra/config/global-config.js'
-import type { InterfaceLanguage } from '@/i18n/interface-language.js'
+import type { InterfaceLanguage } from '@foxpilot/contracts/interface-language.js'
 
 /**
  * `config set-language` 的标准化参数。

@@ -3,7 +3,6 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": ["../../src/*"],
       "@foxpilot/contracts/*": ["../../packages/contracts/src/*"],
       "@foxpilot/runtime/*": ["../../packages/runtime/src/*"],
       "@foxpilot/infra/*": ["../../packages/infra/src/*"],

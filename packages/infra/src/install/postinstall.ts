@@ -92,7 +92,7 @@ export async function runPostinstall(
   const homeDir = input.homeDir ?? os.homedir()
   const packageRoot = input.packageRoot ?? resolvePackageRoot()
   const executablePath =
-    input.executablePath ?? path.join(packageRoot, 'dist', 'src', 'cli', 'run.js')
+    input.executablePath ?? path.join(packageRoot, 'dist', 'apps', 'cli', 'src', 'cli', 'run.js')
 
   if (shouldSkipRegistration(packageRoot)) {
     return

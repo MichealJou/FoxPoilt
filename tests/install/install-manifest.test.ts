@@ -106,7 +106,7 @@ describe('install manifest helpers', () => {
     tempDirs.push(tempDir)
 
     const packageDir = path.join(tempDir, 'node_modules', 'foxpilot')
-    const packageBinDir = path.join(packageDir, 'dist', 'src', 'cli')
+    const packageBinDir = path.join(packageDir, 'dist', 'apps', 'cli', 'src', 'cli')
     const shimDir = path.join(tempDir, 'node_modules', '.bin')
     const executablePath = path.join(shimDir, 'foxpilot')
 
@@ -125,7 +125,7 @@ describe('install manifest helpers', () => {
           platform: 'darwin',
           arch: 'arm64',
           installRoot: packageDir,
-          binPath: path.join(packageDir, 'dist', 'src', 'cli', 'run.js'),
+          binPath: path.join(packageDir, 'dist', 'apps', 'cli', 'src', 'cli', 'run.js'),
           updateTarget: {
             npmPackage: 'foxpilot',
           },
@@ -136,7 +136,7 @@ describe('install manifest helpers', () => {
         2,
       ),
     )
-    await symlink('../foxpilot/dist/src/cli/run.js', executablePath)
+    await symlink('../foxpilot/dist/apps/cli/src/cli/run.js', executablePath)
 
     await expect(readInstallManifest({ executablePath })).resolves.toMatchObject({
       installMethod: 'npm',
@@ -156,7 +156,7 @@ describe('install manifest helpers', () => {
     tempDirs.push(tempDir)
 
     const packageDir = path.join(tempDir, 'node_modules', 'foxpilot')
-    const packageBinDir = path.join(packageDir, 'dist', 'src', 'cli')
+    const packageBinDir = path.join(packageDir, 'dist', 'apps', 'cli', 'src', 'cli')
     const shimDir = path.join(tempDir, 'node_modules', '.bin')
     const executablePath = path.join(shimDir, 'foxpilot')
 
@@ -175,7 +175,7 @@ describe('install manifest helpers', () => {
           platform: 'darwin',
           arch: 'arm64',
           installRoot: packageDir,
-          binPath: path.join(packageDir, 'dist', 'src', 'cli', 'run.js'),
+          binPath: path.join(packageDir, 'dist', 'apps', 'cli', 'src', 'cli', 'run.js'),
           updateTarget: {
             npmPackage: 'foxpilot',
           },
@@ -191,7 +191,7 @@ describe('install manifest helpers', () => {
       [
         '#!/bin/sh',
         'basedir=$(dirname "$(echo "$0" | sed -e \'s,\\\\,/,g\')")',
-        'exec node "$basedir/../foxpilot/dist/src/cli/run.js" "$@"',
+        'exec node "$basedir/../foxpilot/dist/apps/cli/src/cli/run.js" "$@"',
         '',
       ].join('\n'),
     )

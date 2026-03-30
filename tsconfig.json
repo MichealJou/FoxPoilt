@@ -6,7 +6,7 @@
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
+      "@/*": ["apps/cli/src/*"],
       "@foxpilot/contracts/*": ["packages/contracts/src/*"],
       "@foxpilot/runtime/*": ["packages/runtime/src/*"],
       "@foxpilot/infra/*": ["packages/infra/src/*"],
@@ -23,8 +23,8 @@
     "types": ["node", "vitest/globals"]
   },
   "include": [
-    "src/**/*.ts",
-    "src/**/*.tsx",
+    "apps/cli/src/**/*.ts",
+    "apps/cli/src/**/*.tsx",
     "packages/**/*.ts",
     "packages/**/*.tsx",
     "apps/desktop/src/**/*.ts",

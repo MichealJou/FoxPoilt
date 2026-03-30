@@ -23,7 +23,7 @@ describe('postinstall integration', () => {
         platform: process.platform,
         arch: process.arch,
         installRoot: '/tmp/global-install',
-        binPath: '/tmp/global-install/dist/src/cli/run.js',
+        binPath: '/tmp/global-install/dist/apps/cli/src/cli/run.js',
         updateTarget: {
           npmPackage: 'foxpilot',
         },
@@ -70,7 +70,7 @@ describe('postinstall integration', () => {
       cwd: '/tmp/global-install',
       packageRoot: '/tmp/global-install',
       homeDir: '/Users/demo',
-      executablePath: '/tmp/global-install/dist/src/cli/run.js',
+      executablePath: '/tmp/global-install/dist/apps/cli/src/cli/run.js',
       registerCurrentInstallation,
       readPackageMetadata,
       setupFoundationPack,
@@ -101,7 +101,7 @@ describe('postinstall integration', () => {
         platform: process.platform,
         arch: process.arch,
         installRoot: '/tmp/consumer-root/node_modules/foxpilot',
-        binPath: '/tmp/consumer-root/node_modules/foxpilot/dist/src/cli/run.js',
+        binPath: '/tmp/consumer-root/node_modules/foxpilot/dist/apps/cli/src/cli/run.js',
         updateTarget: {
           npmPackage: 'foxpilot',
         },
@@ -141,7 +141,7 @@ describe('postinstall integration', () => {
     expect(registerCurrentInstallation).toHaveBeenCalledWith(
       expect.objectContaining({
         installRoot: '/tmp/consumer-root/node_modules/foxpilot',
-        executablePath: '/tmp/consumer-root/node_modules/foxpilot/dist/src/cli/run.js',
+        executablePath: '/tmp/consumer-root/node_modules/foxpilot/dist/apps/cli/src/cli/run.js',
       }),
     )
   })
@@ -160,7 +160,7 @@ describe('postinstall integration', () => {
         platform: process.platform,
         arch: process.arch,
         installRoot: '/tmp/global-install',
-        binPath: '/tmp/global-install/dist/src/cli/run.js',
+        binPath: '/tmp/global-install/dist/apps/cli/src/cli/run.js',
         updateTarget: {
           npmPackage: 'foxpilot',
         },
@@ -194,7 +194,7 @@ describe('postinstall integration', () => {
       cwd: '/tmp/global-install',
       packageRoot: '/tmp/global-install',
       homeDir: '/Users/demo',
-      executablePath: '/tmp/global-install/dist/src/cli/run.js',
+      executablePath: '/tmp/global-install/dist/apps/cli/src/cli/run.js',
       registerCurrentInstallation,
       readPackageMetadata,
       setupFoundationPack,

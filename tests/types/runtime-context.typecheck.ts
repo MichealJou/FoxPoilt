@@ -18,7 +18,7 @@ import type {
   TaskUpdateStatusContext,
   TaskUpdateStatusDependencies,
 } from '@/commands/task/task-update-status-types.js'
-import type { InterfaceLanguage } from '@/i18n/interface-language.js'
+import type { InterfaceLanguage } from '@foxpilot/contracts/interface-language.js'
 
 /**
  * 这组类型断言不参与运行时测试，只用于锁定上下文类型的编译期结构。

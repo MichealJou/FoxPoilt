@@ -3,7 +3,7 @@
   "compilerOptions": {
     "baseUrl": "../..",
     "paths": {
-      "@/*": ["src/*"],
+      "@/*": ["apps/cli/src/*"],
       "@foxpilot/contracts/*": ["packages/contracts/src/*"],
       "@foxpilot/runtime/*": ["packages/runtime/src/*"],
       "@foxpilot/infra/*": ["packages/infra/src/*"],
@@ -12,13 +12,14 @@
       "@desktop/*": ["apps/desktop/src/*"]
     },
     "outDir": "./dist",
+    "rootDir": "../..",
     "types": ["node"],
     "declaration": false,
     "sourceMap": false
   },
   "include": [
-    "../../src/**/*.ts",
-    "../../src/**/*.tsx",
+    "./src/**/*.ts",
+    "./src/**/*.tsx",
     "../../packages/**/*.ts",
     "../../packages/**/*.tsx"
   ],

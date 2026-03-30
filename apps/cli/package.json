@@ -4,8 +4,8 @@
   "private": false,
   "type": "module",
   "bin": {
-    "foxpilot": "dist/src/cli/run.js",
-    "fp": "dist/src/cli/run.js"
+    "foxpilot": "dist/apps/cli/src/cli/run.js",
+    "fp": "dist/apps/cli/src/cli/run.js"
   },
   "files": [
     "dist",
@@ -19,7 +19,8 @@
   "scripts": {
     "build": "pnpm clean && tsc -p tsconfig.build.json && tsc-alias -p tsconfig.build.json && mkdir -p dist/packages/infra/src/db && cp ../../docs/specs/sql/foxpilot-phase1-init.sql dist/packages/infra/src/db/foxpilot-phase1-init.sql",
     "clean": "rm -rf dist",
-    "cli": "tsx ../../src/cli/run.ts",
+    "cli": "tsx ./src/cli/run.ts",
+    "typecheck": "tsc -p tsconfig.build.json --noEmit",
     "postinstall": "node scripts/postinstall.js"
   },
   "dependencies": {

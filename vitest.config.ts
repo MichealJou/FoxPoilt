@@ -26,7 +26,7 @@ export default defineConfig({
         replacement: fileURLToPath(new URL('./apps/desktop/src', import.meta.url)),
       },
       { find: '@tests', replacement: fileURLToPath(new URL('./tests', import.meta.url)) },
-      { find: '@', replacement: fileURLToPath(new URL('./src', import.meta.url)) },
+      { find: '@', replacement: fileURLToPath(new URL('./apps/cli/src', import.meta.url)) },
     ],
   },
   test: {

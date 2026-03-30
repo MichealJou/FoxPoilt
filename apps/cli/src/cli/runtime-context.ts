@@ -3,7 +3,7 @@
  * @author michaeljou
  */
 
-import type { InterfaceLanguage } from '@/i18n/interface-language.js'
+import type { InterfaceLanguage } from '@foxpilot/contracts/interface-language.js'
 
 /**
  * 注入到每个 CLI 命令中的共享运行时上下文。

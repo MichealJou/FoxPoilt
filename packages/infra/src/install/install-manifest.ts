@@ -11,6 +11,7 @@ import {
   resolveInstallIndexPath,
   resolveInstallManifestPath,
 } from '@foxpilot/infra/install/install-paths.js'
+import { readPackageMetadata } from '@foxpilot/infra/install/package-info.js'
 
 /**
  * 读取与当前可执行实例绑定的安装清单。
@@ -25,6 +26,14 @@ export async function readInstallManifest({
 }: {
   executablePath: string
 }): Promise<InstallManifest | undefined> {
+  let packageName = 'foxpilot'
+
+  try {
+    packageName = (await readPackageMetadata()).name
+  } catch {
+    // 包元数据读取失败时，回退到当前固定包名，保证安装清单探测仍然可用。
+  }
+
   const executableCandidates = [executablePath]
 
   try {
@@ -42,12 +51,9 @@ export async function readInstallManifest({
     executableCandidates.push(shimResolvedPath)
   }
 
-  const manifestPaths = executableCandidates.flatMap((candidatePath) => [
-    resolveInstallManifestPath(candidatePath),
-    path.join(path.dirname(candidatePath), '..', 'install-manifest.json'),
-    path.join(path.dirname(candidatePath), '..', '..', 'install-manifest.json'),
-    path.join(path.dirname(candidatePath), '..', '..', '..', 'install-manifest.json'),
-  ])
+  const manifestPaths = executableCandidates.flatMap((candidatePath) =>
+    collectManifestPaths(candidatePath, packageName),
+  )
 
   for (const manifestPath of manifestPaths) {
     try {
@@ -63,6 +69,29 @@ export async function readInstallManifest({
   }
 
   return undefined
+}
+
+function collectManifestPaths(candidatePath: string, packageName: string): string[] {
+  const manifestPaths = new Set<string>()
+  let currentDir = path.dirname(candidatePath)
+
+  manifestPaths.add(resolveInstallManifestPath(candidatePath))
+  if (path.basename(currentDir) === '.bin') {
+    manifestPaths.add(path.join(currentDir, '..', packageName, 'install-manifest.json'))
+  }
+
+  for (let depth = 0; depth < 8; depth += 1) {
+    manifestPaths.add(path.join(currentDir, 'install-manifest.json'))
+
+    const parentDir = path.dirname(currentDir)
+    if (parentDir === currentDir) {
+      break
+    }
+
+    currentDir = parentDir
+  }
+
+  return [...manifestPaths]
 }
 
 async function resolveExecutableFromShim(executablePath: string): Promise<string | undefined> {

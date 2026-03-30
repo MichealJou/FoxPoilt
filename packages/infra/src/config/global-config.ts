@@ -6,9 +6,12 @@
 import { access } from 'node:fs/promises'
 import path from 'node:path'
 
+import {
+  isInterfaceLanguage,
+  type InterfaceLanguage,
+} from '@foxpilot/contracts/interface-language.js'
 import { readJsonFile, writeJsonFile } from '@foxpilot/infra/core/json-file.js'
 import { resolveGlobalConfigPath } from '@foxpilot/infra/core/paths.js'
-import { isInterfaceLanguage, type InterfaceLanguage } from '@/i18n/interface-language.js'
 
 /**
  * 所有本地项目共享的用户级配置。

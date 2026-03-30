@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "build": "pnpm desktop:build",
     "ui:dev": "vite",
     "ui:build": "vite build --outDir dist-ui",
     "desktop:dev": "tauri dev",

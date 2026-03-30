@@ -1,10 +1,10 @@
 /**
- * @file src/i18n/interface-language.ts
+ * @file interface-language.ts
  * @author michaeljou
  */
 
 /**
- * CLI 暴露的交互语言列表。
+ * CLI 与桌面共享的交互语言列表。
  */
 export const interfaceLanguages = ['zh-CN', 'en-US', 'ja-JP'] as const
 

@@ -3,6 +3,7 @@
 set -eu
 
 out_dir="${1:-dist/release-assets}"
+mkdir -p "$(dirname "${out_dir}")"
 out_dir="$(cd "$(dirname "${out_dir}")" && pwd)/$(basename "${out_dir}")"
 stage_root="$(mktemp -d)"
 package_root="apps/cli"
@@ -35,18 +36,18 @@ build_unix_archive() {
   mkdir -p "${stage_dir}/scripts"
   cp "${package_root}/scripts/install.sh" "${package_root}/scripts/install.ps1" "${package_root}/scripts/postinstall.js" "${stage_dir}/scripts"
 
-  cat >"${stage_dir}/foxpilot" <<'EOF'
+cat >"${stage_dir}/foxpilot" <<'EOF'
 #!/usr/bin/env sh
 set -eu
 SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
-exec node "${SCRIPT_DIR}/dist/src/cli/run.js" "$@"
+exec node "${SCRIPT_DIR}/dist/apps/cli/src/cli/run.js" "$@"
 EOF
 
   cat >"${stage_dir}/fp" <<'EOF'
 #!/usr/bin/env sh
 set -eu
 SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
-exec node "${SCRIPT_DIR}/dist/src/cli/run.js" "$@"
+exec node "${SCRIPT_DIR}/dist/apps/cli/src/cli/run.js" "$@"
 EOF
 
   chmod +x "${stage_dir}/foxpilot" "${stage_dir}/fp"
@@ -67,12 +68,12 @@ build_windows_archive() {
 
   cat >"${stage_dir}/foxpilot.cmd" <<'EOF'
 @echo off
-node "%~dp0dist\src\cli\run.js" %*
+node "%~dp0dist\apps\cli\src\cli\run.js" %*
 EOF
 
   cat >"${stage_dir}/fp.cmd" <<'EOF'
 @echo off
-node "%~dp0dist\src\cli\run.js" %*
+node "%~dp0dist\apps\cli\src\cli\run.js" %*
 EOF
 
   (

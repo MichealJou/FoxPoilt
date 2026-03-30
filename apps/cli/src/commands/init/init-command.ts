@@ -27,7 +27,10 @@ import {
   resolveGlobalDatabasePath,
   resolveProjectConfigPath,
 } from '@foxpilot/infra/core/paths.js'
-import { isInterfaceLanguage, type InterfaceLanguage } from '@/i18n/interface-language.js'
+import {
+  isInterfaceLanguage,
+  type InterfaceLanguage,
+} from '@foxpilot/contracts/interface-language.js'
 import { getMessages, type MessageCatalog } from '@/i18n/messages.js'
 import {
   ProjectAlreadyInitializedError,
